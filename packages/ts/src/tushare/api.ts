@@ -1,5 +1,5 @@
 import axios from "axios";
-import { AllStockApiParams, ApiParams, StockKeys } from "./type";
+import { AllStockApiParams, ApiParams, StockKeys, StockModel } from "./type";
 
 const StockFields: StockKeys[] = [
   "act_ent_type",
@@ -17,8 +17,11 @@ const StockFields: StockKeys[] = [
 ];
 
 export namespace TUSHARE_API {
-  function request(path: string, params: Pick<ApiParams, "params" | "fields">) {
-    return axios.post(
+  function request<T>(
+    path: string,
+    params: Pick<ApiParams, "params" | "fields">
+  ) {
+    return axios.post<T>(
       process.env.TUSHARE_API as string,
       {
         ...params,
@@ -32,6 +35,18 @@ export namespace TUSHARE_API {
     return request("stock_basic", {
       fields: StockFields.join(","),
       params: params as Record<string, unknown>,
-    });
+    })
+      .then((res) => {
+        if (res.status == 200) {
+          console.log(res.data);
+
+          return (res?.data as any)?.data as StockModel[];
+        }
+        return null;
+      })
+      .catch((e) => {
+        console.log(e);
+        return null;
+      });
   }
 }

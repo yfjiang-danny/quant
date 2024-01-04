@@ -47,7 +47,7 @@ act_name	str	N	实控人名称
 act_ent_type	str	N	实控人企业性质
  * 
  */
-export interface StockModel {
+export interface StockModel extends Record<string, unknown> {
   ts_code?: string;
   symbol?: string;
   name?: string;

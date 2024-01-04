@@ -4,13 +4,21 @@ import { ALPH_API } from "./api";
 dotenv.config();
 
 function main() {
-  ALPH_API.getCompanyOverview("002932.SHZ")
+  ALPH_API.getStockDaily("002962.SHZ")
     .then((res) => {
-      console.log("res", JSON.stringify(res.data));
+      console.log("getStockDaily", JSON.stringify(res.data));
     })
     .catch((err) => {
       console.log("err", err);
     });
+
+  // ALPH_API.getSMA({ symbol: "002962.SHZ" })
+  //   .then((res) => {
+  //     console.log("getStockDaily", JSON.stringify(res.data));
+  //   })
+  //   .catch((err) => {
+  //     console.log("err", err);
+  //   });
 }
 
 main();

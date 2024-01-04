@@ -1,5 +1,5 @@
 import axios from "axios";
-import { AlphApiParams } from "./type";
+import { AlphApiParams, IntervalType, SeriesType } from "./type";
 
 const url = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo`;
 
@@ -25,7 +25,7 @@ export namespace ALPH_API {
     return request({
       function: "TIME_SERIES_DAILY",
       symbol: symbol,
-      outputsize: "full",
+      outputsize: "compact",
     });
   }
 
@@ -41,6 +41,32 @@ export namespace ALPH_API {
     return request({
       function: "OVERVIEW",
       symbol: symbol,
+    });
+  }
+
+  /**
+   *
+   * @param symbol
+   * @param period
+   * @returns
+   */
+  export function getSMA({
+    symbol,
+    period = 5,
+    series_type = "close",
+    interval = "daily",
+  }: {
+    symbol: string;
+    period?: number;
+    series_type?: SeriesType;
+    interval?: IntervalType;
+  }) {
+    return request({
+      function: "SMA",
+      symbol: symbol,
+      interval: interval,
+      time_period: period,
+      series_type: series_type,
     });
   }
 }
