@@ -19,7 +19,7 @@ class Logger {
     const file = this.filePath;
     this.queue = new Queue();
     this.queue.process(function (job, done) {
-      appendFile(file, JSON.stringify(job.data)).then(
+      appendFile(file, JSON.stringify(job.data) + "\n").then(
         () => {
           //
           done();
@@ -32,12 +32,16 @@ class Logger {
     });
   }
 
-  info(msg: unknown) {
+  setFilePath = (filePath: string) => {
+    this.filePath = filePath;
+  };
+
+  info = (msg: unknown) => {
     this.queue.add({
       time: moment().format("YYYY-MM-DD HH:mm:SS"),
       message: msg,
     });
-  }
+  };
 }
 
 // Logger

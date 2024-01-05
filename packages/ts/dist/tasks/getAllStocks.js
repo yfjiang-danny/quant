@@ -77,6 +77,7 @@ var dotenv = __importStar(require("dotenv"));
 var moment_1 = __importDefault(require("moment"));
 var node_schedule_1 = require("node-schedule");
 var path_1 = __importDefault(require("path"));
+var logs_1 = require("../logs");
 var api_1 = require("../tushare/api");
 var constant_1 = require("../tushare/constant");
 var excel_1 = require("../utils/excel");
@@ -168,9 +169,12 @@ function task(repeat) {
     });
 }
 (function main() {
-    task(5);
+    logs_1.logger.setFilePath(path_1.default.resolve(rootPath, "logs", "all_stocks.log"));
+    // task(5);
     // 星期1~5 早上 4 点
     // scheduleJob("* * 9 * 1-5", task.bind(null, 5));
+    // 每天早上 4 点
+    (0, node_schedule_1.scheduleJob)("* * 4 * *", task.bind(null, 5));
     process.on("SIGINT", function () {
         (0, node_schedule_1.gracefulShutdown)().then(function () { return process.exit(0); });
     });

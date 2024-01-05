@@ -1,4 +1,4 @@
-export type MarketType = "SZ" | "SH";
+export type MarketType = "SZ" | "SH" | "OC";
 
 interface QuoteSnapshotModel {
   code: string;

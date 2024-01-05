@@ -73,88 +73,79 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Excel = void 0;
-var fs = __importStar(require("fs"));
-var moment_1 = __importDefault(require("moment"));
-var node_xlsx_1 = __importDefault(require("node-xlsx"));
-var Excel;
-(function (Excel) {
-    function read(filePath) {
-        return new Promise(function (resolve) {
-            try {
-                var sheets = node_xlsx_1.default.parse(filePath);
-                resolve(sheets);
-            }
-            catch (error) {
-                console.log(error);
-                resolve(null);
-            }
-        });
-    }
-    Excel.read = read;
-    function write(data, filePath) {
-        return new Promise(function (resolve) {
-            try {
-                var buffer = node_xlsx_1.default.build(data);
-                fs.writeFile(filePath, buffer, function (err) {
-                    if (err) {
-                        console.log("Write failed: " + err);
-                        resolve(false);
-                    }
-                    console.log("Write completed.");
-                    resolve(true);
+var dotenv = __importStar(require("dotenv"));
+var fs_1 = require("fs");
+var node_schedule_1 = require("node-schedule");
+var path_1 = __importDefault(require("path"));
+var constant_1 = require("../eastmoney/constant");
+var logs_1 = require("../logs");
+var constant_2 = require("../tushare/constant");
+var excel_1 = require("../utils/excel");
+var utils_1 = require("./utils");
+dotenv.config();
+var rootPath = path_1.default.resolve(".", ".");
+var dbPath = path_1.default.resolve(rootPath, "db");
+var allStocksFilePath = path_1.default.resolve(dbPath, "all_stocks.xlsx");
+var filePath = path_1.default.resolve(dbPath, "all_capital_stocks.xlsx");
+function saveAllCapitalStock(stocks) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            if (stocks && stocks.length) {
+                excel_1.Excel.saveToExcel({
+                    columns: __assign(__assign({}, constant_2.StockFieldNames), constant_1.StockInfoFieldNames),
+                    data: stocks,
+                    filePath: filePath,
                 });
             }
-            catch (error) {
-                console.log(error);
-                resolve(false);
+            return [2 /*return*/];
+        });
+    });
+}
+function task() {
+    var _this = this;
+    (0, fs_1.access)(allStocksFilePath, fs_1.constants.F_OK, function (err) { return __awaiter(_this, void 0, void 0, function () {
+        var preAllStocks, sheet, allStockData, keys_1, allStocks_1, fillResult;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!err) return [3 /*break*/, 1];
+                    console.log("".concat(allStocksFilePath, " do not exist"));
+                    return [3 /*break*/, 5];
+                case 1: return [4 /*yield*/, excel_1.Excel.read(allStocksFilePath)];
+                case 2:
+                    preAllStocks = _a.sent();
+                    if (!(preAllStocks && preAllStocks.length > 0)) return [3 /*break*/, 5];
+                    sheet = preAllStocks[0];
+                    allStockData = sheet.data.slice(1);
+                    keys_1 = Object.keys(constant_2.StockFieldNames);
+                    allStocks_1 = [];
+                    allStockData.forEach(function (v) {
+                        var stock = {};
+                        keys_1.forEach(function (key, i) {
+                            if (v[i]) {
+                                stock[key] = v[i];
+                            }
+                        });
+                        allStocks_1.push(stock);
+                    });
+                    return [4 /*yield*/, (0, utils_1.fillStockInfo)(allStocks_1)];
+                case 3:
+                    fillResult = _a.sent();
+                    if (!fillResult) return [3 /*break*/, 5];
+                    return [4 /*yield*/, saveAllCapitalStock(fillResult)];
+                case 4:
+                    _a.sent();
+                    _a.label = 5;
+                case 5: return [2 /*return*/];
             }
         });
-    }
-    Excel.write = write;
-    function saveToExcel(_a) {
-        var columns = _a.columns, data = _a.data, filePath = _a.filePath, sheetName = _a.sheetName;
-        return __awaiter(this, void 0, void 0, function () {
-            var rows, columnKeys, header, newSheet, newXlsx, oldData;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        if (!filePath) {
-                            console.log("filePath can not be null");
-                            return [2 /*return*/, false];
-                        }
-                        rows = [];
-                        columnKeys = Object.keys(columns);
-                        header = [];
-                        columnKeys.forEach(function (key) {
-                            header.push(columns[key]);
-                        });
-                        rows.push(header);
-                        data.forEach(function (v) {
-                            var row = [];
-                            columnKeys.forEach(function (key, i) {
-                                row.push(v[key] || "");
-                            });
-                            rows.push(row);
-                        });
-                        newSheet = {
-                            name: sheetName || (0, moment_1.default)().format("YYYYMMDD"),
-                            data: rows,
-                            options: {},
-                        };
-                        newXlsx = [newSheet];
-                        return [4 /*yield*/, Excel.read(filePath)];
-                    case 1:
-                        oldData = _b.sent();
-                        if (oldData) {
-                            oldData.forEach(function (v) {
-                                newXlsx.push(__assign(__assign({}, v), { options: {} }));
-                            });
-                        }
-                        return [2 /*return*/, Excel.write(newXlsx, filePath)];
-                }
-            });
-        });
-    }
-    Excel.saveToExcel = saveToExcel;
-})(Excel || (exports.Excel = Excel = {}));
+    }); });
+}
+(function main() {
+    logs_1.logger.setFilePath(path_1.default.resolve(rootPath, "logs", "all_capital_stocks.log"));
+    // 每天早上 4 点
+    (0, node_schedule_1.scheduleJob)("* * 8 * *", task);
+    process.on("SIGINT", function () {
+        (0, node_schedule_1.gracefulShutdown)().then(function () { return process.exit(0); });
+    });
+})();

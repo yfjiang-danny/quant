@@ -13,6 +13,16 @@ var queue_1 = require("../utils/queue");
  */
 var Logger = /** @class */ (function () {
     function Logger(filePath) {
+        var _this = this;
+        this.setFilePath = function (filePath) {
+            _this.filePath = filePath;
+        };
+        this.info = function (msg) {
+            _this.queue.add({
+                time: (0, moment_1.default)().format("YYYY-MM-DD HH:mm:SS"),
+                message: msg,
+            });
+        };
         if (!filePath) {
             this.filePath = path_1.default.resolve(__dirname, "quant.log");
         }
@@ -22,7 +32,7 @@ var Logger = /** @class */ (function () {
         var file = this.filePath;
         this.queue = new queue_1.Queue();
         this.queue.process(function (job, done) {
-            (0, promises_1.appendFile)(file, JSON.stringify(job.data)).then(function () {
+            (0, promises_1.appendFile)(file, JSON.stringify(job.data) + "\n").then(function () {
                 //
                 done();
             }, function (err) {
@@ -31,12 +41,6 @@ var Logger = /** @class */ (function () {
             });
         });
     }
-    Logger.prototype.info = function (msg) {
-        this.queue.add({
-            time: (0, moment_1.default)().format("YYYY-MM-DD HH:mm:SS"),
-            message: msg,
-        });
-    };
     return Logger;
 }());
 // Logger

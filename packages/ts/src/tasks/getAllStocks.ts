@@ -1,8 +1,9 @@
 import * as dotenv from "dotenv";
 import moment from "moment";
-import { gracefulShutdown } from "node-schedule";
+import { gracefulShutdown, scheduleJob } from "node-schedule";
 import { WorkSheet } from "node-xlsx";
 import path from "path";
+import { logger } from "../logs";
 import { TUSHARE_API } from "../tushare/api";
 import { StockFieldNames } from "../tushare/constant";
 import { StockModel } from "../tushare/type";
@@ -24,6 +25,7 @@ async function saveAllStock(stocks: StockModel[]) {
       header.push(StockFieldNames[key]);
     });
     rows.push(header);
+
     stocks.forEach((v) => {
       const row: unknown[] = [];
       columnKeys.forEach((key, i) => {
@@ -31,6 +33,7 @@ async function saveAllStock(stocks: StockModel[]) {
       });
       rows.push(row);
     });
+
     const newSheet: WorkSheet = {
       name: dateString,
       data: rows,
@@ -81,9 +84,12 @@ async function task(repeat: number) {
 }
 
 (function main() {
-  task(5);
+  logger.setFilePath(path.resolve(rootPath, "logs", "all_stocks.log"));
+  // task(5);
   // 星期1~5 早上 4 点
   // scheduleJob("* * 9 * 1-5", task.bind(null, 5));
+  // 每天早上 4 点
+  scheduleJob("* * 4 * *", task.bind(null, 5));
 
   process.on("SIGINT", function () {
     gracefulShutdown().then(() => process.exit(0));
