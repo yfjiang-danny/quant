@@ -16,6 +16,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TUSHARE_API = void 0;
 var axios_1 = __importDefault(require("axios"));
+var logs_1 = require("../logs");
 var StockFields = [
     "act_ent_type",
     "act_name",
@@ -43,9 +44,23 @@ var TUSHARE_API;
         })
             .then(function (res) {
             var _a;
+            logs_1.logger.info(res.data);
             if (res.status == 200) {
-                console.log(res.data);
-                return (_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a.data;
+                var data_1 = (_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a.data;
+                if (data_1) {
+                    var stocks_1 = [];
+                    data_1.items.forEach(function (item) {
+                        var stock = {};
+                        item.forEach(function (v, i) {
+                            var key = data_1.fields[i];
+                            if (key) {
+                                stock[key] = v;
+                            }
+                        });
+                        stocks_1.push(stock);
+                    });
+                    return stocks_1;
+                }
             }
             return null;
         })

@@ -10,6 +10,29 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -50,12 +73,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllStocks = exports.saveAllStock = void 0;
-var api_1 = require("./tushare/api");
-var constant_1 = require("./tushare/constant");
-var excel_1 = require("./utils/excel");
+var dotenv = __importStar(require("dotenv"));
 var moment_1 = __importDefault(require("moment"));
+var node_schedule_1 = require("node-schedule");
 var path_1 = __importDefault(require("path"));
+var api_1 = require("../tushare/api");
+var constant_1 = require("../tushare/constant");
+var excel_1 = require("../utils/excel");
+var sleep_1 = require("../utils/sleep");
+dotenv.config();
 var rootPath = path_1.default.resolve(".", ".");
 var dateString = (0, moment_1.default)().format("YYYYMMDD");
 function saveAllStock(stocks) {
@@ -102,22 +128,50 @@ function saveAllStock(stocks) {
         });
     });
 }
-exports.saveAllStock = saveAllStock;
 function getAllStocks() {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            return [2 /*return*/, new Promise(function (resolve) {
-                    api_1.TUSHARE_API.getAllStock().then(function (res) {
-                        if (res) {
-                            console.log(JSON.stringify(res));
-                            saveAllStock(res).then(function (res) { return resolve(res); });
-                        }
-                        else {
-                            resolve(false);
-                        }
-                    });
-                })];
+    return new Promise(function (resolve) {
+        api_1.TUSHARE_API.getAllStock().then(function (res) {
+            if (res) {
+                console.log(JSON.stringify(res));
+                saveAllStock(res).then(function (res) { return resolve(res); });
+            }
+            else {
+                resolve(false);
+            }
         });
     });
 }
-exports.getAllStocks = getAllStocks;
+function task(repeat) {
+    return __awaiter(this, void 0, void 0, function () {
+        var max, success;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    max = repeat;
+                    success = false;
+                    _a.label = 1;
+                case 1:
+                    if (!(!success && max > 0)) return [3 /*break*/, 5];
+                    return [4 /*yield*/, getAllStocks()];
+                case 2:
+                    success = _a.sent();
+                    max--;
+                    if (!!success) return [3 /*break*/, 4];
+                    return [4 /*yield*/, (0, sleep_1.sleep)(1000 * 60 * 60 * 60 + 1000 * 60 * 5)];
+                case 3:
+                    _a.sent();
+                    _a.label = 4;
+                case 4: return [3 /*break*/, 1];
+                case 5: return [2 /*return*/];
+            }
+        });
+    });
+}
+(function main() {
+    task(5);
+    // 星期1~5 早上 4 点
+    // scheduleJob("* * 9 * 1-5", task.bind(null, 5));
+    process.on("SIGINT", function () {
+        (0, node_schedule_1.gracefulShutdown)().then(function () { return process.exit(0); });
+    });
+})();

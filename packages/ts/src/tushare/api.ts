@@ -1,4 +1,5 @@
 import axios from "axios";
+import { logger } from "../logs";
 import { AllStockApiParams, ApiParams, StockKeys, StockModel } from "./type";
 
 const StockFields: StockKeys[] = [
@@ -37,10 +38,26 @@ export namespace TUSHARE_API {
       params: params as Record<string, unknown>,
     })
       .then((res) => {
+        logger.info(res.data);
         if (res.status == 200) {
-          console.log(res.data);
-
-          return (res?.data as any)?.data as StockModel[];
+          const data = (res?.data as any)?.data as {
+            fields: string[];
+            items: (string | null)[][];
+          };
+          if (data) {
+            const stocks: StockModel[] = [];
+            data.items.forEach((item) => {
+              const stock: StockModel = {};
+              item.forEach((v, i) => {
+                const key = data.fields[i];
+                if (key) {
+                  stock[key] = v;
+                }
+              });
+              stocks.push(stock);
+            });
+            return stocks;
+          }
         }
         return null;
       })

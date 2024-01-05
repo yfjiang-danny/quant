@@ -1,17 +1,21 @@
-import { WorkSheet } from "node-xlsx";
-import { TUSHARE_API } from "./tushare/api";
-import { StockFieldNames } from "./tushare/constant";
-import { Excel } from "./utils/excel";
-
+import * as dotenv from "dotenv";
 import moment from "moment";
+import { gracefulShutdown } from "node-schedule";
+import { WorkSheet } from "node-xlsx";
 import path from "path";
-import { StockModel } from "./tushare/type";
+import { TUSHARE_API } from "../tushare/api";
+import { StockFieldNames } from "../tushare/constant";
+import { StockModel } from "../tushare/type";
+import { Excel } from "../utils/excel";
+import { sleep } from "../utils/sleep";
+
+dotenv.config();
 
 const rootPath = path.resolve(".", ".");
 
 const dateString = moment().format("YYYYMMDD");
 
-export async function saveAllStock(stocks: StockModel[]) {
+async function saveAllStock(stocks: StockModel[]) {
   if (stocks) {
     const rows: unknown[][] = [];
     const columnKeys = Object.keys(StockFieldNames);
@@ -50,7 +54,7 @@ export async function saveAllStock(stocks: StockModel[]) {
   });
 }
 
-export async function getAllStocks() {
+function getAllStocks() {
   return new Promise<boolean>((resolve) => {
     TUSHARE_API.getAllStock().then((res) => {
       if (res) {
@@ -63,3 +67,25 @@ export async function getAllStocks() {
     });
   });
 }
+
+async function task(repeat: number) {
+  let max = repeat;
+  let success = false;
+  while (!success && max > 0) {
+    success = await getAllStocks();
+    max--;
+    if (!success) {
+      await sleep(1000 * 60 * 60 * 60 + 1000 * 60 * 5);
+    }
+  }
+}
+
+(function main() {
+  task(5);
+  // 星期1~5 早上 4 点
+  // scheduleJob("* * 9 * 1-5", task.bind(null, 5));
+
+  process.on("SIGINT", function () {
+    gracefulShutdown().then(() => process.exit(0));
+  });
+})();

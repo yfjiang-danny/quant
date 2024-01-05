@@ -1,6 +1,6 @@
 import { access, constants } from "fs";
 import path from "path";
-import { Excel } from "./utils/excel";
+import { Excel } from "../utils/excel";
 
 const dbPath = path.resolve(".", ".", "db");
 
