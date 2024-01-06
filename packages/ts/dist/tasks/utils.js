@@ -47,8 +47,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fillStockInfo = void 0;
+exports.fillAllStockSMA = exports.fillEastStockInfo = void 0;
 var api_1 = require("../eastmoney/api");
+var sma_1 = require("../sma");
 function getMarket(symbol) {
     switch (symbol.slice(0, 1)) {
         case "0":
@@ -66,7 +67,7 @@ var batch = 10;
  * @param stocks
  * @returns
  */
-function fillStockInfo(stocks) {
+function fillEastStockInfo(stocks) {
     return __awaiter(this, void 0, void 0, function () {
         var res, len, i, _loop_1;
         return __generator(this, function (_a) {
@@ -123,4 +124,58 @@ function fillStockInfo(stocks) {
         });
     });
 }
-exports.fillStockInfo = fillStockInfo;
+exports.fillEastStockInfo = fillEastStockInfo;
+/**
+ * Use alph api to calculate sma and filled to stock
+ */
+function fillAllStockSMA(stocks) {
+    return __awaiter(this, void 0, void 0, function () {
+        var res, len, i, _loop_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    res = [];
+                    len = Math.round(stocks.length / batch);
+                    i = 0;
+                    _loop_2 = function () {
+                        var arr, promises_2, responses;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0:
+                                    arr = stocks.slice(i, i + batch);
+                                    if (!(arr.length > 0)) return [3 /*break*/, 2];
+                                    promises_2 = [];
+                                    arr.forEach(function (v) {
+                                        promises_2.push((0, sma_1.fillStockSMA)(v));
+                                    });
+                                    return [4 /*yield*/, Promise.all(promises_2)];
+                                case 1:
+                                    responses = _b.sent();
+                                    responses.forEach(function (v, i) {
+                                        if (v) {
+                                            res.push(__assign(__assign({}, arr[i]), v));
+                                        }
+                                        else {
+                                            res.push(__assign({}, arr[i]));
+                                        }
+                                    });
+                                    _b.label = 2;
+                                case 2:
+                                    i++;
+                                    return [2 /*return*/];
+                            }
+                        });
+                    };
+                    _a.label = 1;
+                case 1:
+                    if (!(i < len)) return [3 /*break*/, 3];
+                    return [5 /*yield**/, _loop_2()];
+                case 2:
+                    _a.sent();
+                    return [3 /*break*/, 1];
+                case 3: return [2 /*return*/, res];
+            }
+        });
+    });
+}
+exports.fillAllStockSMA = fillAllStockSMA;

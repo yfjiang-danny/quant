@@ -1,8 +1,9 @@
+import { StockModel } from "../common/type";
 import { EastMoney_API } from "../eastmoney/api";
-import { MarketType, StockInfoModel } from "../eastmoney/type";
-import { StockModel } from "../tushare/type";
-
-export type StockInfoMerge = StockModel & StockInfoModel;
+import { MarketType, EastMoneyStockModel } from "../eastmoney/type";
+import { fillStockSMA } from "../sma";
+import { StockWithSMA } from "../sma/type";
+import { TushareStockModel } from "../tushare/type";
 
 function getMarket(symbol: string): MarketType {
   switch (symbol.slice(0, 1)) {
@@ -23,10 +24,10 @@ const batch = 10;
  * @param stocks
  * @returns
  */
-export async function fillStockInfo(
-  stocks: StockModel[]
-): Promise<StockInfoMerge[]> {
-  const res: StockInfoMerge[] = [];
+export async function fillEastStockInfo(
+  stocks: TushareStockModel[]
+): Promise<StockModel[]> {
+  const res: StockModel[] = [];
 
   const len = Math.round(stocks.length / batch);
 
@@ -34,7 +35,7 @@ export async function fillStockInfo(
   while (i < len) {
     const arr = stocks.slice(i, i + batch);
     if (arr.length > 0) {
-      const promises: Promise<StockInfoModel | null>[] = [];
+      const promises: Promise<EastMoneyStockModel | null>[] = [];
       arr.forEach((v) => {
         if (v.symbol) {
           promises.push(
@@ -53,7 +54,39 @@ export async function fillStockInfo(
         if (v) {
           res.push({ ...arr[i], ...v });
         } else {
-          res.push({ ...arr[i] } as StockInfoMerge);
+          res.push({ ...arr[i] } as StockModel);
+        }
+      });
+    }
+    i++;
+  }
+
+  return res;
+}
+
+/**
+ * Use alph api to calculate sma and filled to stock
+ */
+export async function fillAllStockSMA(stocks: StockModel[]) {
+  const res: StockModel[] = [];
+
+  const len = Math.round(stocks.length / batch);
+
+  let i = 0;
+  while (i < len) {
+    const arr = stocks.slice(i, i + batch);
+    if (arr.length > 0) {
+      const promises: Promise<StockWithSMA>[] = [];
+      arr.forEach((v) => {
+        promises.push(fillStockSMA(v));
+      });
+
+      const responses = await Promise.all(promises);
+      responses.forEach((v, i) => {
+        if (v) {
+          res.push({ ...arr[i], ...v } as StockModel);
+        } else {
+          res.push({ ...arr[i] } as StockModel);
         }
       });
     }

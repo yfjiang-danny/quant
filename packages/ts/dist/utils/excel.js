@@ -69,6 +69,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -112,49 +121,75 @@ var Excel;
         });
     }
     Excel.write = write;
-    function saveToExcel(_a) {
-        var columns = _a.columns, data = _a.data, filePath = _a.filePath, sheetName = _a.sheetName;
-        return __awaiter(this, void 0, void 0, function () {
-            var rows, columnKeys, header, newSheet, newXlsx, oldData;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        if (!filePath) {
-                            console.log("filePath can not be null");
-                            return [2 /*return*/, false];
-                        }
-                        rows = [];
-                        columnKeys = Object.keys(columns);
-                        header = [];
-                        columnKeys.forEach(function (key) {
-                            header.push(columns[key]);
-                        });
-                        rows.push(header);
-                        data.forEach(function (v) {
-                            var row = [];
-                            columnKeys.forEach(function (key, i) {
-                                row.push(v[key] || "");
-                            });
-                            rows.push(row);
-                        });
-                        newSheet = {
-                            name: sheetName || (0, moment_1.default)().format("YYYYMMDD"),
-                            data: rows,
-                            options: {},
-                        };
-                        newXlsx = [newSheet];
-                        return [4 /*yield*/, Excel.read(filePath)];
-                    case 1:
-                        oldData = _b.sent();
-                        if (oldData) {
-                            oldData.forEach(function (v) {
-                                newXlsx.push(__assign(__assign({}, v), { options: {} }));
-                            });
-                        }
-                        return [2 /*return*/, Excel.write(newXlsx, filePath)];
+    function append(data, filePath, before) {
+        if (before === void 0) { before = false; }
+        return new Promise(function (resolve) {
+            try {
+                if (!filePath) {
+                    console.log("".concat(filePath, " do not exist"));
+                    return false;
                 }
+                read(filePath).then(function (res) {
+                    var newData = __spreadArray([], data, true);
+                    if (res) {
+                        var oldData = res.map(function (v) { return (__assign(__assign({}, v), { options: {} })); });
+                        if (before) {
+                            newData.push.apply(newData, oldData);
+                        }
+                        else {
+                            newData.unshift.apply(newData, oldData);
+                        }
+                    }
+                    var buffer = node_xlsx_1.default.build(newData);
+                    fs.writeFile(filePath, buffer, function (err) {
+                        if (err) {
+                            console.log("Write failed: " + err);
+                            resolve(false);
+                        }
+                        console.log("Write completed.");
+                        resolve(true);
+                    });
+                });
+            }
+            catch (error) {
+                console.log(error);
+                resolve(false);
+            }
+        });
+    }
+    Excel.append = append;
+    function insertToExcel(_a) {
+        var columns = _a.columns, data = _a.data, filePath = _a.filePath, sheetName = _a.sheetName, _b = _a.before, before = _b === void 0 ? true : _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var rows, columnKeys, header, newSheet, newXlsx;
+            return __generator(this, function (_c) {
+                if (!filePath) {
+                    console.log("filePath can not be null");
+                    return [2 /*return*/, false];
+                }
+                rows = [];
+                columnKeys = Object.keys(columns);
+                header = [];
+                columnKeys.forEach(function (key) {
+                    header.push(columns[key]);
+                });
+                rows.push(header);
+                data.forEach(function (v) {
+                    var row = [];
+                    columnKeys.forEach(function (key, i) {
+                        row.push(v[key] || "");
+                    });
+                    rows.push(row);
+                });
+                newSheet = {
+                    name: sheetName || (0, moment_1.default)().format("YYYYMMDD"),
+                    data: rows,
+                    options: {},
+                };
+                newXlsx = [newSheet];
+                return [2 /*return*/, append(newXlsx, filePath, before)];
             });
         });
     }
-    Excel.saveToExcel = saveToExcel;
+    Excel.insertToExcel = insertToExcel;
 })(Excel || (exports.Excel = Excel = {}));

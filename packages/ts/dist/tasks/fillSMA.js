@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -63,77 +74,51 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var dotenv = __importStar(require("dotenv"));
-var fs_1 = require("fs");
-var node_schedule_1 = require("node-schedule");
-var path_1 = __importDefault(require("path"));
 var logs_1 = require("../logs");
-var constant_1 = require("../tushare/constant");
+var path_1 = __importDefault(require("path"));
+var fs_1 = require("fs");
 var excel_1 = require("../utils/excel");
+var common_1 = require("./common");
 var utils_1 = require("./utils");
+var common_2 = require("../common");
+var node_schedule_1 = require("node-schedule");
 dotenv.config();
-var rootPath = path_1.default.resolve(".", ".");
-var dbPath = path_1.default.resolve(rootPath, "db");
-var allStocksFilePath = path_1.default.resolve(dbPath, "all_stocks.xlsx");
-var filePath = path_1.default.resolve(dbPath, "all_capital_stocks.xlsx");
-function saveAllCapitalStock(stocks) {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            if (stocks && stocks.length) {
-                return [2 /*return*/, excel_1.Excel.saveToExcel({
-                        columns: utils_1.StockMergeColumns,
-                        data: stocks,
-                        filePath: filePath,
-                    })];
-            }
-            return [2 /*return*/, false];
-        });
-    });
-}
-function task() {
+function fillSMATask() {
     var _this = this;
-    (0, fs_1.access)(allStocksFilePath, fs_1.constants.F_OK, function (err) { return __awaiter(_this, void 0, void 0, function () {
-        var preAllStocks, sheet, allStockData, keys_1, allStocks_1, fillResult;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+    (0, fs_1.access)(common_1.allCapitalStocksFilePath, fs_1.constants.F_OK, function (err) { return __awaiter(_this, void 0, void 0, function () {
+        var allSheets, sheet, allStocks, sheetData, _a;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
                     if (!err) return [3 /*break*/, 1];
-                    console.log("".concat(allStocksFilePath, " do not exist"));
+                    console.log("".concat(common_1.allCapitalStocksFilePath, " do not exist"));
                     return [3 /*break*/, 5];
-                case 1: return [4 /*yield*/, excel_1.Excel.read(allStocksFilePath)];
+                case 1: return [4 /*yield*/, excel_1.Excel.read(common_1.allCapitalStocksFilePath)];
                 case 2:
-                    preAllStocks = _a.sent();
-                    if (!(preAllStocks && preAllStocks.length > 0)) return [3 /*break*/, 5];
-                    sheet = preAllStocks[0];
-                    allStockData = sheet.data.slice(1);
-                    keys_1 = Object.keys(constant_1.StockFieldNames);
-                    allStocks_1 = [];
-                    allStockData.forEach(function (v) {
-                        var stock = {};
-                        keys_1.forEach(function (key, i) {
-                            if (v[i]) {
-                                stock[key] = v[i];
-                            }
-                        });
-                        allStocks_1.push(stock);
-                    });
-                    return [4 /*yield*/, (0, utils_1.fillStockInfo)(allStocks_1)];
+                    allSheets = _b.sent();
+                    if (!(allSheets && allSheets.length > 0)) return [3 /*break*/, 4];
+                    sheet = allSheets[0];
+                    allStocks = (0, common_2.excelToStocks)(sheet.data);
+                    _a = common_2.stocksToSheetData;
+                    return [4 /*yield*/, (0, utils_1.fillAllStockSMA)(allStocks)];
                 case 3:
-                    fillResult = _a.sent();
-                    if (!fillResult) return [3 /*break*/, 5];
-                    return [4 /*yield*/, saveAllCapitalStock(fillResult)];
+                    sheetData = _a.apply(void 0, [_b.sent()]);
+                    allSheets[0] = __assign(__assign({}, sheet), { data: sheetData });
+                    _b.label = 4;
                 case 4:
-                    _a.sent();
-                    _a.label = 5;
+                    if (allSheets) {
+                        excel_1.Excel.write(allSheets.map(function (v) {
+                            return __assign(__assign({}, v), { options: {} });
+                        }), common_1.allCapitalStocksFilePath);
+                    }
+                    _b.label = 5;
                 case 5: return [2 /*return*/];
             }
         });
     }); });
 }
 (function main() {
-    logs_1.logger.setFilePath(path_1.default.resolve(rootPath, "logs", "all_capital_stocks.log"));
+    logs_1.logger.setFilePath(path_1.default.resolve(common_1.rootPath, "logs", "sma.log"));
     // 每天早上 4 点
-    (0, node_schedule_1.scheduleJob)("* * 8 * *", task);
-    process.on("SIGINT", function () {
-        (0, node_schedule_1.gracefulShutdown)().then(function () { return process.exit(0); });
-    });
+    (0, node_schedule_1.scheduleJob)("* 30 8 * *", fillSMATask);
 })();

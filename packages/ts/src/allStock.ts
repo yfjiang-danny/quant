@@ -1,23 +1,23 @@
 import { WorkSheet } from "node-xlsx";
 import { TUSHARE_API } from "./tushare/api";
-import { StockFieldNames } from "./tushare/constant";
+import { TushareStockColumns } from "./tushare/constant";
 import { Excel } from "./utils/excel";
 
 import moment from "moment";
 import path from "path";
-import { StockModel } from "./tushare/type";
+import { TushareStockModel } from "./tushare/type";
 
 const rootPath = path.resolve(".", ".");
 
 const dateString = moment().format("YYYYMMDD");
 
-export async function saveAllStock(stocks: StockModel[]) {
+export async function saveAllStock(stocks: TushareStockModel[]) {
   if (stocks) {
     const rows: unknown[][] = [];
-    const columnKeys = Object.keys(StockFieldNames);
+    const columnKeys = Object.keys(TushareStockColumns);
     const header: string[] = [];
     columnKeys.forEach((key) => {
-      header.push(StockFieldNames[key]);
+      header.push(TushareStockColumns[key]);
     });
     rows.push(header);
     stocks.forEach((v) => {

@@ -16,9 +16,10 @@ class Logger {
       this.filePath = filePath;
     }
 
-    const file = this.filePath;
+    const _this = this;
     this.queue = new Queue();
     this.queue.process(function (job, done) {
+      const file = _this.filePath;
       appendFile(file, JSON.stringify(job.data) + "\n").then(
         () => {
           //

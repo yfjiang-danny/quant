@@ -5,6 +5,14 @@ interface ApiParams {
   fields: string;
 }
 
+export type TushareMarketType = "主板" | "创业板" | "科创板" | "CDR" | "北交所";
+
+export type ListStatusType = "L" | "D" | "P";
+
+export type ExchangeType = "SSE" | "SZSE" | "BSE";
+
+export type IsHSType = "N" | "H" | "S";
+
 /**
  * 
 名称	类型	必选	描述
@@ -19,9 +27,9 @@ is_hs	str	N	是否沪深港通标的，N否 H沪股通 S深股通
 export interface AllStockApiParams {
   ts_code?: string;
   name?: string;
-  market?: string;
-  list_status?: string;
-  exchange?: string;
+  market?: TushareMarketType;
+  list_status?: ListStatusType;
+  exchange?: ExchangeType;
   is_hs?: string;
 }
 
@@ -47,7 +55,7 @@ act_name	str	N	实控人名称
 act_ent_type	str	N	实控人企业性质
  * 
  */
-export interface StockModel extends Record<string, unknown> {
+export interface TushareStockModel extends Record<string, unknown> {
   ts_code?: string;
   symbol?: string;
   name?: string;
@@ -67,6 +75,6 @@ export interface StockModel extends Record<string, unknown> {
   act_ent_type?: string;
 }
 
-export type StockKeys = keyof StockModel;
+export type StockKeys = keyof TushareStockModel;
 
-export type AllStockApiReturn = Array<StockModel>;
+export type AllStockApiReturn = Array<TushareStockModel>;

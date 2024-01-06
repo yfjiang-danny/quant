@@ -1,3 +1,5 @@
+import { StockBasicModel } from "../common/type";
+
 export type MarketType = "SZ" | "SH" | "OC";
 
 interface QuoteSnapshotModel {
@@ -51,18 +53,16 @@ interface QuoteSnapshotModel {
   tradeperiod: number; //6;
 }
 
-export interface StockBasicModel {
-  close: number;
-  open: number;
-  high: number;
-  low: number;
-  avg: number;
-}
-
-export interface StockInfoModel extends StockBasicModel {
-  code: string;
-  name: string;
-  capital: number;
-  turnover: number;
-  date: string;
+export interface EastMoneyStockModel {
+  code?: string;
+  name?: string;
+  close?: number;
+  open?: number;
+  high?: number;
+  low?: number;
+  date?: string;
+  volume?: number;
+  capital?: number;
+  turnover?: number;
+  avg?: number;
 }

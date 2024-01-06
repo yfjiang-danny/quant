@@ -1,5 +1,5 @@
 import axios from "axios";
-import { MarketType, QuoteSnapshotModel, StockInfoModel } from "./type";
+import { MarketType, QuoteSnapshotModel, EastMoneyStockModel } from "./type";
 
 export namespace EastMoney_API {
   export function getQuoteSnapshot(symbol: string, market: MarketType) {
@@ -57,7 +57,8 @@ export namespace EastMoney_API {
             date: res.realtimequote.date,
             name: res.name,
             turnover: turnover,
-          } as StockInfoModel;
+            volume: volume,
+          } as EastMoneyStockModel;
         }
         return null;
       })

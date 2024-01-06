@@ -40,15 +40,57 @@ export namespace Excel {
     });
   }
 
-  export async function saveToExcel({
+  export function append<T = unknown>(
+    data: WorkSheet<T>[],
+    filePath: string,
+    before = false
+  ) {
+    return new Promise<boolean>((resolve) => {
+      try {
+        if (!filePath) {
+          console.log(`${filePath} do not exist`);
+          return false;
+        }
+
+        read(filePath).then((res) => {
+          const newData = [...data];
+          if (res) {
+            const oldData = res.map((v) => ({ ...v, options: {} }));
+            if (before) {
+              newData.push(...oldData);
+            } else {
+              newData.unshift(...oldData);
+            }
+          }
+          const buffer = xlsx.build(newData);
+          fs.writeFile(filePath, buffer, function (err) {
+            if (err) {
+              console.log("Write failed: " + err);
+              resolve(false);
+            }
+
+            console.log("Write completed.");
+            resolve(true);
+          });
+        });
+      } catch (error) {
+        console.log(error);
+        resolve(false);
+      }
+    });
+  }
+
+  export async function insertToExcel({
     columns,
     data,
     filePath,
     sheetName,
+    before = true,
   }: {
     columns: Record<string, string>;
     data: Record<string, unknown>[];
     filePath: string;
+    before?: boolean;
     sheetName?: string;
   }) {
     if (!filePath) {
@@ -81,16 +123,6 @@ export namespace Excel {
     };
     const newXlsx: WorkSheet[] = [newSheet];
 
-    // Old sheet data
-    const oldData = await Excel.read(filePath);
-    if (oldData) {
-      oldData.forEach((v) => {
-        newXlsx.push({
-          ...v,
-          options: {},
-        });
-      });
-    }
-    return Excel.write(newXlsx, filePath);
+    return append(newXlsx, filePath, before);
   }
 }

@@ -1,6 +1,11 @@
 import axios from "axios";
 import { logger } from "../logs";
-import { AllStockApiParams, ApiParams, StockKeys, StockModel } from "./type";
+import {
+  AllStockApiParams,
+  ApiParams,
+  StockKeys,
+  TushareStockModel,
+} from "./type";
 
 const StockFields: StockKeys[] = [
   "act_ent_type",
@@ -45,9 +50,9 @@ export namespace TUSHARE_API {
             items: (string | null)[][];
           };
           if (data) {
-            const stocks: StockModel[] = [];
+            const stocks: TushareStockModel[] = [];
             data.items.forEach((item) => {
-              const stock: StockModel = {};
+              const stock: TushareStockModel = {};
               item.forEach((v, i) => {
                 const key = data.fields[i];
                 if (key) {

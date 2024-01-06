@@ -6,7 +6,7 @@ dotenv.config();
 function main() {
   ALPH_API.getStockDaily("002962.SHZ")
     .then((res) => {
-      console.log("getStockDaily", JSON.stringify(res.data));
+      console.log("getStockDaily", JSON.stringify(res));
     })
     .catch((err) => {
       console.log("err", err);

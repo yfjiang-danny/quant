@@ -50,6 +50,7 @@ var EastMoney_API;
                     date: res.realtimequote.date,
                     name: res.name,
                     turnover: turnover,
+                    volume: volume,
                 };
             }
             return null;
