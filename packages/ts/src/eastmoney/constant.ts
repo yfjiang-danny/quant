@@ -10,6 +10,6 @@ export const EastMoneyColumns: Record<keyof EastMoneyStockModel, string> = {
   capital: "流通市值(亿)",
   avg: "均价",
   turnover: "换手率",
-  volume: "成交量(万手)",
+  volume: "成交量(手)",
   date: "日期",
 };

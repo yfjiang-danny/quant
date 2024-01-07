@@ -34,3 +34,8 @@ export interface ALPHStockModel {
   date?: string;
   volume?: number;
 }
+
+export interface CreateTokenParams {
+  organization_text: string;
+  email_text: string;
+}

@@ -4,7 +4,7 @@ import { ALPH_API } from "./api";
 dotenv.config();
 
 function main() {
-  ALPH_API.getStockDaily("002962.SHZ")
+  ALPH_API.getStockDaily("000001.SHZ")
     .then((res) => {
       console.log("getStockDaily", JSON.stringify(res));
     })

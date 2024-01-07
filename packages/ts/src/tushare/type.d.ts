@@ -9,7 +9,7 @@ export type TushareMarketType = "主板" | "创业板" | "科创板" | "CDR" | "
 
 export type ListStatusType = "L" | "D" | "P";
 
-export type ExchangeType = "SSE" | "SZSE" | "BSE";
+export type ExchangeType = "SSE" | "SZSE" | "BSE" | "";
 
 export type IsHSType = "N" | "H" | "S";
 

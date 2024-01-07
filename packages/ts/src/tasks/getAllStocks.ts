@@ -52,11 +52,11 @@ async function task(repeat: number) {
 
 (function main() {
   logger.setFilePath(path.resolve(rootPath, "logs", "all_stocks.log"));
-  // task(5);
+  task(5);
   // 星期1~5 早上 4 点
   // scheduleJob("* * 9 * 1-5", task.bind(null, 5));
   // 每天早上 4 点
-  scheduleJob("* * 4 * *", task.bind(null, 5));
+  // scheduleJob("* * 4 * *", task.bind(null, 5));
 
   process.on("SIGINT", function () {
     gracefulShutdown().then(() => process.exit(0));

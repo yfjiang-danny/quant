@@ -69,21 +69,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Excel = void 0;
 var fs = __importStar(require("fs"));
+var promises_1 = require("fs/promises");
 var moment_1 = __importDefault(require("moment"));
 var node_xlsx_1 = __importDefault(require("node-xlsx"));
 var Excel;
@@ -91,8 +83,13 @@ var Excel;
     function read(filePath) {
         return new Promise(function (resolve) {
             try {
-                var sheets = node_xlsx_1.default.parse(filePath);
-                resolve(sheets);
+                (0, promises_1.access)(filePath, promises_1.constants.F_OK).then(function () {
+                    var sheets = node_xlsx_1.default.parse(filePath);
+                    resolve(sheets);
+                }, function (e) {
+                    console.log(e);
+                    resolve(null);
+                });
             }
             catch (error) {
                 console.log(error);
@@ -130,15 +127,22 @@ var Excel;
                     return false;
                 }
                 read(filePath).then(function (res) {
-                    var newData = __spreadArray([], data, true);
+                    var newData = [];
                     if (res) {
                         var oldData = res.map(function (v) { return (__assign(__assign({}, v), { options: {} })); });
+                        newData.push.apply(newData, oldData);
+                        if (oldData.find(function (v) { return v.name === data.name; })) {
+                            data.name += (0, moment_1.default)().format("hhmmss");
+                        }
                         if (before) {
-                            newData.push.apply(newData, oldData);
+                            newData.unshift(data);
                         }
                         else {
-                            newData.unshift.apply(newData, oldData);
+                            newData.push(data);
                         }
+                    }
+                    else {
+                        newData.push(data);
                     }
                     var buffer = node_xlsx_1.default.build(newData);
                     fs.writeFile(filePath, buffer, function (err) {
@@ -161,7 +165,7 @@ var Excel;
     function insertToExcel(_a) {
         var columns = _a.columns, data = _a.data, filePath = _a.filePath, sheetName = _a.sheetName, _b = _a.before, before = _b === void 0 ? true : _b;
         return __awaiter(this, void 0, void 0, function () {
-            var rows, columnKeys, header, newSheet, newXlsx;
+            var rows, columnKeys, header, newSheet;
             return __generator(this, function (_c) {
                 if (!filePath) {
                     console.log("filePath can not be null");
@@ -169,6 +173,7 @@ var Excel;
                 }
                 rows = [];
                 columnKeys = Object.keys(columns);
+                rows.push(columnKeys);
                 header = [];
                 columnKeys.forEach(function (key) {
                     header.push(columns[key]);
@@ -186,8 +191,7 @@ var Excel;
                     data: rows,
                     options: {},
                 };
-                newXlsx = [newSheet];
-                return [2 /*return*/, append(newXlsx, filePath, before)];
+                return [2 /*return*/, append(newSheet, filePath, before)];
             });
         });
     }

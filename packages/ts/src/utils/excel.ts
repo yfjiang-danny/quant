@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import { access, constants } from "fs/promises";
 import moment from "moment";
 import xlsx, { WorkSheet } from "node-xlsx";
 
@@ -11,8 +12,16 @@ export namespace Excel {
   export function read(filePath: string) {
     return new Promise<SheetDataModel[] | null>((resolve) => {
       try {
-        const sheets = xlsx.parse(filePath);
-        resolve(sheets);
+        access(filePath, constants.F_OK).then(
+          () => {
+            const sheets = xlsx.parse(filePath);
+            resolve(sheets);
+          },
+          (e) => {
+            console.log(e);
+            resolve(null);
+          }
+        );
       } catch (error) {
         console.log(error);
         resolve(null);
@@ -41,7 +50,7 @@ export namespace Excel {
   }
 
   export function append<T = unknown>(
-    data: WorkSheet<T>[],
+    data: WorkSheet<T>,
     filePath: string,
     before = false
   ) {
@@ -53,14 +62,20 @@ export namespace Excel {
         }
 
         read(filePath).then((res) => {
-          const newData = [...data];
+          const newData = [];
           if (res) {
             const oldData = res.map((v) => ({ ...v, options: {} }));
-            if (before) {
-              newData.push(...oldData);
-            } else {
-              newData.unshift(...oldData);
+            newData.push(...oldData);
+            if (oldData.find((v) => v.name === data.name)) {
+              data.name += moment().format("hhmmss");
             }
+            if (before) {
+              newData.unshift(data);
+            } else {
+              newData.push(data);
+            }
+          } else {
+            newData.push(data);
           }
           const buffer = xlsx.build(newData);
           fs.writeFile(filePath, buffer, function (err) {
@@ -102,6 +117,9 @@ export namespace Excel {
     const rows: unknown[][] = [];
 
     const columnKeys = Object.keys(columns);
+
+    rows.push(columnKeys);
+
     const header: string[] = [];
     columnKeys.forEach((key) => {
       header.push(columns[key]);
@@ -121,8 +139,7 @@ export namespace Excel {
       data: rows,
       options: {},
     };
-    const newXlsx: WorkSheet[] = [newSheet];
 
-    return append(newXlsx, filePath, before);
+    return append(newSheet, filePath, before);
   }
 }

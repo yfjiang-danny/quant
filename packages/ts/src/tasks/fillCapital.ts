@@ -34,7 +34,7 @@ function task() {
     } else {
       const preAllStocks = await Excel.read(allStocksFilePath);
       if (preAllStocks && preAllStocks.length > 0) {
-        const sheet = preAllStocks[0];
+        const sheet = preAllStocks[preAllStocks.length - 1];
 
         const allStocks: StockModel[] = excelToStocks(sheet.data);
 
@@ -50,7 +50,8 @@ function task() {
 (function main() {
   logger.setFilePath(path.resolve(rootPath, "logs", "all_capital_stocks.log"));
   // 每天早上 4 点
-  scheduleJob("* * 8 * *", task);
+  // scheduleJob("* * 8 * *", task);
+  task();
 
   process.on("SIGINT", function () {
     gracefulShutdown().then(() => process.exit(0));

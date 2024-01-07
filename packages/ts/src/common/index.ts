@@ -2,8 +2,8 @@ import { StockColumns } from "./constant";
 import { StockModel } from "./type";
 
 export function excelToStocks(sheetData: any[][]) {
-  const allStockData = sheetData.slice(1);
-  const keys = Object.keys(StockColumns);
+  const allStockData = sheetData.slice(2);
+  const keys = sheetData[0];
 
   const allStocks: StockModel[] = [];
   allStockData.forEach((v) => {
@@ -22,6 +22,9 @@ export function stocksToSheetData(stocks: StockModel[]) {
   const rows: unknown[][] = [];
 
   const columnKeys = Object.keys(StockColumns);
+
+  rows.push(columnKeys);
+
   const header: string[] = [];
   columnKeys.forEach((key) => {
     header.push(StockColumns[key]);
@@ -31,7 +34,7 @@ export function stocksToSheetData(stocks: StockModel[]) {
   stocks.forEach((v) => {
     const row: unknown[] = [];
     columnKeys.forEach((key, i) => {
-      row.push(v[key] || "");
+      row.push(v[key] || undefined);
     });
     rows.push(row);
   });

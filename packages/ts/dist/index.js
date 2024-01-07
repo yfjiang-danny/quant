@@ -58,44 +58,21 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var dotenv = __importStar(require("dotenv"));
-var moment_1 = __importDefault(require("moment"));
-var path_1 = __importDefault(require("path"));
-var allStock_1 = require("./allStock");
+var api_1 = require("./alph/api");
+var email_1 = require("./utils/email");
 dotenv.config();
-var rootPath = path_1.default.resolve(".", ".");
-var date = new Date();
-var dateString = (0, moment_1.default)().format("YYYYMMDD");
-function sleep(milliseconds) {
-    return new Promise(function (resolve) { return setTimeout(resolve, milliseconds); });
-}
 (function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var count, success;
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    count = 5;
-                    success = false;
-                    _a.label = 1;
-                case 1:
-                    if (!(!success && count > 0)) return [3 /*break*/, 5];
-                    return [4 /*yield*/, (0, allStock_1.getAllStocks)()];
-                case 2:
-                    success = _a.sent();
-                    count--;
-                    if (!!success) return [3 /*break*/, 4];
-                    return [4 /*yield*/, sleep(1000 * 60 * 60 * 60 + 1000 * 60)];
-                case 3:
-                    _a.sent();
-                    _a.label = 4;
-                case 4: return [3 /*break*/, 1];
-                case 5: return [2 /*return*/];
-            }
+            api_1.ALPH_API.createToken({
+                organization_text: (0, email_1.genRandomText)(4),
+                email_text: (0, email_1.genRandomEmail)(),
+            }).then(function (token) {
+                console.log(token);
+            });
+            return [2 /*return*/];
         });
     });
 })();

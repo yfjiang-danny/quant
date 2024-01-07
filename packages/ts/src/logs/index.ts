@@ -7,7 +7,7 @@ import { Queue } from "../utils/queue";
  *
  */
 class Logger {
-  private filePath: string;
+  private filePath: string | undefined;
   queue: Queue;
   constructor(filePath?: string) {
     if (!filePath) {
@@ -20,16 +20,20 @@ class Logger {
     this.queue = new Queue();
     this.queue.process(function (job, done) {
       const file = _this.filePath;
-      appendFile(file, JSON.stringify(job.data) + "\n").then(
-        () => {
-          //
-          done();
-        },
-        (err) => {
-          console.log(err);
-          done();
-        }
-      );
+      if (file) {
+        appendFile(file, JSON.stringify(job.data) + "\n").then(
+          () => {
+            //
+            done();
+          },
+          (err) => {
+            console.log(err);
+            done();
+          }
+        );
+      } else {
+        console.log(`Logger ${file} do not exist`);
+      }
     });
   }
 

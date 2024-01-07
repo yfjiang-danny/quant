@@ -6,21 +6,12 @@ import {
   StockKeys,
   TushareStockModel,
 } from "./type";
+import { TushareStockColumns } from "./constant";
+import { mockAllStockResponse } from "./mock";
 
-const StockFields: StockKeys[] = [
-  "act_ent_type",
-  "act_name",
-  "area",
-  "cnspell",
-  "curr_type",
-  "delist_date",
-  "enname",
-  "exchange",
-  "fullname",
-  "industry",
-  "is_hs",
-  "list_date",
-];
+// http://api.tushare.pro
+
+const StockFields: StockKeys[] = Object.keys(TushareStockColumns);
 
 export namespace TUSHARE_API {
   function request<T>(
@@ -37,7 +28,9 @@ export namespace TUSHARE_API {
     );
   }
 
-  export function getAllStock(params: AllStockApiParams = {}) {
+  export function getAllStock(
+    params: AllStockApiParams = { exchange: "", list_status: "L" }
+  ) {
     return request("stock_basic", {
       fields: StockFields.join(","),
       params: params as Record<string, unknown>,
@@ -45,6 +38,11 @@ export namespace TUSHARE_API {
       .then((res) => {
         logger.info(res.data);
         if (res.status == 200) {
+          let responseData = res?.data as any;
+          if (responseData?.code != 0) {
+            logger.info(`Use mock data`);
+            responseData = mockAllStockResponse;
+          }
           const data = (res?.data as any)?.data as {
             fields: string[];
             items: (string | null)[][];

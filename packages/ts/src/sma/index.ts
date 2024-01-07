@@ -58,11 +58,11 @@ export function calculateMovingAverage(
 }
 
 export async function fillStockSMA(stock: StockModel) {
-  if (!stock.symbol || !stock.exchange) {
+  if (!stock.ts_code) {
     return stock;
   }
 
-  const symbol = stock.symbol + "." + stock.exchange;
+  const symbol = stock.ts_code;
 
   const histories = await ALPH_API.getStockDaily(symbol);
 

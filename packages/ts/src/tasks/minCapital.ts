@@ -5,19 +5,14 @@ import path from "path";
 import { logger } from "../logs";
 import { Excel } from "../utils/excel";
 import { StockColumns } from "../common/constant";
+import {
+  allCapitalStocksFilePath,
+  minCapitalStocksFilePath,
+  rootPath,
+} from "./common";
+import { StockModel } from "../common/type";
 
 dotenv.config();
-
-const rootPath = path.resolve("..", "..");
-
-const dbPath = path.resolve(rootPath, "src", "db");
-
-const allCapitalStocksFilePath = path.resolve(
-  dbPath,
-  "all_capital_stocks.xlsx"
-);
-
-const filePath = path.resolve(dbPath, "min_capital_stocks.xlsx");
 
 function task() {
   access(allCapitalStocksFilePath, constants.F_OK, async (err) => {
@@ -26,9 +21,9 @@ function task() {
     } else {
       const preAllStocks = await Excel.read(allCapitalStocksFilePath);
       if (preAllStocks && preAllStocks.length > 0) {
-        const sheet = preAllStocks[0];
-        const capitalIndex = Object.keys(StockColumns).findIndex(
-          (v) => v === "capital"
+        const sheet = preAllStocks[preAllStocks.length - 1];
+        const capitalIndex = sheet.data[0].findIndex((v) =>
+          (v as string).includes("capital")
         );
 
         if (capitalIndex === -1) {
@@ -36,16 +31,30 @@ function task() {
           return;
         }
 
+        const symbolIndex = sheet.data[0].findIndex((v) => v === "symbol");
+
+        const turnoverIndex = sheet.data[0].findIndex((v) =>
+          (v as string).includes("turnover")
+        );
+
         const minCapitalStockData = sheet.data.filter((v, i) => {
-          if (i === 0) {
+          if (i === 0 || i === 1) {
             return true;
           }
-          return v[capitalIndex] && v[capitalIndex] < 100;
+          const symbol = v[symbolIndex] as string;
+
+          const isFitSymbol =
+            !symbol ||
+            symbol.startsWith("3") ||
+            symbol.startsWith("60") ||
+            symbol.startsWith("0");
+          const capital = v[capitalIndex];
+          return isFitSymbol && capital && capital < 50;
         });
 
         Excel.append(
-          [{ name: sheet.name, data: minCapitalStockData, options: {} }],
-          filePath,
+          { name: sheet.name, data: minCapitalStockData, options: {} },
+          minCapitalStocksFilePath,
           true
         );
       }
@@ -56,7 +65,8 @@ function task() {
 (function main() {
   logger.setFilePath(path.resolve(rootPath, "logs", "min_capital_stocks.log"));
   // 每天早上 9 点
-  scheduleJob("* * 9 * *", task);
+  // scheduleJob("* * 9 * *", task);
+  task();
 
   process.on("SIGINT", function () {
     gracefulShutdown().then(() => process.exit(0));

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ALPH_API = void 0;
 var axios_1 = __importDefault(require("axios"));
+var logs_1 = require("../logs");
 var url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo";
 var ALPH_API;
 (function (ALPH_API) {
@@ -31,43 +32,46 @@ var ALPH_API;
             outputsize: "compact",
         }).then(function (res) {
             if (res) {
+                logs_1.logger.info({ symbol: symbol, data: res });
                 var data_1 = res["Time Series (Daily)"];
-                var dates = Object.keys(data_1);
-                var stocks_1 = [];
-                dates.forEach(function (date) {
-                    var stock = {
-                        code: symbol,
-                        date: date.replace(/-/gi, ""),
-                    };
-                    var v = data_1[date];
-                    if (v) {
-                        var keys = Object.keys(v);
-                        keys.forEach(function (key) {
-                            if (key.includes("open") && v[key]) {
-                                stock.open = Number(v[key]);
-                                return;
-                            }
-                            if (key.includes("close") && v[key]) {
-                                stock.close = Number(v[key]);
-                                return;
-                            }
-                            if (key.includes("high") && v[key]) {
-                                stock.high = Number(v[key]);
-                                return;
-                            }
-                            if (key.includes("low") && v[key]) {
-                                stock.low = Number(v[key]);
-                                return;
-                            }
-                            if (key.includes("volume") && v[key]) {
-                                stock.volume = Number(v[key]);
-                                return;
-                            }
-                        });
-                    }
-                    stocks_1.push(stock);
-                });
-                return stocks_1;
+                if (data_1) {
+                    var dates = Object.keys(data_1);
+                    var stocks_1 = [];
+                    dates.forEach(function (date) {
+                        var stock = {
+                            code: symbol,
+                            date: date.replace(/-/gi, ""),
+                        };
+                        var v = data_1[date];
+                        if (v) {
+                            var keys = Object.keys(v);
+                            keys.forEach(function (key) {
+                                if (key.includes("open") && v[key]) {
+                                    stock.open = Number(v[key]);
+                                    return;
+                                }
+                                if (key.includes("close") && v[key]) {
+                                    stock.close = Number(v[key]);
+                                    return;
+                                }
+                                if (key.includes("high") && v[key]) {
+                                    stock.high = Number(v[key]);
+                                    return;
+                                }
+                                if (key.includes("low") && v[key]) {
+                                    stock.low = Number(v[key]);
+                                    return;
+                                }
+                                if (key.includes("volume") && v[key]) {
+                                    stock.volume = Number(v[key]);
+                                    return;
+                                }
+                            });
+                        }
+                        stocks_1.push(stock);
+                    });
+                    return stocks_1;
+                }
             }
             return null;
         });

@@ -49,6 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fillAllStockSMA = exports.fillEastStockInfo = void 0;
 var api_1 = require("../eastmoney/api");
+var logs_1 = require("../logs");
 var sma_1 = require("../sma");
 function getMarket(symbol) {
     switch (symbol.slice(0, 1)) {
@@ -73,15 +74,18 @@ function fillEastStockInfo(stocks) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    logs_1.logger.info("fillEastStockInfo start...\n");
                     res = [];
                     len = Math.round(stocks.length / batch);
                     i = 0;
                     _loop_1 = function () {
-                        var arr, promises_1, responses;
+                        var from, to, arr, promises_1, responses;
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0:
-                                    arr = stocks.slice(i, i + batch);
+                                    from = i * batch;
+                                    to = from + batch;
+                                    arr = stocks.slice(from, to);
                                     if (!(arr.length > 0)) return [3 /*break*/, 2];
                                     promises_1 = [];
                                     arr.forEach(function (v) {
@@ -94,15 +98,16 @@ function fillEastStockInfo(stocks) {
                                             }));
                                         }
                                     });
+                                    logs_1.logger.info("batch: [".concat(from, ", ").concat(to, "], total ").concat(len));
                                     return [4 /*yield*/, Promise.all(promises_1)];
                                 case 1:
                                     responses = _b.sent();
-                                    responses.forEach(function (v, i) {
+                                    responses.forEach(function (v, j) {
                                         if (v) {
-                                            res.push(__assign(__assign({}, arr[i]), v));
+                                            res.push(__assign(__assign({}, arr[j]), v));
                                         }
                                         else {
-                                            res.push(__assign({}, arr[i]));
+                                            res.push(__assign({}, arr[j]));
                                         }
                                     });
                                     _b.label = 2;
@@ -119,7 +124,9 @@ function fillEastStockInfo(stocks) {
                 case 2:
                     _a.sent();
                     return [3 /*break*/, 1];
-                case 3: return [2 /*return*/, res];
+                case 3:
+                    logs_1.logger.info("fillEastStockInfo finished");
+                    return [2 /*return*/, res];
             }
         });
     });
@@ -134,6 +141,7 @@ function fillAllStockSMA(stocks) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    logs_1.logger.info("fillAllStockSMA start...");
                     res = [];
                     len = Math.round(stocks.length / batch);
                     i = 0;
@@ -173,7 +181,9 @@ function fillAllStockSMA(stocks) {
                 case 2:
                     _a.sent();
                     return [3 /*break*/, 1];
-                case 3: return [2 /*return*/, res];
+                case 3:
+                    logs_1.logger.info("fillAllStockSMA finished...");
+                    return [2 /*return*/, res];
             }
         });
     });

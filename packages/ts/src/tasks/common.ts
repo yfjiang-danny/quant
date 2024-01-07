@@ -3,7 +3,7 @@ import path from "path";
 
 export const dateString = moment().format("YYYYMMDD");
 
-export const rootPath = path.resolve("..", "..");
+export const rootPath = path.resolve(".", ".");
 
 export const dbPath = path.resolve(rootPath, "src", "db");
 
@@ -18,3 +18,5 @@ export const minCapitalStocksFilePath = path.resolve(
   dbPath,
   "min_capital_stocks.xlsx"
 );
+
+export const filterStocksFilePath = path.resolve(dbPath, "filter_stocks.xlsx");

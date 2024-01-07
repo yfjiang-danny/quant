@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -74,58 +63,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var dotenv = __importStar(require("dotenv"));
-var moment_1 = __importDefault(require("moment"));
 var node_schedule_1 = require("node-schedule");
 var path_1 = __importDefault(require("path"));
 var logs_1 = require("../logs");
 var api_1 = require("../tushare/api");
-var constant_1 = require("../tushare/constant");
 var excel_1 = require("../utils/excel");
 var sleep_1 = require("../utils/sleep");
+var common_1 = require("./common");
+var constant_1 = require("../common/constant");
 dotenv.config();
-var rootPath = path_1.default.resolve(".", ".");
-var dateString = (0, moment_1.default)().format("YYYYMMDD");
 function saveAllStock(stocks) {
     return __awaiter(this, void 0, void 0, function () {
-        var rows_1, columnKeys_1, header_1, newSheet, filePath, newXlsx_1, oldData;
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (!stocks) return [3 /*break*/, 2];
-                    rows_1 = [];
-                    columnKeys_1 = Object.keys(constant_1.StockFieldNames);
-                    header_1 = [];
-                    columnKeys_1.forEach(function (key) {
-                        header_1.push(constant_1.StockFieldNames[key]);
-                    });
-                    rows_1.push(header_1);
-                    stocks.forEach(function (v) {
-                        var row = [];
-                        columnKeys_1.forEach(function (key, i) {
-                            row.push(v[key] || "");
-                        });
-                        rows_1.push(row);
-                    });
-                    newSheet = {
-                        name: dateString,
-                        data: rows_1,
-                        options: {},
-                    };
-                    filePath = path_1.default.resolve(rootPath, "db", "all_stock.xlsx");
-                    newXlsx_1 = [newSheet];
-                    return [4 /*yield*/, excel_1.Excel.read(filePath)];
-                case 1:
-                    oldData = _a.sent();
-                    if (oldData) {
-                        oldData.forEach(function (v) {
-                            newXlsx_1.push(__assign(__assign({}, v), { options: {} }));
-                        });
-                    }
-                    return [2 /*return*/, excel_1.Excel.write(newXlsx_1, filePath)];
-                case 2: return [2 /*return*/, new Promise(function (resolve) {
-                        resolve(false);
+            if (stocks && stocks.length > 0) {
+                return [2 /*return*/, excel_1.Excel.insertToExcel({
+                        columns: constant_1.StockColumns,
+                        data: stocks,
+                        filePath: common_1.allStocksFilePath,
+                        sheetName: common_1.dateString,
                     })];
             }
+            return [2 /*return*/, false];
         });
     });
 }
@@ -133,7 +91,6 @@ function getAllStocks() {
     return new Promise(function (resolve) {
         api_1.TUSHARE_API.getAllStock().then(function (res) {
             if (res) {
-                console.log(JSON.stringify(res));
                 saveAllStock(res).then(function (res) { return resolve(res); });
             }
             else {
@@ -169,12 +126,12 @@ function task(repeat) {
     });
 }
 (function main() {
-    logs_1.logger.setFilePath(path_1.default.resolve(rootPath, "logs", "all_stocks.log"));
-    // task(5);
+    logs_1.logger.setFilePath(path_1.default.resolve(common_1.rootPath, "logs", "all_stocks.log"));
+    task(5);
     // 星期1~5 早上 4 点
     // scheduleJob("* * 9 * 1-5", task.bind(null, 5));
     // 每天早上 4 点
-    (0, node_schedule_1.scheduleJob)("* * 4 * *", task.bind(null, 5));
+    // scheduleJob("* * 4 * *", task.bind(null, 5));
     process.on("SIGINT", function () {
         (0, node_schedule_1.gracefulShutdown)().then(function () { return process.exit(0); });
     });

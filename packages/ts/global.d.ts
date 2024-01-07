@@ -6,6 +6,7 @@ declare global {
       TUSHARE_TOKEN: string;
       ALPH_API: string;
       ALPH_TOKEN: string;
+      EASTMONEY_API: string;
     }
   }
 }

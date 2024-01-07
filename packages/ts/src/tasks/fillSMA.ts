@@ -4,7 +4,7 @@ import path from "path";
 import { StockModel } from "../common/type";
 import { access, constants } from "fs";
 import { Excel } from "../utils/excel";
-import { allCapitalStocksFilePath, rootPath } from "./common";
+import { filterStocksFilePath, rootPath } from "./common";
 import { fillAllStockSMA } from "./utils";
 import { excelToStocks, stocksToSheetData } from "../common";
 import { scheduleJob } from "node-schedule";
@@ -12,19 +12,21 @@ import { scheduleJob } from "node-schedule";
 dotenv.config();
 
 function fillSMATask() {
-  access(allCapitalStocksFilePath, constants.F_OK, async (err) => {
+  access(filterStocksFilePath, constants.F_OK, async (err) => {
     if (err) {
-      console.log(`${allCapitalStocksFilePath} do not exist`);
+      console.log(`${filterStocksFilePath} do not exist`);
     } else {
-      const allSheets = await Excel.read(allCapitalStocksFilePath);
+      const allSheets = await Excel.read(filterStocksFilePath);
       if (allSheets && allSheets.length > 0) {
         const sheet = allSheets[0];
         const allStocks: StockModel[] = excelToStocks(sheet.data);
 
-        const sheetData = stocksToSheetData(await fillAllStockSMA(allStocks));
+        const fillResult = await fillAllStockSMA(allStocks);
+
+        const sheetData = stocksToSheetData(fillResult);
 
         allSheets[0] = {
-          ...sheet,
+          name: sheet.name + "sma",
           data: sheetData,
         };
       }
@@ -33,7 +35,7 @@ function fillSMATask() {
           allSheets.map((v) => {
             return { ...v, options: {} };
           }),
-          allCapitalStocksFilePath
+          filterStocksFilePath
         );
       }
     }
@@ -44,5 +46,6 @@ function fillSMATask() {
   logger.setFilePath(path.resolve(rootPath, "logs", "sma.log"));
 
   // 每天早上 4 点
-  scheduleJob("* 30 8 * *", fillSMATask);
+  // scheduleJob("* 30 8 * *", fillSMATask);
+  fillSMATask();
 })();

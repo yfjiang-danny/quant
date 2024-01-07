@@ -33,13 +33,18 @@ var Logger = /** @class */ (function () {
         this.queue = new queue_1.Queue();
         this.queue.process(function (job, done) {
             var file = _this.filePath;
-            (0, promises_1.appendFile)(file, JSON.stringify(job.data) + "\n").then(function () {
-                //
-                done();
-            }, function (err) {
-                console.log(err);
-                done();
-            });
+            if (file) {
+                (0, promises_1.appendFile)(file, JSON.stringify(job.data) + "\n").then(function () {
+                    //
+                    done();
+                }, function (err) {
+                    console.log(err);
+                    done();
+                });
+            }
+            else {
+                console.log("Logger ".concat(file, " do not exist"));
+            }
         });
     }
     return Logger;

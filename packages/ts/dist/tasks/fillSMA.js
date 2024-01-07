@@ -81,37 +81,39 @@ var excel_1 = require("../utils/excel");
 var common_1 = require("./common");
 var utils_1 = require("./utils");
 var common_2 = require("../common");
-var node_schedule_1 = require("node-schedule");
 dotenv.config();
 function fillSMATask() {
     var _this = this;
-    (0, fs_1.access)(common_1.allCapitalStocksFilePath, fs_1.constants.F_OK, function (err) { return __awaiter(_this, void 0, void 0, function () {
-        var allSheets, sheet, allStocks, sheetData, _a;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+    (0, fs_1.access)(common_1.filterStocksFilePath, fs_1.constants.F_OK, function (err) { return __awaiter(_this, void 0, void 0, function () {
+        var allSheets, sheet, allStocks, fillResult, sheetData;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0:
                     if (!err) return [3 /*break*/, 1];
-                    console.log("".concat(common_1.allCapitalStocksFilePath, " do not exist"));
+                    console.log("".concat(common_1.filterStocksFilePath, " do not exist"));
                     return [3 /*break*/, 5];
-                case 1: return [4 /*yield*/, excel_1.Excel.read(common_1.allCapitalStocksFilePath)];
+                case 1: return [4 /*yield*/, excel_1.Excel.read(common_1.filterStocksFilePath)];
                 case 2:
-                    allSheets = _b.sent();
+                    allSheets = _a.sent();
                     if (!(allSheets && allSheets.length > 0)) return [3 /*break*/, 4];
                     sheet = allSheets[0];
                     allStocks = (0, common_2.excelToStocks)(sheet.data);
-                    _a = common_2.stocksToSheetData;
                     return [4 /*yield*/, (0, utils_1.fillAllStockSMA)(allStocks)];
                 case 3:
-                    sheetData = _a.apply(void 0, [_b.sent()]);
-                    allSheets[0] = __assign(__assign({}, sheet), { data: sheetData });
-                    _b.label = 4;
+                    fillResult = _a.sent();
+                    sheetData = (0, common_2.stocksToSheetData)(fillResult);
+                    allSheets[0] = {
+                        name: sheet.name + "sma",
+                        data: sheetData,
+                    };
+                    _a.label = 4;
                 case 4:
                     if (allSheets) {
                         excel_1.Excel.write(allSheets.map(function (v) {
                             return __assign(__assign({}, v), { options: {} });
-                        }), common_1.allCapitalStocksFilePath);
+                        }), common_1.filterStocksFilePath);
                     }
-                    _b.label = 5;
+                    _a.label = 5;
                 case 5: return [2 /*return*/];
             }
         });
@@ -120,5 +122,6 @@ function fillSMATask() {
 (function main() {
     logs_1.logger.setFilePath(path_1.default.resolve(common_1.rootPath, "logs", "sma.log"));
     // 每天早上 4 点
-    (0, node_schedule_1.scheduleJob)("* 30 8 * *", fillSMATask);
+    // scheduleJob("* 30 8 * *", fillSMATask);
+    fillSMATask();
 })();

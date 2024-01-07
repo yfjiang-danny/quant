@@ -67,22 +67,20 @@ var fs_1 = require("fs");
 var node_schedule_1 = require("node-schedule");
 var path_1 = __importDefault(require("path"));
 var logs_1 = require("../logs");
-var constant_1 = require("../tushare/constant");
 var excel_1 = require("../utils/excel");
 var utils_1 = require("./utils");
+var common_1 = require("./common");
+var common_2 = require("../common");
+var constant_1 = require("../common/constant");
 dotenv.config();
-var rootPath = path_1.default.resolve(".", ".");
-var dbPath = path_1.default.resolve(rootPath, "db");
-var allStocksFilePath = path_1.default.resolve(dbPath, "all_stocks.xlsx");
-var filePath = path_1.default.resolve(dbPath, "all_capital_stocks.xlsx");
 function saveAllCapitalStock(stocks) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             if (stocks && stocks.length) {
-                return [2 /*return*/, excel_1.Excel.saveToExcel({
-                        columns: utils_1.StockMergeColumns,
+                return [2 /*return*/, excel_1.Excel.insertToExcel({
+                        columns: constant_1.StockColumns,
                         data: stocks,
-                        filePath: filePath,
+                        filePath: common_1.allCapitalStocksFilePath,
                     })];
             }
             return [2 /*return*/, false];
@@ -91,32 +89,21 @@ function saveAllCapitalStock(stocks) {
 }
 function task() {
     var _this = this;
-    (0, fs_1.access)(allStocksFilePath, fs_1.constants.F_OK, function (err) { return __awaiter(_this, void 0, void 0, function () {
-        var preAllStocks, sheet, allStockData, keys_1, allStocks_1, fillResult;
+    (0, fs_1.access)(common_1.allStocksFilePath, fs_1.constants.F_OK, function (err) { return __awaiter(_this, void 0, void 0, function () {
+        var preAllStocks, sheet, allStocks, fillResult;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     if (!err) return [3 /*break*/, 1];
-                    console.log("".concat(allStocksFilePath, " do not exist"));
+                    console.log("".concat(common_1.allStocksFilePath, " do not exist"));
                     return [3 /*break*/, 5];
-                case 1: return [4 /*yield*/, excel_1.Excel.read(allStocksFilePath)];
+                case 1: return [4 /*yield*/, excel_1.Excel.read(common_1.allStocksFilePath)];
                 case 2:
                     preAllStocks = _a.sent();
                     if (!(preAllStocks && preAllStocks.length > 0)) return [3 /*break*/, 5];
-                    sheet = preAllStocks[0];
-                    allStockData = sheet.data.slice(1);
-                    keys_1 = Object.keys(constant_1.StockFieldNames);
-                    allStocks_1 = [];
-                    allStockData.forEach(function (v) {
-                        var stock = {};
-                        keys_1.forEach(function (key, i) {
-                            if (v[i]) {
-                                stock[key] = v[i];
-                            }
-                        });
-                        allStocks_1.push(stock);
-                    });
-                    return [4 /*yield*/, (0, utils_1.fillStockInfo)(allStocks_1)];
+                    sheet = preAllStocks[preAllStocks.length - 1];
+                    allStocks = (0, common_2.excelToStocks)(sheet.data);
+                    return [4 /*yield*/, (0, utils_1.fillEastStockInfo)(allStocks)];
                 case 3:
                     fillResult = _a.sent();
                     if (!fillResult) return [3 /*break*/, 5];
@@ -130,9 +117,10 @@ function task() {
     }); });
 }
 (function main() {
-    logs_1.logger.setFilePath(path_1.default.resolve(rootPath, "logs", "all_capital_stocks.log"));
+    logs_1.logger.setFilePath(path_1.default.resolve(common_1.rootPath, "logs", "all_capital_stocks.log"));
     // 每天早上 4 点
-    (0, node_schedule_1.scheduleJob)("* * 8 * *", task);
+    // scheduleJob("* * 8 * *", task);
+    task();
     process.on("SIGINT", function () {
         (0, node_schedule_1.gracefulShutdown)().then(function () { return process.exit(0); });
     });

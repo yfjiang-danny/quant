@@ -1,6 +1,7 @@
 import { StockModel } from "../common/type";
 import { EastMoney_API } from "../eastmoney/api";
 import { MarketType, EastMoneyStockModel } from "../eastmoney/type";
+import { logger } from "../logs";
 import { fillStockSMA } from "../sma";
 import { StockWithSMA } from "../sma/type";
 import { TushareStockModel } from "../tushare/type";
@@ -27,13 +28,17 @@ const batch = 10;
 export async function fillEastStockInfo(
   stocks: TushareStockModel[]
 ): Promise<StockModel[]> {
+  logger.info("fillEastStockInfo start...\n");
+
   const res: StockModel[] = [];
 
   const len = Math.round(stocks.length / batch);
 
   let i = 0;
   while (i < len) {
-    const arr = stocks.slice(i, i + batch);
+    const from = i * batch;
+    const to = from + batch;
+    const arr = stocks.slice(from, to);
     if (arr.length > 0) {
       const promises: Promise<EastMoneyStockModel | null>[] = [];
       arr.forEach((v) => {
@@ -49,18 +54,22 @@ export async function fillEastStockInfo(
           );
         }
       });
+
+      logger.info(`batch: [${from}, ${to}], total ${len}`);
+
       const responses = await Promise.all(promises);
-      responses.forEach((v, i) => {
+      responses.forEach((v, j) => {
         if (v) {
-          res.push({ ...arr[i], ...v });
+          res.push({ ...arr[j], ...v });
         } else {
-          res.push({ ...arr[i] } as StockModel);
+          res.push({ ...arr[j] } as StockModel);
         }
       });
     }
     i++;
   }
 
+  logger.info("fillEastStockInfo finished");
   return res;
 }
 
@@ -68,6 +77,7 @@ export async function fillEastStockInfo(
  * Use alph api to calculate sma and filled to stock
  */
 export async function fillAllStockSMA(stocks: StockModel[]) {
+  logger.info("fillAllStockSMA start...");
   const res: StockModel[] = [];
 
   const len = Math.round(stocks.length / batch);
@@ -93,5 +103,6 @@ export async function fillAllStockSMA(stocks: StockModel[]) {
     i++;
   }
 
+  logger.info("fillAllStockSMA finished...");
   return res;
 }
