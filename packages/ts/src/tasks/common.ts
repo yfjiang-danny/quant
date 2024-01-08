@@ -20,3 +20,15 @@ export const minCapitalStocksFilePath = path.resolve(
 );
 
 export const filterStocksFilePath = path.resolve(dbPath, "filter_stocks.xlsx");
+
+export const allStocksJsonFilePath = path.resolve(
+  dbPath,
+  "all",
+  `${dateString}.json`
+);
+
+export const symbolJsonFilePath = path.resolve(
+  dbPath,
+  dateString,
+  "${code}.json"
+);

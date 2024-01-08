@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.filterStocksFilePath = exports.minCapitalStocksFilePath = exports.allCapitalStocksFilePath = exports.allStocksFilePath = exports.dbPath = exports.rootPath = exports.dateString = void 0;
+exports.symbolJsonFilePath = exports.allStocksJsonFilePath = exports.filterStocksFilePath = exports.minCapitalStocksFilePath = exports.allCapitalStocksFilePath = exports.allStocksFilePath = exports.dbPath = exports.rootPath = exports.dateString = void 0;
 var moment_1 = __importDefault(require("moment"));
 var path_1 = __importDefault(require("path"));
 exports.dateString = (0, moment_1.default)().format("YYYYMMDD");
@@ -13,3 +13,5 @@ exports.allStocksFilePath = path_1.default.resolve(exports.dbPath, "all_stocks.x
 exports.allCapitalStocksFilePath = path_1.default.resolve(exports.dbPath, "all_capital_stocks.xlsx");
 exports.minCapitalStocksFilePath = path_1.default.resolve(exports.dbPath, "min_capital_stocks.xlsx");
 exports.filterStocksFilePath = path_1.default.resolve(exports.dbPath, "filter_stocks.xlsx");
+exports.allStocksJsonFilePath = path_1.default.resolve(exports.dbPath, "all", "".concat(exports.dateString, ".json"));
+exports.symbolJsonFilePath = path_1.default.resolve(exports.dbPath, exports.dateString, "${code}.json");

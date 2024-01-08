@@ -73,7 +73,7 @@ dotenv.config();
 function task() {
     var _this = this;
     (0, fs_1.access)(common_1.allCapitalStocksFilePath, fs_1.constants.F_OK, function (err) { return __awaiter(_this, void 0, void 0, function () {
-        var preAllStocks, sheet, capitalIndex_1, symbolIndex_1, minCapitalStockData;
+        var preAllStocks, sheet, capitalIndex_1, symbolIndex_1, turnoverIndex, minCapitalStockData;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -93,12 +93,14 @@ function task() {
                             return [2 /*return*/];
                         }
                         symbolIndex_1 = sheet.data[0].findIndex(function (v) { return v === "symbol"; });
+                        turnoverIndex = sheet.data[0].findIndex(function (v) {
+                            return v.includes("turnover");
+                        });
                         minCapitalStockData = sheet.data.filter(function (v, i) {
                             if (i === 0 || i === 1) {
                                 return true;
                             }
                             var symbol = v[symbolIndex_1];
-                            console.log("".concat(symbol));
                             var isFitSymbol = !symbol ||
                                 symbol.startsWith("3") ||
                                 symbol.startsWith("60") ||

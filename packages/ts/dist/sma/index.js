@@ -91,10 +91,10 @@ function fillStockSMA(stock) {
         return __generator(this, function (_g) {
             switch (_g.label) {
                 case 0:
-                    if (!stock.symbol || !stock.exchange) {
+                    if (!stock.ts_code) {
                         return [2 /*return*/, stock];
                     }
-                    symbol = stock.symbol + "." + stock.exchange;
+                    symbol = stock.ts_code;
                     return [4 /*yield*/, api_1.ALPH_API.getStockDaily(symbol)];
                 case 1:
                     histories = _g.sent();

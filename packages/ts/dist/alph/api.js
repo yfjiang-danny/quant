@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -101,4 +112,29 @@ var ALPH_API;
         });
     }
     ALPH_API.getSMA = getSMA;
+    function createToken(params) {
+        return axios_1.default
+            .postForm("\n      https://www.alphavantage.co/create_post/", __assign({ first_text: "deprecated", last_text: "deprecated", occupation_text: "Investor" }, params), {
+            headers: {
+                Cookie: "_ga=GA1.1.438591812.1702815045; csrftoken=mbKMptJGtLfSW8qri78Tdn481gfMi6vk; _ga_FQEDGD32JV=GS1.1.1704627105.6.1.1704627155.0.0.0",
+                "X-Csrftoken": "mbKMptJGtLfSW8qri78Tdn481gfMi6vk",
+            },
+        })
+            .then(function (res) {
+            if (res.data) {
+                var text = res.data.text;
+                var apiKeyRegex = /[A-Z0-9]{16}/;
+                var match = text.match(apiKeyRegex);
+                if (match) {
+                    return match;
+                }
+            }
+            return null;
+        })
+            .catch(function (e) {
+            console.log(e);
+            return null;
+        });
+    }
+    ALPH_API.createToken = createToken;
 })(ALPH_API || (exports.ALPH_API = ALPH_API = {}));
