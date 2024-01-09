@@ -20,6 +20,7 @@ var logs_1 = require("../logs");
 var url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo";
 var ALPH_API;
 (function (ALPH_API) {
+    var isLimited = false;
     function request(params) {
         var query = [];
         Object.keys(params).forEach(function (k) {
@@ -27,22 +28,34 @@ var ALPH_API;
         });
         return axios_1.default
             .get("".concat(process.env.ALPH_API, "?apikey=").concat(process.env.ALPH_TOKEN, "&").concat(query.join("&")), {
-            headers: { "User-Agent": "request" },
+            headers: { "User-Agent": "request", "X-Real-IP": "192.168.8.33" },
         })
             .then(function (res) {
             if (res.data) {
                 return res.data;
             }
             return null;
+        })
+            .catch(function (e) {
+            console.log(e);
+            return null;
         });
     }
     function getStockDaily(symbol) {
+        if (isLimited) {
+            return new Promise(function (resolve) {
+                resolve(null);
+            });
+        }
         return request({
             function: "TIME_SERIES_DAILY",
             symbol: symbol,
             outputsize: "compact",
         }).then(function (res) {
             if (res) {
+                if (res.Information) {
+                    isLimited = true;
+                }
                 logs_1.logger.info({ symbol: symbol, data: res });
                 var data_1 = res["Time Series (Daily)"];
                 if (data_1) {

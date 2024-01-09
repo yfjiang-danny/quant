@@ -66,12 +66,13 @@ var dotenv = __importStar(require("dotenv"));
 var fs_1 = require("fs");
 var node_schedule_1 = require("node-schedule");
 var path_1 = __importDefault(require("path"));
-var logs_1 = require("../logs");
-var excel_1 = require("../utils/excel");
-var utils_1 = require("./utils");
-var common_1 = require("./common");
-var common_2 = require("../common");
+var common_1 = require("../common");
 var constant_1 = require("../common/constant");
+var logs_1 = require("../logs");
+var storage_1 = require("../storage/storage");
+var excel_1 = require("../utils/excel");
+var common_2 = require("./common");
+var utils_1 = require("./utils");
 dotenv.config();
 function saveAllCapitalStock(stocks) {
     return __awaiter(this, void 0, void 0, function () {
@@ -80,29 +81,61 @@ function saveAllCapitalStock(stocks) {
                 return [2 /*return*/, excel_1.Excel.insertToExcel({
                         columns: constant_1.StockColumns,
                         data: stocks,
-                        filePath: common_1.allCapitalStocksFilePath,
+                        filePath: common_2.allCapitalStocksFilePath,
                     })];
             }
             return [2 /*return*/, false];
         });
     });
 }
+function jsonTask() {
+    var _this = this;
+    (0, fs_1.access)(common_2.allStocksJsonFilePath, fs_1.constants.F_OK, function (err) { return __awaiter(_this, void 0, void 0, function () {
+        var _this = this;
+        return __generator(this, function (_a) {
+            storage_1.Storage.getAllBasicStocks().then(function (res) { return __awaiter(_this, void 0, void 0, function () {
+                var allStocks, fillResult;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!res.msg) return [3 /*break*/, 1];
+                            console.log(res.msg);
+                            return [3 /*break*/, 3];
+                        case 1:
+                            allStocks = res.data;
+                            return [4 /*yield*/, (0, utils_1.fillEastStockInfo)(allStocks)];
+                        case 2:
+                            fillResult = _a.sent();
+                            storage_1.Storage.saveStocks(fillResult).then(function (res) {
+                                if (res.msg) {
+                                    console.log(res.msg);
+                                }
+                            });
+                            _a.label = 3;
+                        case 3: return [2 /*return*/];
+                    }
+                });
+            }); });
+            return [2 /*return*/];
+        });
+    }); });
+}
 function task() {
     var _this = this;
-    (0, fs_1.access)(common_1.allStocksFilePath, fs_1.constants.F_OK, function (err) { return __awaiter(_this, void 0, void 0, function () {
+    (0, fs_1.access)(common_2.allStocksFilePath, fs_1.constants.F_OK, function (err) { return __awaiter(_this, void 0, void 0, function () {
         var preAllStocks, sheet, allStocks, fillResult;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     if (!err) return [3 /*break*/, 1];
-                    console.log("".concat(common_1.allStocksFilePath, " do not exist"));
+                    console.log("".concat(common_2.allStocksFilePath, " do not exist"));
                     return [3 /*break*/, 5];
-                case 1: return [4 /*yield*/, excel_1.Excel.read(common_1.allStocksFilePath)];
+                case 1: return [4 /*yield*/, excel_1.Excel.read(common_2.allStocksFilePath)];
                 case 2:
                     preAllStocks = _a.sent();
                     if (!(preAllStocks && preAllStocks.length > 0)) return [3 /*break*/, 5];
                     sheet = preAllStocks[preAllStocks.length - 1];
-                    allStocks = (0, common_2.excelToStocks)(sheet.data);
+                    allStocks = (0, common_1.excelToStocks)(sheet.data);
                     return [4 /*yield*/, (0, utils_1.fillEastStockInfo)(allStocks)];
                 case 3:
                     fillResult = _a.sent();
@@ -117,10 +150,10 @@ function task() {
     }); });
 }
 (function main() {
-    logs_1.logger.setFilePath(path_1.default.resolve(common_1.rootPath, "logs", "all_capital_stocks.log"));
+    logs_1.logger.setFilePath(path_1.default.resolve(common_2.rootPath, "logs", "all_capital_stocks.log"));
     // 每天早上 4 点
     // scheduleJob("* * 8 * *", task);
-    task();
+    jsonTask();
     process.on("SIGINT", function () {
         (0, node_schedule_1.gracefulShutdown)().then(function () { return process.exit(0); });
     });

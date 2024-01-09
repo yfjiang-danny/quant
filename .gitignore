@@ -6,3 +6,6 @@ venv
 *.log
 
 *.pid
+
+packages/ts/db
+packages/ts/dist

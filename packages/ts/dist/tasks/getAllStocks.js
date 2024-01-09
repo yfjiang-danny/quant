@@ -65,13 +65,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var dotenv = __importStar(require("dotenv"));
 var node_schedule_1 = require("node-schedule");
 var path_1 = __importDefault(require("path"));
+var constant_1 = require("../common/constant");
 var logs_1 = require("../logs");
+var storage_1 = require("../storage/storage");
 var api_1 = require("../tushare/api");
 var excel_1 = require("../utils/excel");
 var sleep_1 = require("../utils/sleep");
 var common_1 = require("./common");
-var constant_1 = require("../common/constant");
 dotenv.config();
+function saveToJson(stocks) {
+    return storage_1.Storage.saveAllBasicStocks(stocks).then(function (res) {
+        return res.data;
+    });
+}
 function saveAllStock(stocks) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -91,7 +97,8 @@ function getAllStocks() {
     return new Promise(function (resolve) {
         api_1.TUSHARE_API.getAllStock().then(function (res) {
             if (res) {
-                saveAllStock(res).then(function (res) { return resolve(res); });
+                saveToJson(res).then(function (res) { return resolve(res); });
+                saveAllStock(res);
             }
             else {
                 resolve(false);

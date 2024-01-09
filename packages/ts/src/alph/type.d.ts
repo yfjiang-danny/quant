@@ -23,6 +23,7 @@ export type IntervalType =
 export interface DailyResponse {
   "Meta Data": Record<string, string>;
   "Time Series (Daily)": Record<string, Record<string, string>>;
+  Information?: string;
 }
 
 export interface ALPHStockModel {

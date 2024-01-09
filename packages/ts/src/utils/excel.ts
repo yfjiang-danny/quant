@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { access, constants } from "fs/promises";
+import { access } from "fs/promises";
 import moment from "moment";
 import xlsx, { WorkSheet } from "node-xlsx";
 
@@ -12,7 +12,7 @@ export namespace Excel {
   export function read(filePath: string) {
     return new Promise<SheetDataModel[] | null>((resolve) => {
       try {
-        access(filePath, constants.F_OK).then(
+        access(filePath, fs.constants.F_OK).then(
           () => {
             const sheets = xlsx.parse(filePath);
             resolve(sheets);

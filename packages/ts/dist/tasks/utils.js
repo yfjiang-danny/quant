@@ -150,7 +150,7 @@ function fillAllStockSMA(stocks) {
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0:
-                                    arr = stocks.slice(i, i + batch);
+                                    arr = stocks.slice(i * batch, (i + 1) * batch);
                                     if (!(arr.length > 0)) return [3 /*break*/, 2];
                                     promises_2 = [];
                                     arr.forEach(function (v) {

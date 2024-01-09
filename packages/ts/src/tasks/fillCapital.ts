@@ -1,18 +1,20 @@
 import * as dotenv from "dotenv";
 import { access, constants } from "fs";
-import { gracefulShutdown, scheduleJob } from "node-schedule";
+import { gracefulShutdown } from "node-schedule";
 import path from "path";
+import { excelToStocks } from "../common";
+import { StockColumns } from "../common/constant";
+import { StockModel } from "../common/type";
 import { logger } from "../logs";
+import { Storage } from "../storage/storage";
 import { Excel } from "../utils/excel";
-import { fillEastStockInfo } from "./utils";
 import {
   allCapitalStocksFilePath,
   allStocksFilePath,
+  allStocksJsonFilePath,
   rootPath,
 } from "./common";
-import { StockModel } from "../common/type";
-import { excelToStocks } from "../common";
-import { StockColumns } from "../common/constant";
+import { fillEastStockInfo } from "./utils";
 
 dotenv.config();
 
@@ -25,6 +27,24 @@ async function saveAllCapitalStock(stocks: StockModel[]) {
     });
   }
   return false;
+}
+
+function jsonTask() {
+  access(allStocksJsonFilePath, constants.F_OK, async (err) => {
+    Storage.getAllBasicStocks().then(async (res) => {
+      if (res.msg) {
+        console.log(res.msg);
+      } else {
+        const allStocks = res.data;
+        const fillResult = await fillEastStockInfo(allStocks);
+        Storage.saveStocks(fillResult).then((res) => {
+          if (res.msg) {
+            console.log(res.msg);
+          }
+        });
+      }
+    });
+  });
 }
 
 function task() {
@@ -51,7 +71,7 @@ function task() {
   logger.setFilePath(path.resolve(rootPath, "logs", "all_capital_stocks.log"));
   // 每天早上 4 点
   // scheduleJob("* * 8 * *", task);
-  task();
+  jsonTask();
 
   process.on("SIGINT", function () {
     gracefulShutdown().then(() => process.exit(0));

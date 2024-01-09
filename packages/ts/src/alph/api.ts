@@ -1,4 +1,5 @@
 import axios from "axios";
+import { logger } from "../logs";
 import {
   ALPHStockModel,
   AlphApiParams,
@@ -7,11 +8,11 @@ import {
   IntervalType,
   SeriesType,
 } from "./type";
-import { logger } from "../logs";
 
 const url = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo`;
 
 export namespace ALPH_API {
+  let isLimited = false;
   function request<T = any>(params: AlphApiParams) {
     const query: string[] = [];
 
@@ -25,7 +26,7 @@ export namespace ALPH_API {
           "&"
         )}`,
         {
-          headers: { "User-Agent": "request" },
+          headers: { "User-Agent": "request", "X-Real-IP": "192.168.8.33" },
         }
       )
       .then((res) => {
@@ -33,16 +34,30 @@ export namespace ALPH_API {
           return res.data;
         }
         return null;
+      })
+      .catch((e) => {
+        console.log(e);
+
+        return null;
       });
   }
 
   export function getStockDaily(symbol: string) {
+    if (isLimited) {
+      return new Promise<null>((resolve) => {
+        resolve(null);
+      });
+    }
+
     return request<DailyResponse | null>({
       function: "TIME_SERIES_DAILY",
       symbol: symbol,
       outputsize: "compact",
     }).then((res) => {
       if (res) {
+        if (res.Information) {
+          isLimited = true;
+        }
         logger.info({ symbol: symbol, data: res });
         const data = res["Time Series (Daily)"];
         if (data) {

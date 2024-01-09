@@ -1,18 +1,22 @@
 import * as dotenv from "dotenv";
-import moment from "moment";
-import { gracefulShutdown, scheduleJob } from "node-schedule";
-import { WorkSheet } from "node-xlsx";
+import { gracefulShutdown } from "node-schedule";
 import path from "path";
+import { StockColumns } from "../common/constant";
 import { logger } from "../logs";
+import { Storage } from "../storage/storage";
 import { TUSHARE_API } from "../tushare/api";
-import { TushareStockColumns } from "../tushare/constant";
 import { TushareStockModel } from "../tushare/type";
 import { Excel } from "../utils/excel";
 import { sleep } from "../utils/sleep";
 import { allStocksFilePath, dateString, rootPath } from "./common";
-import { StockColumns } from "../common/constant";
 
 dotenv.config();
+
+function saveToJson(stocks: TushareStockModel[]) {
+  return Storage.saveAllBasicStocks(stocks).then((res) => {
+    return res.data;
+  });
+}
 
 async function saveAllStock(stocks: TushareStockModel[]) {
   if (stocks && stocks.length > 0) {
@@ -30,7 +34,8 @@ function getAllStocks() {
   return new Promise<boolean>((resolve) => {
     TUSHARE_API.getAllStock().then((res) => {
       if (res) {
-        saveAllStock(res).then((res) => resolve(res));
+        saveToJson(res).then((res) => resolve(res));
+        saveAllStock(res);
       } else {
         resolve(false);
       }

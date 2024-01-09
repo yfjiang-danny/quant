@@ -83,7 +83,7 @@ var Excel;
     function read(filePath) {
         return new Promise(function (resolve) {
             try {
-                (0, promises_1.access)(filePath, promises_1.constants.F_OK).then(function () {
+                (0, promises_1.access)(filePath, fs.constants.F_OK).then(function () {
                     var sheets = node_xlsx_1.default.parse(filePath);
                     resolve(sheets);
                 }, function (e) {

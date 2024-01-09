@@ -1,6 +1,6 @@
 import { StockModel } from "../common/type";
 import { EastMoney_API } from "../eastmoney/api";
-import { MarketType, EastMoneyStockModel } from "../eastmoney/type";
+import { EastMoneyStockModel, MarketType } from "../eastmoney/type";
 import { logger } from "../logs";
 import { fillStockSMA } from "../sma";
 import { StockWithSMA } from "../sma/type";
@@ -84,7 +84,7 @@ export async function fillAllStockSMA(stocks: StockModel[]) {
 
   let i = 0;
   while (i < len) {
-    const arr = stocks.slice(i, i + batch);
+    const arr = stocks.slice(i * batch, (i + 1) * batch);
     if (arr.length > 0) {
       const promises: Promise<StockWithSMA>[] = [];
       arr.forEach((v) => {

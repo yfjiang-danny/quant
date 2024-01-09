@@ -5,7 +5,7 @@ export const dateString = moment().format("YYYYMMDD");
 
 export const rootPath = path.resolve(".", ".");
 
-export const dbPath = path.resolve(rootPath, "src", "db");
+export const dbPath = path.resolve(rootPath, "db");
 
 export const allStocksFilePath = path.resolve(dbPath, "all_stocks.xlsx");
 

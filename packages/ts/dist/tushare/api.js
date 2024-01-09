@@ -33,7 +33,6 @@ var TUSHARE_API;
             params: params,
         })
             .then(function (res) {
-            var _a;
             logs_1.logger.info(res.data);
             if (res.status == 200) {
                 var responseData = res === null || res === void 0 ? void 0 : res.data;
@@ -41,7 +40,7 @@ var TUSHARE_API;
                     logs_1.logger.info("Use mock data");
                     responseData = mock_1.mockAllStockResponse;
                 }
-                var data_1 = (_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a.data;
+                var data_1 = responseData === null || responseData === void 0 ? void 0 : responseData.data;
                 if (data_1) {
                     var stocks_1 = [];
                     data_1.items.forEach(function (item) {

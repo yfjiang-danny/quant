@@ -63,46 +63,82 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var dotenv = __importStar(require("dotenv"));
-var excel_1 = require("../utils/excel");
-var common_1 = require("./common");
-var common_2 = require("../common");
-var strategy_1 = require("../strategy");
-var constant_1 = require("../common/constant");
-var path_1 = __importDefault(require("path"));
-var logs_1 = require("../logs");
+var moment_1 = __importDefault(require("moment"));
 var node_schedule_1 = require("node-schedule");
+var path_1 = __importDefault(require("path"));
+var common_1 = require("../common");
+var logs_1 = require("../logs");
+var storage_1 = require("../storage/storage");
+var strategy_1 = require("../strategy");
+var excel_1 = require("../utils/excel");
+var common_2 = require("./common");
+var utils_1 = require("./utils");
 dotenv.config();
 function filter() {
     return __awaiter(this, void 0, void 0, function () {
-        var preMinCapitalStocks, sheet, allStocks, filterStocks;
+        var allStocks, minCapitalStocks, crossStocks, sheets, limitedStocks, fillSMAStocks, filterStocks, filePath;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, excel_1.Excel.read(common_1.minCapitalStocksFilePath)];
+                case 0: return [4 /*yield*/, storage_1.Storage.getAllStocks().then(function (res) {
+                        if (res.msg) {
+                            console.log(res.msg);
+                        }
+                        return res.data;
+                    })];
                 case 1:
-                    preMinCapitalStocks = _a.sent();
-                    if (!(preMinCapitalStocks && preMinCapitalStocks.length > 0)) return [3 /*break*/, 3];
-                    sheet = preMinCapitalStocks[0];
-                    allStocks = (0, common_2.excelToStocks)(sheet.data);
-                    filterStocks = allStocks.filter(function (v) {
+                    allStocks = _a.sent();
+                    if (allStocks.length <= 0) {
+                        console.log("Stocks is empty");
+                        return [2 /*return*/];
+                    }
+                    minCapitalStocks = allStocks
+                        .filter(function (v) {
+                        var symbol = v.symbol;
+                        var isFitSymbol = !symbol ||
+                            symbol.startsWith("3") ||
+                            symbol.startsWith("60") ||
+                            symbol.startsWith("0");
+                        var capital = v.capital;
+                        return isFitSymbol && capital && capital < 100;
+                    })
+                        .sort(function (a, b) { return a.capital - b.capital; });
+                    crossStocks = minCapitalStocks.filter(function (v) {
                         return (0, strategy_1.isCross)(v) && (0, strategy_1.fitTurnover)(v, 3, 60);
                     });
-                    console.log(filterStocks);
-                    if (!(filterStocks && filterStocks.length > 0)) return [3 /*break*/, 3];
-                    return [4 /*yield*/, excel_1.Excel.insertToExcel({
-                            columns: constant_1.StockColumns,
-                            data: filterStocks,
-                            filePath: common_1.filterStocksFilePath,
-                        })];
+                    if (crossStocks.length <= 0) {
+                        console.log("crossStocks is empty");
+                        return [2 /*return*/];
+                    }
+                    sheets = [
+                        { name: "cross", data: (0, common_1.stocksToSheetData)(crossStocks), options: {} },
+                    ];
+                    limitedStocks = crossStocks.slice(0, 25);
+                    return [4 /*yield*/, (0, utils_1.fillAllStockSMA)(limitedStocks)];
                 case 2:
-                    _a.sent();
-                    _a.label = 3;
-                case 3: return [2 /*return*/];
+                    fillSMAStocks = _a.sent();
+                    sheets.push({
+                        name: "sma",
+                        data: (0, common_1.stocksToSheetData)(fillSMAStocks),
+                        options: {},
+                    });
+                    filterStocks = fillSMAStocks.filter(function (v) { return v.sma5 && v.sma10 && v.sma20 && v.sma5 > v.sma10 && v.sma10 > v.sma20; });
+                    if (filterStocks.length <= 0) {
+                        console.log("filterStocks is empty");
+                    }
+                    sheets.push({
+                        name: "filter",
+                        data: (0, common_1.stocksToSheetData)(filterStocks),
+                        options: {},
+                    });
+                    filePath = path_1.default.resolve(common_2.dbPath, "filter_".concat((0, moment_1.default)().format("YYYYMMDDHHMMSS"), ".xlsx"));
+                    excel_1.Excel.write(sheets, filePath).then(function () { return console.log(filePath); });
+                    return [2 /*return*/];
             }
         });
     });
 }
 (function main() {
-    logs_1.logger.setFilePath(path_1.default.resolve(common_1.rootPath, "logs", "filter_stocks.log"));
+    logs_1.logger.setFilePath(path_1.default.resolve(common_2.rootPath, "logs", "filter_stocks.log"));
     // 星期1~5 早上 9 点
     //   scheduleJob("* * 9 * 1-5", filter);
     filter();

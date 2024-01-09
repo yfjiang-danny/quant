@@ -1,13 +1,13 @@
 import axios from "axios";
 import { logger } from "../logs";
+import { TushareStockColumns } from "./constant";
+import { mockAllStockResponse } from "./mock";
 import {
   AllStockApiParams,
   ApiParams,
   StockKeys,
   TushareStockModel,
 } from "./type";
-import { TushareStockColumns } from "./constant";
-import { mockAllStockResponse } from "./mock";
 
 // http://api.tushare.pro
 
@@ -43,7 +43,7 @@ export namespace TUSHARE_API {
             logger.info(`Use mock data`);
             responseData = mockAllStockResponse;
           }
-          const data = (res?.data as any)?.data as {
+          const data = responseData?.data as {
             fields: string[];
             items: (string | null)[][];
           };
