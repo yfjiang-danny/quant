@@ -55,7 +55,7 @@ export async function fillEastStockInfo(
         }
       });
 
-      logger.info(`batch: [${from}, ${to}], total ${len}`);
+      logger.info(`batch ${i}: [${from}, ${to}], total ${len}`);
 
       const responses = await Promise.all(promises);
       responses.forEach((v, j) => {

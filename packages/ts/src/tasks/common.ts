@@ -29,6 +29,9 @@ export const allStocksJsonFilePath = path.resolve(
 
 export const symbolJsonFilePath = path.resolve(
   dbPath,
+  "history",
   dateString,
   "${code}.json"
 );
+
+export const historyPath = path.resolve(dbPath, "history");

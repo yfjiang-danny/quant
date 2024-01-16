@@ -1,9 +1,14 @@
 import { accessSync } from "fs";
 import moment from "moment";
 import path from "path";
-import { dbPath } from "../tasks/common";
 
-export function findLatestTradeDate(d?: string) {
+/**
+ * 找最近存在数据的日期
+ * @param rootPath
+ * @param d
+ * @returns
+ */
+export function findExistDate(rootPath: string, d?: string) {
   const date = moment(d);
   let dateStr = date.format("YYYYMMDD");
   let success = false;
@@ -11,7 +16,7 @@ export function findLatestTradeDate(d?: string) {
 
   while (!success && max > 0) {
     try {
-      accessSync(path.resolve(dbPath, dateStr));
+      accessSync(path.resolve(rootPath, dateStr));
       success = true;
       break;
     } catch (error) {
@@ -21,7 +26,7 @@ export function findLatestTradeDate(d?: string) {
 
     max--;
   }
-  return success ? dateStr : null;
+  return success ? dateStr : undefined;
 }
 
 export function isWorkday(date?: string) {

@@ -1,6 +1,7 @@
 import { appendFile } from "fs/promises";
 import moment from "moment";
 import path from "path";
+import { logRootPath } from "../common/paths";
 import { Queue } from "../utils/queue";
 
 /**
@@ -11,7 +12,7 @@ class Logger {
   queue: Queue;
   constructor(filePath?: string) {
     if (!filePath) {
-      this.filePath = path.resolve(__dirname, "quant.log");
+      this.filePath = path.resolve(logRootPath, "quant.log");
     } else {
       this.filePath = filePath;
     }
@@ -19,7 +20,10 @@ class Logger {
     const _this = this;
     this.queue = new Queue();
     this.queue.process(function (job, done) {
-      const file = _this.filePath;
+      const file = (job.data as any).output || _this.filePath;
+
+      delete (job.data as any).output;
+
       if (file) {
         appendFile(file, JSON.stringify(job.data) + "\n").then(
           () => {
@@ -41,10 +45,11 @@ class Logger {
     this.filePath = filePath;
   };
 
-  info = (msg: unknown) => {
+  info = (msg: unknown, output?: string) => {
     this.queue.add({
       time: moment().format("YYYY-MM-DD HH:mm:SS"),
       message: msg,
+      output,
     });
   };
 }

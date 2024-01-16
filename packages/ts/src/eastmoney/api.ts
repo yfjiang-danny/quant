@@ -1,10 +1,13 @@
 import axios from "axios";
-import { MarketType, QuoteSnapshotModel, EastMoneyStockModel } from "./type";
+import path from "path";
+import { logRootPath } from "../common/paths";
 import { logger } from "../logs";
+import { EastMoneyStockModel, MarketType, QuoteSnapshotModel } from "./type";
 
 // https://emhsmarketwg.eastmoneysec.com/api/SHSZQuoteSnapshot
 
 export namespace EastMoney_API {
+  const logOutput = path.resolve(logRootPath, "east_money_api.log");
   export function getQuoteSnapshot(symbol: string, market: MarketType) {
     const callbackKey = "jQueryH";
     const timestamp = new Date().getTime();
@@ -42,7 +45,7 @@ export namespace EastMoney_API {
     return getQuoteSnapshot(symbol, market)
       .then((res) => {
         if (res) {
-          logger.info(res);
+          logger.info(res, logOutput);
           const close = Number(res.realtimequote.currentPrice);
           const volume = Number(res.realtimequote.volume);
           const turnover = Number(
