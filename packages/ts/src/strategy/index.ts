@@ -1,7 +1,7 @@
 import { StockModel } from "../common/type";
 
-const openClosePercentage = 0.01;
-const highLowPercentage = 0.02;
+const openClosePercentage = 0.01; // <1%
+const highLowPercentage = 0.02; // >2%
 
 /**
  * 十字星线

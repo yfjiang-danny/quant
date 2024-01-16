@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fitTurnover = exports.isCross = void 0;
-var openClosePercentage = 0.01;
-var highLowPercentage = 0.02;
+var openClosePercentage = 0.01; // <1%
+var highLowPercentage = 0.02; // >2%
 /**
  * 十字星线
  * @param stock
