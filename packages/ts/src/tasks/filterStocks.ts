@@ -4,12 +4,13 @@ import { gracefulShutdown } from "node-schedule";
 import { WorkSheet } from "node-xlsx";
 import path from "path";
 import { stocksToSheetData } from "../common";
+import { dbRootPath } from "../common/paths";
 import { StockModel } from "../common/type";
 import { logger } from "../logs";
 import { Storage } from "../storage/storage";
 import { fitTurnover, isCross } from "../strategy";
 import { Excel } from "../utils/excel";
-import { dbPath, rootPath } from "./common";
+import { rootPath } from "./common";
 import { fillAllStockSMA } from "./utils";
 
 dotenv.config();
@@ -80,8 +81,8 @@ async function filter() {
   });
 
   const filePath = path.resolve(
-    dbPath,
-    `filter_${moment().format("YYYYMMDDHHMMSS")}.xlsx`
+    dbRootPath,
+    `filter_${moment().format("YYYYMMDD-hhmmss")}.xlsx`
   );
 
   Excel.write(sheets, filePath).then(() => console.log(filePath));

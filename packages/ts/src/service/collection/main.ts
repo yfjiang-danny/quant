@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import { gracefulShutdown, scheduleJob } from "node-schedule";
+import { RecurrenceRule, gracefulShutdown, scheduleJob } from "node-schedule";
 import path from "path";
 import { initPath, logRootPath } from "../../common/paths";
 import { StockModel } from "../../common/type";
@@ -83,7 +83,11 @@ async function collectionTask() {
 
   logger.setFilePath(path.resolve(logRootPath, "collection.log"));
   // 每天晚上 22 点
-  scheduleJob("* * 22 * *", collectionTask);
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 22;
+  rule.minute = 35;
+  scheduleJob(rule, collectionTask);
 
   process.on("SIGINT", function () {
     gracefulShutdown().then(() => process.exit(0));
