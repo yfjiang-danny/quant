@@ -1,0 +1,15 @@
+version: "3"
+services:
+  quant:
+    image: quant:latest
+    restart: always
+    networks:
+      - quant_network
+    volumes:
+      - ./.env:/opt/quant/.env:ro
+    ports:
+      - 3800:3800
+
+networks:
+  quant_network:
+    driver: bridge

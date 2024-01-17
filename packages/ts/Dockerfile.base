@@ -1,0 +1,9 @@
+FROM node:lts-alpine
+
+WORKDIR /opt/quant
+
+COPY package.json /opt/quant/package.json
+COPY .npmrc /opt/quant/.npmrc
+
+RUN npm install
+

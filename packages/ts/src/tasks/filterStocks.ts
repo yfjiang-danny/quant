@@ -1,13 +1,12 @@
+import axios from "axios";
 import * as dotenv from "dotenv";
 import moment from "moment";
-import { gracefulShutdown } from "node-schedule";
 import { WorkSheet } from "node-xlsx";
 import path from "path";
 import { stocksToSheetData } from "../common";
 import { dbRootPath } from "../common/paths";
 import { StockModel } from "../common/type";
 import { logger } from "../logs";
-import { Storage } from "../storage/storage";
 import { fitTurnover, isCross } from "../strategy";
 import { Excel } from "../utils/excel";
 import { rootPath } from "./common";
@@ -16,12 +15,20 @@ import { fillAllStockSMA } from "./utils";
 dotenv.config();
 
 async function filter() {
-  const allStocks: StockModel[] = await Storage.getAllStocks().then((res) => {
-    if (res.msg) {
-      console.log(res.msg);
-    }
-    return res.data;
-  });
+  // const allStocks: StockModel[] = await Storage.getAllStocks().then((res) => {
+  //   if (res.msg) {
+  //     console.log(res.msg);
+  //   }
+  //   return res.data;
+  // });
+  const allStocks: StockModel[] = await axios
+    .get(`${process.env.SERVICE_API}/stock/getAllStocks`)
+    .then((res) => {
+      return res.data;
+    })
+    .then((res) => {
+      return res.data;
+    });
 
   if (allStocks.length <= 0) {
     console.log(`Stocks is empty`);
@@ -91,11 +98,5 @@ async function filter() {
 (function main() {
   logger.setFilePath(path.resolve(rootPath, "logs", "filter_stocks.log"));
 
-  // 星期1~5 早上 9 点
-  //   scheduleJob("* * 9 * 1-5", filter);
   filter();
-
-  process.on("SIGINT", function () {
-    gracefulShutdown().then(() => process.exit(0));
-  });
 })();

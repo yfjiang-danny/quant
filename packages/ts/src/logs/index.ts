@@ -7,7 +7,7 @@ import { Queue } from "../utils/queue";
 /**
  *
  */
-class Logger {
+export class Logger {
   private filePath: string | undefined;
   queue: Queue;
   constructor(filePath?: string) {

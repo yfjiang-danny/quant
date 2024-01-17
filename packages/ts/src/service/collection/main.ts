@@ -1,7 +1,4 @@
 import * as dotenv from "dotenv";
-import { RecurrenceRule, gracefulShutdown, scheduleJob } from "node-schedule";
-import path from "path";
-import { initPath, logRootPath } from "../../common/paths";
 import { StockModel } from "../../common/type";
 import { logger } from "../../logs";
 import { Storage } from "../../storage/storage";
@@ -69,7 +66,7 @@ function fillTradeInfo(stocks: TushareStockModel[] | null) {
   });
 }
 
-async function collectionTask() {
+export async function collectionTask() {
   logger.info(`Start collection task`);
 
   // 使用示例
@@ -78,18 +75,18 @@ async function collectionTask() {
   const fillResult = await fillTradeInfo(allBasicStocks);
 }
 
-(function main() {
-  initPath();
+// (function main() {
+//   initPath();
 
-  logger.setFilePath(path.resolve(logRootPath, "collection.log"));
-  // 每天晚上 22 点
-  const rule = new RecurrenceRule();
-  rule.dayOfWeek = [1, 2, 3, 4, 5];
-  rule.hour = 22;
-  rule.minute = 35;
-  scheduleJob(rule, collectionTask);
+//   logger.setFilePath(path.resolve(logRootPath, "collection.log"));
+//   // 每天晚上 22 点
+//   const rule = new RecurrenceRule();
+//   rule.dayOfWeek = [1, 2, 3, 4, 5];
+//   rule.hour = 22;
+//   rule.minute = 35;
+//   scheduleJob(rule, collectionTask);
 
-  process.on("SIGINT", function () {
-    gracefulShutdown().then(() => process.exit(0));
-  });
-})();
+//   process.on("SIGINT", function () {
+//     gracefulShutdown().then(() => process.exit(0));
+//   });
+// })();
