@@ -1,4 +1,4 @@
-import { MarketType } from "../eastmoney/type";
+import { MarketType } from "../models/eastmoney/type";
 
 export function getMarket(symbol: string): MarketType {
   switch (symbol.slice(0, 1)) {

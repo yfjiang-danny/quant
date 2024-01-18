@@ -1,8 +1,4 @@
 import * as dotenv from "dotenv";
-import moment from "moment";
-import path from "path";
-import { ALPH_API } from "./alph/api";
-import { genRandomEmail, genRandomText } from "./utils/email";
 dotenv.config();
 
 (async function main() {

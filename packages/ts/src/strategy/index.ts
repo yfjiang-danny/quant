@@ -1,4 +1,4 @@
-import { StockModel } from "../common/type";
+import { StockModel } from "../models/type";
 
 const openClosePercentage = 0.01; // <1%
 const highLowPercentage = 0.02; // >2%

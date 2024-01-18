@@ -1,10 +1,10 @@
-import { StockModel } from "../common/type";
-import { EastMoney_API } from "../eastmoney/api";
-import { EastMoneyStockModel, MarketType } from "../eastmoney/type";
 import { logger } from "../logs";
-import { fillStockSMA } from "../sma";
-import { StockWithSMA } from "../sma/type";
-import { TushareStockModel } from "../tushare/type";
+import { EastMoneyStockModel, MarketType } from "../models/eastmoney/type";
+import { StockWithSMA } from "../models/sma/type";
+import { TushareStockModel } from "../models/tushare/type";
+import { StockModel } from "../models/type";
+import { EastMoney_API } from "../service/eastmoney/api";
+import { fillStockSMA } from "../service/factors/sma";
 
 function getMarket(symbol: string): MarketType {
   switch (symbol.slice(0, 1)) {

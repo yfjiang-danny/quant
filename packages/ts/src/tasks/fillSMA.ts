@@ -1,13 +1,12 @@
 import * as dotenv from "dotenv";
-import { logger } from "../logs";
-import path from "path";
-import { StockModel } from "../common/type";
 import { access, constants } from "fs";
+import path from "path";
+import { excelToStocks, stocksToSheetData } from "../common";
+import { logger } from "../logs";
+import { StockModel } from "../models/type";
 import { Excel } from "../utils/excel";
 import { filterStocksFilePath, rootPath } from "./common";
 import { fillAllStockSMA } from "./utils";
-import { excelToStocks, stocksToSheetData } from "../common";
-import { scheduleJob } from "node-schedule";
 
 dotenv.config();
 

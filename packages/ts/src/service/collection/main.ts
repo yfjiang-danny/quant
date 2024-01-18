@@ -1,10 +1,10 @@
 import * as dotenv from "dotenv";
-import { StockModel } from "../../common/type";
 import { logger } from "../../logs";
-import { Storage } from "../../storage/storage";
+import { TushareStockModel } from "../../models/tushare/type";
+import { StockModel } from "../../models/type";
 import { fillEastStockInfo } from "../../tasks/utils";
-import { TUSHARE_API } from "../../tushare/api";
-import { TushareStockModel } from "../../tushare/type";
+import { Storage } from "../storage/storage";
+import { TUSHARE_API } from "../tushare/api";
 
 dotenv.config();
 

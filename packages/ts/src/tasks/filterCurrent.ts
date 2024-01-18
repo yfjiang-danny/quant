@@ -1,11 +1,11 @@
+import axios from "axios";
 import * as dotenv from "dotenv";
 import moment from "moment";
 import { WorkSheet } from "node-xlsx";
 import path from "path";
 import { stocksToSheetData } from "../common";
-import { StockModel } from "../common/type";
 import { logger } from "../logs";
-import { Storage } from "../storage/storage";
+import { StockModel } from "../models/type";
 import { fitTurnover, isCross } from "../strategy";
 import { Excel } from "../utils/excel";
 import { dbPath, rootPath } from "./common";
@@ -14,12 +14,14 @@ import { fillAllStockSMA, fillEastStockInfo } from "./utils";
 dotenv.config();
 
 async function filter() {
-  const allStocks: StockModel[] = await Storage.getAllStocks().then((res) => {
-    if (res.msg) {
-      console.log(res.msg);
-    }
-    return res.data;
-  });
+  const allStocks: StockModel[] = await axios
+    .get(`${process.env.SERVICE_API}/stock/getAllStocks`)
+    .then((res) => {
+      return res.data;
+    })
+    .then((res) => {
+      return res.data;
+    });
 
   if (allStocks.length <= 0) {
     console.log(`Stocks is empty`);

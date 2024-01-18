@@ -1,5 +1,5 @@
-import { StockColumns } from "./constant";
-import { StockModel } from "./type";
+import { StockColumns } from "../models/constant";
+import { StockModel } from "../models/type";
 
 export function excelToStocks(sheetData: any[][]) {
   const allStockData = sheetData.slice(2);

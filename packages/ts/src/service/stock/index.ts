@@ -1,8 +1,8 @@
-import { StockModel } from "../../common/type";
-import { EastMoney_API } from "../../eastmoney/api";
-import { Storage } from "../../storage/storage";
-import { Response } from "../../storage/type";
+import { StockModel } from "../../models/type";
 import { getMarket } from "../../utils/convert";
+import { EastMoney_API } from "../eastmoney/api";
+import { Storage } from "../storage/storage";
+import { Response } from "../storage/type";
 
 export class StockService {
   //   logger: Logger;
