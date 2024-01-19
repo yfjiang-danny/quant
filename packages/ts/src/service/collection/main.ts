@@ -5,6 +5,7 @@ import { StockModel } from "../../models/type";
 import { Storage } from "../storage/storage";
 import { TUSHARE_API } from "../tushare/api";
 import { fillEastStockInfo, fillStockHistoryByALPH } from "../utils";
+import { fillStocksSMA } from "../factors/sma";
 
 dotenv.config();
 
@@ -97,13 +98,13 @@ export async function collectionTask() {
 
   const fillResult = await fillTradeInfo(allBasicStocks);
 
-  // const smaResult = await fillStocksSMA(fillResult);
+  const smaResult = await fillStocksSMA(fillResult);
 
-  await Storage.saveStocksInOneDate(fillResult).then((res) => {
+  await Storage.saveStocksInOneDate(smaResult).then((res) => {
     if (res.msg) {
       console.log(res.msg);
     }
   });
 
-  // fillHistoryByALPH();
+  fillHistoryByALPH();
 }
