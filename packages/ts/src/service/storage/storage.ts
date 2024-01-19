@@ -112,7 +112,65 @@ export namespace Storage {
     });
   }
 
-  export function saveStocks(stocks: StockModel[]) {
+  export function saveStocks(stocks: StockModel[], override = false) {
+    return new Promise<Response<boolean>>((resolve, reject) => {
+      const invalidStocks: StockModel[] = [];
+
+      const newStocks = stocks?.filter((v) => {
+        const valid = v && v.date && v.symbol;
+        if (!valid) {
+          invalidStocks.push(v);
+        }
+        return valid;
+      });
+
+      if (invalidStocks.length > 0) {
+        console.log(`Invalid stocks: ${JSON.stringify(invalidStocks)}`);
+      }
+
+      if (!newStocks || newStocks.length <= 0) {
+        resolve({ data: false, msg: `Empty list, nothing to save!` });
+        return;
+      }
+
+      const promises: Promise<Response<boolean>>[] = [];
+
+      let i = 0,
+        currentDate = newStocks[0]?.date as string;
+      while (i < newStocks.length) {
+        const temp: StockModel[] = [];
+
+        while (i < newStocks.length) {
+          temp.push({ ...newStocks[i] });
+          i++;
+          if (
+            newStocks[i] &&
+            newStocks[i].date &&
+            newStocks[i].date != currentDate
+          ) {
+            break;
+          }
+        }
+
+        promises.push(saveStocksInOneDate(temp));
+
+        currentDate = newStocks[i].date as string;
+      }
+
+      Promise.allSettled(promises).then(
+        () => {
+          resolve({ data: true });
+        },
+        (e) => {
+          console.log(e);
+
+          resolve({ data: false, msg: "Write file error" });
+        }
+      );
+    });
+  }
+
+  export function saveStocksInOneDate(stocks: StockModel[], override = false) {
     return new Promise<Response<boolean>>((resolve) => {
       const invalidStocks: StockModel[] = [];
 
@@ -128,12 +186,14 @@ export namespace Storage {
         console.log(`Invalid stocks: ${JSON.stringify(invalidStocks)}`);
       }
 
-      if (newStocks.length <= 0) {
+      if (!newStocks || newStocks.length <= 0) {
         resolve({ data: false, msg: `Empty list, nothing to save!` });
         return;
       }
+
       const dateStr = newStocks[0].date as string;
       const fileDir = path.resolve(historyRootPath, dateStr);
+
       createDir(fileDir).then(
         () => {
           const promises: Promise<void>[] = [];

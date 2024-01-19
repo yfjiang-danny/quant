@@ -2,11 +2,44 @@ import * as dotenv from "dotenv";
 import { logger } from "../../logs";
 import { TushareStockModel } from "../../models/tushare/type";
 import { StockModel } from "../../models/type";
-import { fillEastStockInfo } from "../../tasks/utils";
 import { Storage } from "../storage/storage";
 import { TUSHARE_API } from "../tushare/api";
+import { fillEastStockInfo, fillStockHistoryByALPH } from "../utils";
 
 dotenv.config();
+
+let alphTaskStocks: StockModel[];
+
+async function fillHistoryByALPH() {
+  logger.info(`FillHistoryByALPH start...`);
+  if (!alphTaskStocks || alphTaskStocks.length <= 0) {
+    alphTaskStocks = (
+      await Storage.getAllStocks().then((res) => res.data)
+    ).filter((v) => {
+      !!v.ts_code;
+    });
+  }
+
+  if (alphTaskStocks.length > 0) {
+    const arr = alphTaskStocks.splice(0, 25);
+
+    const promises: Promise<boolean>[] = [];
+
+    arr.forEach((v) => {
+      promises.push(fillStockHistoryByALPH(v));
+    });
+
+    Promise.allSettled(promises)
+      .catch((e) => {
+        console.log(e);
+      })
+      .finally(() => {
+        logger.info(`FillHistoryByALPH end...`);
+      });
+  } else {
+    logger.info(`FillHistoryByALPH end...`);
+  }
+}
 
 function getAllStocks() {
   return new Promise<TushareStockModel[] | null>((resolve) => {
@@ -37,11 +70,6 @@ function fillTradeInfo(stocks: TushareStockModel[] | null) {
   return new Promise<StockModel[]>((resolve) => {
     if (stocks) {
       fillEastStockInfo(stocks).then((fillStocks) => {
-        Storage.saveStocks(fillStocks).then((res) => {
-          if (res.msg) {
-            console.log(res.msg);
-          }
-        });
         resolve(fillStocks);
       });
     } else {
@@ -53,11 +81,6 @@ function fillTradeInfo(stocks: TushareStockModel[] | null) {
         } else {
           const allStocks = res.data;
           fillEastStockInfo(allStocks).then((fillStocks) => {
-            Storage.saveStocks(fillStocks).then((res) => {
-              if (res.msg) {
-                console.log(res.msg);
-              }
-            });
             resolve(fillStocks);
           });
         }
@@ -73,20 +96,14 @@ export async function collectionTask() {
   const allBasicStocks = await getAllStocks();
 
   const fillResult = await fillTradeInfo(allBasicStocks);
+
+  // const smaResult = await fillStocksSMA(fillResult);
+
+  await Storage.saveStocksInOneDate(fillResult).then((res) => {
+    if (res.msg) {
+      console.log(res.msg);
+    }
+  });
+
+  // fillHistoryByALPH();
 }
-
-// (function main() {
-//   initPath();
-
-//   logger.setFilePath(path.resolve(logRootPath, "collection.log"));
-//   // 每天晚上 22 点
-//   const rule = new RecurrenceRule();
-//   rule.dayOfWeek = [1, 2, 3, 4, 5];
-//   rule.hour = 22;
-//   rule.minute = 35;
-//   scheduleJob(rule, collectionTask);
-
-//   process.on("SIGINT", function () {
-//     gracefulShutdown().then(() => process.exit(0));
-//   });
-// })();

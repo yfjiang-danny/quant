@@ -1,4 +1,6 @@
 import axios from "axios";
+import path from "path";
+import { logRootPath } from "../../common/paths";
 import { logger } from "../../logs";
 import {
   ALPHStockModel,
@@ -12,6 +14,8 @@ import {
 const url = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo`;
 
 export namespace ALPH_API {
+  const logPath = path.resolve(logRootPath, "alph.log");
+
   let isLimited = false;
   function request<T = any>(params: AlphApiParams) {
     const query: string[] = [];
@@ -52,13 +56,13 @@ export namespace ALPH_API {
     return request<DailyResponse | null>({
       function: "TIME_SERIES_DAILY",
       symbol: symbol,
-      outputsize: "compact",
+      outputsize: "full",
     }).then((res) => {
       if (res) {
         if (res.Information) {
           isLimited = true;
         }
-        logger.info({ symbol: symbol, data: res });
+        logger.info({ symbol: symbol, data: res }, logPath);
         const data = res["Time Series (Daily)"];
         if (data) {
           const dates = Object.keys(data);

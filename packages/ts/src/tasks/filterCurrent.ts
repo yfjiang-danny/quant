@@ -6,10 +6,11 @@ import path from "path";
 import { stocksToSheetData } from "../common";
 import { logger } from "../logs";
 import { StockModel } from "../models/type";
-import { fitTurnover, isCross } from "../strategy";
+import { fillEastStockInfo } from "../service/utils";
+import { fitTurnover, isCross } from "../strategies/util";
 import { Excel } from "../utils/excel";
 import { dbPath, rootPath } from "./common";
-import { fillAllStockSMA, fillEastStockInfo } from "./utils";
+import { fillAllStockSMA } from "./utils";
 
 dotenv.config();
 

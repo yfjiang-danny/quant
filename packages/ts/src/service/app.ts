@@ -76,14 +76,18 @@ app.listen(port, () => {
 let job: Job;
 
 function runCollectionJob() {
+  console.log(`runCollectionJob ...`);
+
   initPath();
 
   logger.setFilePath(path.resolve(logRootPath, "collection.log"));
   // 每天晚上 22 点
   const rule = new RecurrenceRule();
   rule.dayOfWeek = [1, 2, 3, 4, 5];
-  rule.hour = 22;
+  rule.hour = 23;
+  rule.minute = 12;
   job = scheduleJob(rule, collectionTask);
+  // collectionTask();
 
   process.on("SIGINT", function () {
     gracefulShutdown().then(() => process.exit(0));
