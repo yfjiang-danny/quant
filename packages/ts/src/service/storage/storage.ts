@@ -5,7 +5,7 @@ import path from "path";
 import { allStockRootPath, historyRootPath } from "../../common/paths";
 import { StockModel } from "../../models/type";
 import { findExistDate } from "../../utils/date";
-import { createDir, readJsonFile } from "../../utils/fs";
+import { createDir, iWriteFile, readJsonFile } from "../../utils/fs";
 import { Response } from "./type";
 
 export namespace Storage {
@@ -152,7 +152,7 @@ export namespace Storage {
           }
         }
 
-        promises.push(saveStocksInOneDate(temp));
+        promises.push(saveStocksInOneDate(temp, override));
 
         currentDate = newStocks[i].date as string;
       }
@@ -199,7 +199,7 @@ export namespace Storage {
           const promises: Promise<void>[] = [];
           newStocks.forEach((v) => {
             const filePath = path.resolve(fileDir, `${v.symbol}.json`);
-            promises.push(writeFile(filePath, JSON.stringify(v)));
+            promises.push(iWriteFile(filePath, JSON.stringify(v), override));
           });
 
           Promise.allSettled(promises).then(

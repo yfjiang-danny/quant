@@ -1,4 +1,4 @@
-import { access, mkdir, readFile } from "fs/promises";
+import { access, mkdir, readFile, writeFile } from "fs/promises";
 
 export function createDir(dir: string) {
   return new Promise<undefined>((resolve, reject) => {
@@ -41,6 +41,27 @@ export function readJsonFile<T>(filePath: string) {
       (e) => {
         console.log(e);
         reject(`${filePath} do not exist`);
+      }
+    );
+  });
+}
+
+export function iWriteFile(
+  filePath: string,
+  data: string | Buffer,
+  override: boolean
+) {
+  if (override) {
+    return writeFile(filePath, data);
+  }
+  return new Promise<void>((resolve, reject) => {
+    access(filePath).then(
+      () => {
+        console.log(`${filePath} is exist, do not override`);
+        resolve();
+      },
+      () => {
+        writeFile(filePath, data).then(resolve, reject);
       }
     );
   });
