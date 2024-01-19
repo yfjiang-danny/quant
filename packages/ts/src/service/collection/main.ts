@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import { logger } from "../../logs";
 import { TushareStockModel } from "../../models/tushare/type";
 import { StockModel } from "../../models/type";
+import { fillStocksSMA } from "../factors/sma";
 import { Storage } from "../storage/storage";
 import { TUSHARE_API } from "../tushare/api";
 import { fillEastStockInfo, fillStockHistoryByALPH } from "../utils";
@@ -66,44 +67,56 @@ function getAllStocks() {
   });
 }
 
-function fillTradeInfo(stocks: TushareStockModel[] | null) {
+function fillTradeInfo(stocks: TushareStockModel[]) {
   return new Promise<StockModel[]>((resolve) => {
-    if (stocks) {
-      fillEastStockInfo(stocks).then((fillStocks) => {
-        resolve(fillStocks);
-      });
-    } else {
-      console.log(`BasicStocks is null, call Storage.getAllBasicStocks`);
-
-      Storage.getAllBasicStocks().then((res) => {
-        if (res.msg) {
-          console.log(res.msg);
-        } else {
-          const allStocks = res.data;
-          fillEastStockInfo(allStocks).then((fillStocks) => {
-            resolve(fillStocks);
-          });
-        }
-      });
-    }
+    fillEastStockInfo(stocks).then((fillStocks) => {
+      resolve(fillStocks);
+    });
   });
 }
 
 export async function collectionTask() {
   logger.info(`Start collection task`);
 
-  // 使用示例
-  const allBasicStocks = await getAllStocks();
+  //
+  let allBasicStocks = await TUSHARE_API.getAllStock();
+
+  if (!allBasicStocks || allBasicStocks.length <= 0) {
+    console.log(`TUSHARE_API is null, call Storage.getAllBasicStocks`);
+    allBasicStocks = await Storage.getAllBasicStocks().then((res) => {
+      if (res.msg) {
+        console.log(res.msg);
+      }
+      return res.data;
+    });
+  }
+
+  if (!allBasicStocks || allBasicStocks.length <= 0) {
+    console.log(`allBasicStocks is empty, collection task stop.`);
+
+    return;
+  }
 
   const fillResult = await fillTradeInfo(allBasicStocks);
 
-  // const smaResult = await fillStocksSMA(fillResult);
+  if (!fillResult || fillResult.length <= 0) {
+    console.log(`fillTradeInfo is empty. collection task stop.`);
+    return;
+  }
 
-  await Storage.saveStocksInOneDate(fillResult).then((res) => {
+  const smaResult = await fillStocksSMA(fillResult);
+
+  if (!smaResult || smaResult.length <= 0) {
+    console.log(`fillStocksSMA is empty`);
+  }
+
+  await Storage.saveStocksInOneDate(smaResult || fillResult).then((res) => {
     if (res.msg) {
       console.log(res.msg);
     }
   });
 
-  // fillHistoryByALPH();
+  await fillHistoryByALPH();
+
+  console.log(`Collection Task complete`);
 }

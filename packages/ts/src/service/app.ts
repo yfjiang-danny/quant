@@ -84,8 +84,8 @@ function runCollectionJob() {
   // 每天晚上 22 点
   const rule = new RecurrenceRule();
   rule.dayOfWeek = [1, 2, 3, 4, 5];
-  rule.hour = 23;
-  rule.minute = 12;
+  rule.hour = 22;
+  // rule.minute = 12;
   job = scheduleJob(rule, collectionTask);
   // collectionTask();
 
