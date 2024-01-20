@@ -1,7 +1,34 @@
+import moment from "moment";
 import { logger } from "../../../logs";
 import { StockWithSMA } from "../../../models/sma/type";
 import { StockModel } from "../../../models/type";
 import { Storage } from "../../storage/storage";
+import path from "path";
+import { logRootPath } from "../../../common/paths";
+
+const logPath = path.resolve(logRootPath, "sma.log");
+
+function calculateIntervalAverage(histories: StockModel[], interval: number) {
+  if (histories.length < interval) {
+    return null;
+  }
+  return calculateAverage(histories.slice(0, interval));
+}
+
+function calculateAverage(histories: StockModel[]) {
+  let i = 0,
+    count = 0,
+    sum = 0;
+  while (i < histories.length) {
+    const stock = histories[i];
+    if (stock && stock.close) {
+      sum += stock.close;
+      count++;
+    }
+    i++;
+  }
+  return sum / count;
+}
 
 /**
  * 计算移动平均数
@@ -64,43 +91,72 @@ export async function fillStockSMA(stock: StockModel) {
 
   const symbol = stock.symbol;
 
-  const histories = await Storage.getStockHistories(symbol).then(
-    (res) => res.data
+  let histories = await Storage.getStockHistories(symbol).then((res) =>
+    res.data
+      .filter((v) => v && v.date)
+      .sort((a, b) => {
+        return Number(b.date) - Number(a.date);
+      })
   );
 
   if (!histories) {
     return stock;
   }
 
-  if (!stock.sma5) {
-    stock.sma5 = calculateMovingAverage(histories, 5).find(
-      (v) => v.date === stock.date
-    )?.sma5;
+  const findIndex = histories.findIndex((v) => v.date === stock.date);
+
+  logger.info({ stock, histories }, logPath);
+
+  if (findIndex === -1) {
+    return stock;
   }
+
+  histories = histories.slice(findIndex);
+
+  logger.info(histories, logPath);
+
+  if (histories.length < 5) {
+    return stock;
+  }
+
+  if (!stock.sma5) {
+    stock.sma5 = calculateIntervalAverage(histories, 5) ?? undefined;
+  }
+
+  if (histories.length < 10) {
+    return stock;
+  }
+
   if (!stock.sma10) {
-    stock.sma10 = calculateMovingAverage(histories, 10).find(
-      (v) => v.date === stock.date
-    )?.sma10;
+    stock.sma10 = calculateIntervalAverage(histories, 10) ?? undefined;
+  }
+
+  if (histories.length < 20) {
+    return stock;
   }
   if (!stock.sma20) {
-    stock.sma20 = calculateMovingAverage(histories, 20).find(
-      (v) => v.date === stock.date
-    )?.sma20;
+    stock.sma20 = calculateIntervalAverage(histories, 20) ?? undefined;
+  }
+
+  if (histories.length < 30) {
+    return stock;
   }
   if (!stock.sma30) {
-    stock.sma30 = calculateMovingAverage(histories, 30).find(
-      (v) => v.date === stock.date
-    )?.sma30;
+    stock.sma30 = calculateIntervalAverage(histories, 30) ?? undefined;
+  }
+
+  if (histories.length < 60) {
+    return stock;
   }
   if (!stock.sma60) {
-    stock.sma60 = calculateMovingAverage(histories, 60).find(
-      (v) => v.date === stock.date
-    )?.sma60;
+    stock.sma60 = calculateIntervalAverage(histories, 60) ?? undefined;
+  }
+
+  if (histories.length < 120) {
+    return stock;
   }
   if (!stock.sma120) {
-    stock.sma120 = calculateMovingAverage(histories, 120).find(
-      (v) => v.date === stock.date
-    )?.sma120;
+    stock.sma120 = calculateIntervalAverage(histories, 120) ?? undefined;
   }
 
   return stock;
@@ -123,7 +179,7 @@ export function fillStocksSMA(stocks: StockModel[]) {
     const res: StockModel[] = [];
     responses.forEach((v, i) => {
       if (v.status === "fulfilled" && v.value) {
-        res.push({ ...stocks[i], ...v } as StockModel);
+        res.push({ ...stocks[i], ...v.value } as StockModel);
       } else {
         res.push({ ...stocks[i] } as StockModel);
       }

@@ -5,8 +5,14 @@ import path from "path";
 import { allStockRootPath, historyRootPath } from "../../common/paths";
 import { StockModel } from "../../models/type";
 import { findExistDate } from "../../utils/date";
-import { createDir, iWriteFile, readJsonFile } from "../../utils/fs";
+import {
+  createDir,
+  iWriteFile,
+  readJsonFile,
+  readJsonFileInBatch,
+} from "../../utils/fs";
 import { Response } from "./type";
+import pLimit from "p-limit";
 
 export namespace Storage {
   export function getAllBasicStocks(
@@ -22,7 +28,7 @@ export namespace Storage {
         path.resolve(allStockRootPath, `${date}.json`)
       ).then(
         (v) => {
-          resolve({ data: v });
+          resolve({ data: v || [] });
         },
         (e) => {
           resolve({ data: [], msg: e });
@@ -73,30 +79,11 @@ export namespace Storage {
         () => {
           readdir(fileDir).then(
             (files: string[]) => {
-              const promises: Promise<StockModel | null>[] = [];
-
-              files.forEach((file) =>
-                promises.push(readJsonFile(path.resolve(fileDir, file)))
-              );
-
-              Promise.allSettled(promises).then(
-                (res) => {
-                  const stocks = res.reduce((res, cur) => {
-                    if (cur.status === "fulfilled") {
-                      cur.value && res.push(cur.value);
-                    }
-                    return res;
-                  }, [] as StockModel[]);
-
-                  resolve({
-                    data: stocks,
-                  });
-                },
-                (e) => {
-                  console.log(e);
-                  resolve({ data: [], msg: "File read error!" });
-                }
-              );
+              readJsonFileInBatch<StockModel>(
+                files.map((file) => path.resolve(fileDir, file))
+              ).then((res) => {
+                resolve({ data: res.filter((v) => !!v) as StockModel[] });
+              });
             },
             (e) => {
               console.log(e);
@@ -113,7 +100,7 @@ export namespace Storage {
   }
 
   export function saveStocks(stocks: StockModel[], override = false) {
-    return new Promise<Response<boolean>>((resolve, reject) => {
+    return new Promise<Response<boolean>>((resolve) => {
       const invalidStocks: StockModel[] = [];
 
       const newStocks = stocks?.filter((v) => {
@@ -133,7 +120,7 @@ export namespace Storage {
         return;
       }
 
-      const promises: Promise<Response<boolean>>[] = [];
+      const arr: StockModel[][] = [];
 
       let i = 0,
         currentDate = newStocks[0]?.date as string;
@@ -152,21 +139,31 @@ export namespace Storage {
           }
         }
 
-        promises.push(saveStocksInOneDate(temp, override));
+        arr.push(temp);
 
-        currentDate = newStocks[i].date as string;
+        currentDate = newStocks[i]?.date as string;
       }
 
-      Promise.allSettled(promises).then(
-        () => {
-          resolve({ data: true });
-        },
-        (e) => {
-          console.log(e);
+      arr.forEach(async (s) => {
+        await saveStocksInOneDate(s, override);
+      });
 
-          resolve({ data: false, msg: "Write file error" });
-        }
-      );
+      resolve({ data: true });
+
+      // const limit = pLimit(2);
+      // const promises = arr.map((v) =>
+      //   limit(() => saveStocksInOneDate(v, override))
+      // );
+      // Promise.allSettled(promises).then(
+      //   () => {
+      //     resolve({ data: true });
+      //   },
+      //   (e) => {
+      //     console.log(e);
+
+      //     resolve({ data: false, msg: "Write file error" });
+      //   }
+      // );
     });
   }
 
@@ -175,7 +172,7 @@ export namespace Storage {
       const invalidStocks: StockModel[] = [];
 
       const newStocks = stocks?.filter((v) => {
-        const valid = v.date && v.symbol;
+        const valid = v && v.date && v.symbol;
         if (!valid) {
           invalidStocks.push(v);
         }
@@ -196,11 +193,17 @@ export namespace Storage {
 
       createDir(fileDir).then(
         () => {
-          const promises: Promise<void>[] = [];
-          newStocks.forEach((v) => {
-            const filePath = path.resolve(fileDir, `${v.symbol}.json`);
-            promises.push(iWriteFile(filePath, JSON.stringify(v), override));
-          });
+          const limit = pLimit(10);
+
+          const promises = newStocks.map((v) =>
+            limit(() =>
+              iWriteFile(
+                path.resolve(fileDir, `${v.symbol}.json`),
+                JSON.stringify(v),
+                override
+              )
+            )
+          );
 
           Promise.allSettled(promises).then(
             (values) => {
@@ -291,42 +294,25 @@ export namespace Storage {
     symbol: string
   ): Promise<Response<StockModel[]>> {
     return new Promise<Response<StockModel[]>>((resolve) => {
-      readdir(historyRootPath).then(
-        (dateStrings: string[]) => {
-          const promises: Promise<StockModel | null>[] = [];
-
-          dateStrings.forEach((dateStr) =>
-            readJsonFile(
-              path.resolve(historyRootPath, dateStr, `${symbol}.json`)
-            )
-          );
-
-          Promise.allSettled(promises).then(
-            (res) => {
-              const stocks = res.reduce((res, cur) => {
-                if (cur.status === "fulfilled" && cur.value) {
-                  if (!res.find((v) => v.date == cur.value?.date)) {
-                    res.push(cur.value);
-                  }
-                }
-                return res;
-              }, [] as StockModel[]);
-
-              resolve({
-                data: stocks,
-              });
-            },
-            (e) => {
-              console.log(e);
-              resolve({ data: [], msg: "File read error!" });
-            }
-          );
-        },
-        (e) => {
-          console.log(e);
+      readdir(historyRootPath)
+        .then(
+          (dateStrings: string[]) => {
+            readJsonFileInBatch<StockModel>(
+              dateStrings.map((dateStr) =>
+                path.resolve(historyRootPath, dateStr, `${symbol}.json`)
+              )
+            ).then((res) => {
+              resolve({ data: res.filter((v) => !!v) as StockModel[] });
+            });
+          },
+          (e) => {
+            console.log(e);
+            resolve({ data: [] });
+          }
+        )
+        .catch(() => {
           resolve({ data: [] });
-        }
-      );
+        });
     });
   }
 }

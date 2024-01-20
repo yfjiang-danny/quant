@@ -1,4 +1,5 @@
 import { logger } from "../../logs";
+import { ALPHStockModel } from "../../models/alph/type";
 import { EastMoneyStockModel } from "../../models/eastmoney/type";
 import { TushareStockModel } from "../../models/tushare/type";
 import { StockModel } from "../../models/type";
@@ -66,7 +67,7 @@ export function fillStockHistoryByALPH(stock: StockModel) {
   return new Promise<boolean>((resolve) => {
     if (stock.ts_code) {
       ALPH_API.getStockDaily(stock.ts_code).then(
-        (histories) => {
+        (histories: ALPHStockModel[] | null) => {
           if (histories) {
             Storage.saveStocks(histories.map((v) => ({ v, ...stock })))
               .then((res) => {

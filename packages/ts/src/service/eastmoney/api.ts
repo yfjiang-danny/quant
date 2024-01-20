@@ -7,6 +7,7 @@ import {
   MarketType,
   QuoteSnapshotModel,
 } from "../../models/eastmoney/type";
+import { MockEastMoneyData } from "./mock";
 
 // https://emhsmarketwg.eastmoneysec.com/api/SHSZQuoteSnapshot
 
@@ -15,6 +16,12 @@ export namespace EastMoney_API {
   export function getQuoteSnapshot(symbol: string, market: MarketType) {
     const callbackKey = "jQueryH";
     const timestamp = new Date().getTime();
+    if (process.env.TEST) {
+      logger.info(`process.env.TEST is ${process.env.TEST}, use mock data.`);
+      return new Promise<QuoteSnapshotModel | null>((resolve) => {
+        resolve(MockEastMoneyData.find((v) => v.code === symbol) || null);
+      });
+    }
     return axios
       .get(
         `${

@@ -42,39 +42,6 @@ async function fillHistoryByALPH() {
   }
 }
 
-function getAllStocks() {
-  return new Promise<TushareStockModel[] | null>((resolve) => {
-    TUSHARE_API.getAllStock().then((res) => {
-      if (res) {
-        Storage.saveAllBasicStocks(res).then(
-          (success) => {
-            if (success) {
-              resolve(res);
-            } else {
-              resolve(null);
-            }
-          },
-          (e) => {
-            console.log(e);
-
-            resolve(null);
-          }
-        );
-      } else {
-        resolve(null);
-      }
-    });
-  });
-}
-
-function fillTradeInfo(stocks: TushareStockModel[]) {
-  return new Promise<StockModel[]>((resolve) => {
-    fillEastStockInfo(stocks).then((fillStocks) => {
-      resolve(fillStocks);
-    });
-  });
-}
-
 export async function collectionTask() {
   logger.info(`Start collection task`);
 
@@ -97,7 +64,7 @@ export async function collectionTask() {
     return;
   }
 
-  const fillResult = await fillTradeInfo(allBasicStocks);
+  const fillResult = await fillEastStockInfo(allBasicStocks);
 
   if (!fillResult || fillResult.length <= 0) {
     console.log(`fillTradeInfo is empty. collection task stop.`);
@@ -110,7 +77,7 @@ export async function collectionTask() {
     console.log(`fillStocksSMA is empty`);
   }
 
-  await Storage.saveStocksInOneDate(smaResult || fillResult).then((res) => {
+  await Storage.saveStocks(smaResult || fillResult, true).then((res) => {
     if (res.msg) {
       console.log(res.msg);
     }
