@@ -30,7 +30,7 @@ export namespace ALPH_API {
           "&"
         )}`,
         {
-          headers: { "User-Agent": "request", "X-Real-IP": "192.168.8.33" },
+          headers: { "User-Agent": "request" },
         }
       )
       .then((res) => {
@@ -46,6 +46,11 @@ export namespace ALPH_API {
       });
   }
 
+  /**
+   * 获取日线
+   * @param symbol
+   * @returns
+   */
   export function getStockDaily(symbol: string) {
     if (isLimited) {
       return new Promise<null>((resolve) => {
@@ -58,11 +63,11 @@ export namespace ALPH_API {
       symbol: symbol,
       outputsize: "full",
     }).then((res) => {
+      logger.info({ symbol: symbol, data: res }, logPath);
       if (res) {
         if (res.Information) {
           isLimited = true;
         }
-        logger.info({ symbol: symbol, data: res }, logPath);
         const data = res["Time Series (Daily)"];
         if (data) {
           const dates = Object.keys(data);
