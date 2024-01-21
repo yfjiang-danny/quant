@@ -9,5 +9,5 @@ dotenv.config();
 (function main() {
   logger.setFilePath(path.resolve(rootPath, "logs", "filter_stocks.log"));
 
-  Strategies.filterCross();
+  Strategies.filterStocks();
 })();

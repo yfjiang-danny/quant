@@ -10,3 +10,5 @@ venv
 packages/ts/db
 packages/ts/dist
 packages/ts/filter
+
+*.gz

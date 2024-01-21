@@ -9,4 +9,7 @@ export const StockColumns: Record<keyof StockModel, string> = {
   ...EastMoneyColumns,
   ...SMAColumns,
   ...MaxRiseColumns,
+  ...{
+    maxTurnoverRiseDay: "换手率连续增长天数",
+  },
 };

@@ -20,33 +20,33 @@ const port = process.env.PORT || 3800;
 const stockService = new StockService();
 
 app.get("/stock/getAllStocks", (req: Request, res: Response) => {
-  stockService.getAllStocks(req.params.date).then((v) => res.send(v));
+  stockService.getAllStocks(req.query.date as string).then((v) => res.send(v));
 });
 
 app.get("/stock/getStockHistories", (req: Request, res: Response) => {
-  if (!req.params.symbol) {
+  if (typeof req.query.symbol !== "string") {
     res.send({ data: null, msg: "Empty symbol" });
     return;
   }
-  stockService.getStockHistories(req.params.symbol).then((v) => res.send(v));
+  stockService.getStockHistories(req.query.symbol).then((v) => res.send(v));
 });
 
 app.get("/stock/getStockDaily", (req: Request, res: Response) => {
-  if (!req.params.symbol) {
+  if (typeof req.query.symbol !== "string") {
     res.send({ data: null, msg: "Empty symbol" });
     return;
   }
   stockService
-    .getStockDaily(req.params.symbol, req.params.date)
+    .getStockDaily(req.query.symbol, req.query.date as string)
     .then((v) => res.send(v));
 });
 
 app.get("/stock/getStockTradeInfo", (req: Request, res: Response) => {
-  if (!req.params.symbol) {
+  if (typeof req.query.symbol !== "string") {
     res.send({ data: null, msg: "Empty symbol" });
     return;
   }
-  stockService.getStockTradeInfo(req.params.symbol).then((v) => res.send(v));
+  stockService.getStockTradeInfo(req.query.symbol).then((v) => res.send(v));
 });
 
 app.post("/collection/start", (req: Request, res: Response) => {

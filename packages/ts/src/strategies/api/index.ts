@@ -1,14 +1,20 @@
 import axios from "axios";
+import path from "path";
+import { logRootPath } from "../../common/paths";
+import { logger } from "../../logs";
 
 export namespace RESTFUL_API {
+  const logPath = path.resolve(logRootPath, "resful_api.log");
   function get(path: string) {
+    const url = `${process.env.SERVICE_API}${path}`;
     return axios
-      .get(`${process.env.SERVICE_API}${path}`)
+      .get(url)
       .then((res) => {
+        logger.info({ url: url, res: res.data }, logPath);
         return res.data;
       })
       .catch((e) => {
-        console.log(e);
+        logger.info(e, logPath);
         return { data: null };
       });
   }

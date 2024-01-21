@@ -7,17 +7,6 @@ import { Storage } from "../../storage/storage";
  * @param day
  */
 export function calculateMaxRiseDay(histories: StockModel[]) {
-  histories = histories
-    .filter((v) => {
-      if (!v.date) {
-        console.log(`Empty date: `, JSON.stringify(v));
-
-        return false;
-      }
-      return true;
-    })
-    .sort((a, b) => Number(a.date) - Number(b.date));
-
   if (histories.length <= 1) {
     return null;
   }

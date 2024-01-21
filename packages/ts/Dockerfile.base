@@ -4,6 +4,7 @@ WORKDIR /opt/quant
 
 COPY package.json /opt/quant/package.json
 COPY .npmrc /opt/quant/.npmrc
+COPY package-lock.json /opt/quant/package-lock.json
 
 RUN npm install
 

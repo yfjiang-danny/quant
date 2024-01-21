@@ -53,6 +53,7 @@ export namespace ALPH_API {
    */
   export function getStockDaily(symbol: string) {
     if (isLimited) {
+      logger.info(`isLimited ${isLimited}, do not send a request.`, logPath);
       return new Promise<null>((resolve) => {
         resolve(null);
       });
