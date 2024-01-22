@@ -32,7 +32,8 @@ export class Mailer163 {
     subject: string;
     text?: string;
     html?: string;
-  }) {
+    attachments?: { fileName: string; filePath: string }[];
+  }): Promise<unknown> {
     const _this = this;
     return _this.transporter?.sendMail({
       from: from, // sender address

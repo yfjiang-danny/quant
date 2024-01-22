@@ -1,31 +1,24 @@
-import axios from "axios";
-import * as dotenv from "dotenv";
 import moment from "moment";
-import { WorkSheet } from "node-xlsx";
 import path from "path";
-import { stocksToSheetData } from "../common";
+import { logRootPath } from "../common/paths";
 import { logger } from "../logs";
+import { Mailer163 } from "../mail";
 import { StockModel } from "../models/type";
+import { Storage } from "../service/storage/storage";
 import { fillEastStockInfo } from "../service/utils";
-import { fitTurnover, isCross } from "../strategies/util";
+import { Strategies } from "../strategies";
 import { Excel } from "../utils/excel";
-import { dbPath, rootPath } from "./common";
-import { fillAllStockSMA } from "./utils";
+import { dbPath } from "./common";
 
-dotenv.config();
+const logPath = path.resolve(logRootPath, "filter_current.log");
 
-async function filter() {
-  const allStocks: StockModel[] = await axios
-    .get(`${process.env.SERVICE_API}/stock/getAllStocks`)
-    .then((res) => {
-      return res.data;
-    })
-    .then((res) => {
-      return res.data;
-    });
+export async function filterCurrent(cb?: (msg?: string) => void) {
+  const allStocks: StockModel[] = await Storage.getAllStocks().then((res) => {
+    return res.data;
+  });
 
   if (allStocks.length <= 0) {
-    console.log(`Stocks is empty`);
+    logger.info(`Storage.getAllStocks is empty`, logPath);
 
     return;
   }
@@ -45,57 +38,47 @@ async function filter() {
     .sort((a, b) => (a.capital as number) - (b.capital as number));
 
   // 获取实时行情
-  const newStocks = await fillEastStockInfo(allStocks);
+  const newStocks = await fillEastStockInfo(minCapitalStocks);
 
-  const crossStocks = newStocks.filter((v) => {
-    return isCross(v) && fitTurnover(v, 3, 60);
-  });
+  const sheets = await Strategies.filterCross(newStocks);
 
-  if (crossStocks.length <= 0) {
-    console.log(`crossStocks is empty`);
+  if (!sheets) {
+    cb?.(`filterCurrent sheets is empty`);
     return;
   }
 
-  const sheets: WorkSheet[] = [
-    { name: "cross", data: stocksToSheetData(crossStocks), options: {} },
-  ];
-
-  const limitedStocks = crossStocks.slice(0, 25);
-
-  const fillSMAStocks = await fillAllStockSMA(limitedStocks);
-
-  sheets.push({
-    name: "sma",
-    data: stocksToSheetData(fillSMAStocks),
-    options: {},
-  });
-
-  const filterStocks = fillSMAStocks.filter(
-    (v) => v.sma5 && v.sma10 && v.sma20 && v.sma5 > v.sma10 && v.sma10 > v.sma20
-  );
-
-  if (filterStocks.length <= 0) {
-    console.log(`filterStocks is empty`);
-  }
-
-  sheets.push({
-    name: "filter",
-    data: stocksToSheetData(filterStocks),
-    options: {},
-  });
-
   const filePath = path.resolve(
     dbPath,
-    `filter_current_${moment().format("YYYYMMDD-hhmmss")}.xlsx`
+    `filter_current_${moment().format("YYYYMMDD")}.xlsx`
   );
 
-  Excel.write(sheets, filePath).then(() => console.log(filePath));
+  Excel.write(sheets, filePath)
+    .then(() => {
+      try {
+        const mailer = new Mailer163();
+
+        mailer
+          .send({
+            to: "michael593@163.com",
+            subject: moment().format("YYYY-MM-DD"),
+            attachments: [
+              {
+                fileName: `filter-${moment().format("YYYYMMDD")}.xlsx`,
+                filePath: filePath,
+              },
+            ],
+          })
+          .then((res) => {
+            logger.info(res, logPath);
+          })
+          .catch((e) => {
+            logger.info(e, logPath);
+          });
+      } catch (error) {
+        logger.info(error, logPath);
+      }
+    })
+    .finally(() => {
+      cb?.();
+    });
 }
-
-(function main() {
-  logger.setFilePath(
-    path.resolve(rootPath, "logs", "filter_current_stocks.log")
-  );
-
-  filter();
-})();

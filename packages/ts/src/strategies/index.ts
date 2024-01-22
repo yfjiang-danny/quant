@@ -1,29 +1,29 @@
 import moment from "moment";
 import { WorkSheet } from "node-xlsx";
 import path from "path";
-import { logger } from "../logs";
 import { stocksToSheetData } from "../common";
-import { dbRootPath } from "../common/paths";
+import { dbRootPath, logRootPath } from "../common/paths";
+import { logger } from "../logs";
 import { StockModel } from "../models/type";
 import { calculateMaxRiseDay, fillMaxRiseDay } from "../service/factors/rise";
+import { Storage } from "../service/storage/storage";
 import { Excel } from "../utils/excel";
-import { RESTFUL_API } from "./api";
+import { deepCopyWithJson } from "../utils/util";
 import { fitTurnover, isCross } from "./util";
 
 export namespace Strategies {
+  const logPath = path.resolve(logRootPath, "strategy.log");
   /**
    * 获取小市值的票, 按照从小到大排序
    * @returns
    */
   async function getMinCapitalStocks(minCapital = 100) {
-    const allStocks: StockModel[] = await RESTFUL_API.getAllStocks().then(
-      (res) => {
-        return res.data;
-      }
-    );
+    const allStocks: StockModel[] = await Storage.getAllStocks().then((res) => {
+      return res.data;
+    });
 
     if (!allStocks || allStocks.length <= 0) {
-      console.log(`Stocks is empty`);
+      logger.info(`Stocks is empty`, logPath);
 
       return;
     }
@@ -49,11 +49,13 @@ export namespace Strategies {
    * 十字星, 五日线上方且离五日线振奋不超过 10 个点, 十日线在20日线上方, 换手率在 3~60 之间
    * @returns
    */
-  export async function filterCross() {
-    const minCapitalStocks = await getMinCapitalStocks();
+  export async function filterCross(minCapitalStocks?: StockModel[]) {
+    if (!minCapitalStocks) {
+      minCapitalStocks = await getMinCapitalStocks();
+    }
 
     if (!minCapitalStocks || minCapitalStocks.length <= 0) {
-      console.log(`MinCapitalStocks Stocks is empty`);
+      logger.info(`MinCapitalStocks Stocks is empty`, logPath);
 
       return;
     }
@@ -63,7 +65,7 @@ export namespace Strategies {
     });
 
     if (crossStocks.length <= 0) {
-      console.log(`crossStocks is empty`);
+      logger.info(`crossStocks is empty`, logPath);
       return;
     }
 
@@ -88,7 +90,7 @@ export namespace Strategies {
     });
 
     if (filterStocks.length <= 0) {
-      console.log(`filterStocks is empty`);
+      logger.info(`filterStocks is empty`, logPath);
     }
 
     sheets.push({
@@ -113,12 +115,12 @@ export namespace Strategies {
     ...fns: ((stock: StockModel, histories: StockModel[]) => StockModel)[]
   ) {
     if (!stock.symbol) {
-      console.log(`[stock.symbol] is ${stock.symbol}`);
+      logger.info(`[stock.symbol] is ${stock.symbol}`, logPath);
 
       return stock;
     }
     if (fns.length) {
-      const histories = await RESTFUL_API.getStockHistories(stock.symbol).then(
+      const histories = await Storage.getStockHistories(stock.symbol).then(
         (res) => res.data as StockModel[]
       );
       if (histories && histories.length > 0) {
@@ -128,7 +130,7 @@ export namespace Strategies {
         });
         return res;
       }
-      console.log("RESTFUL_API.getStockHistories is empty");
+      logger.info("Storage.getStockHistories is empty", logPath);
     }
     return stock;
   }
@@ -159,12 +161,13 @@ export namespace Strategies {
    * 小市值,连涨 3 天,换手率环比增大,连涨 3 天,位于五日线上方
    * @param params
    */
-  export async function filterPreRise() {
-    //
-    const minCapitalStocks = await getMinCapitalStocks(10);
+  export async function filterPreRise(minCapitalStocks?: StockModel[]) {
+    if (!minCapitalStocks) {
+      minCapitalStocks = await getMinCapitalStocks();
+    }
 
     if (!minCapitalStocks) {
-      console.log(`Empty minCapital socks`);
+      logger.info(`Empty minCapital socks`, logPath);
       return;
     }
 
@@ -213,20 +216,31 @@ export namespace Strategies {
     return sheets;
   }
 
-  export async function filterStocks() {
+  export async function filterStocks(cb?: (filePath?: string) => void) {
+    const minCapitalStocks = await getMinCapitalStocks();
+
+    if (!minCapitalStocks) {
+      logger.info(`minCapitalStocks is empty`, logPath);
+      cb?.();
+      return;
+    }
+
     const sheets: WorkSheet[] = [];
-    const crossSheets = await filterCross();
+    const crossSheets = await filterCross(deepCopyWithJson(minCapitalStocks));
     if (crossSheets) {
       sheets.push(...crossSheets);
     }
 
-    const preRiseSheet = await filterPreRise();
+    const preRiseSheet = await filterPreRise(
+      deepCopyWithJson(minCapitalStocks)
+    );
     if (preRiseSheet) {
       sheets.push(...preRiseSheet);
     }
 
     if (sheets.length <= 0) {
-      console.log(`sheets is empty`);
+      logger.info(`sheets is empty`, logPath);
+      cb?.();
       return;
     }
     const filePath = path.resolve(
@@ -234,7 +248,8 @@ export namespace Strategies {
       `filter-${moment().format("YYYYMMDD")}.xlsx`
     );
     return Excel.write(sheets, filePath).finally(() => {
-      console.log(`Completely, ${filePath}`);
+      logger.info(`Completely, ${filePath}`, logPath);
+      cb?.(filePath);
     });
   }
 }
