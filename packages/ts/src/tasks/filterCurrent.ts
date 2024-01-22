@@ -1,6 +1,6 @@
 import moment from "moment";
 import path from "path";
-import { logRootPath } from "../common/paths";
+import { dbRootPath, logRootPath } from "../common/paths";
 import { logger } from "../logs";
 import { Mailer163 } from "../mail";
 import { StockModel } from "../models/type";
@@ -8,7 +8,6 @@ import { Storage } from "../service/storage/storage";
 import { fillEastStockInfo } from "../service/utils";
 import { Strategies } from "../strategies";
 import { Excel } from "../utils/excel";
-import { dbPath } from "./common";
 
 const logPath = path.resolve(logRootPath, "filter_current.log");
 
@@ -48,7 +47,7 @@ export async function filterCurrent(cb?: (msg?: string) => void) {
   }
 
   const filePath = path.resolve(
-    dbPath,
+    dbRootPath,
     `filter_current_${moment().format("YYYYMMDD")}.xlsx`
   );
 
