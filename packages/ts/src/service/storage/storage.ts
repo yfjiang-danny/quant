@@ -19,14 +19,14 @@ export namespace Storage {
     date?: string
   ): Promise<Response<StockModel[]>> {
     return new Promise<Response<StockModel[]>>((resolve) => {
-      const dateStr = findExistDate(allStockRootPath, date);
+      const dateStr = findExistDate(allStockRootPath, date, ".json");
       if (!dateStr) {
         resolve({ data: [], msg: "Can not find data" });
         return;
       }
-      readJsonFile<StockModel[]>(
-        path.resolve(allStockRootPath, `${date}.json`)
-      ).then(
+      const filePath = path.resolve(allStockRootPath, `${dateStr}.json`);
+
+      readJsonFile<StockModel[]>(filePath).then(
         (v) => {
           resolve({ data: v || [] });
         },

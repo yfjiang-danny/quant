@@ -8,7 +8,7 @@ import path from "path";
  * @param d
  * @returns
  */
-export function findExistDate(rootPath: string, d?: string) {
+export function findExistDate(rootPath: string, d?: string, ext?: string) {
   const date = moment(d);
   let dateStr = date.format("YYYYMMDD");
   let success = false;
@@ -16,7 +16,12 @@ export function findExistDate(rootPath: string, d?: string) {
 
   while (!success && max > 0) {
     try {
-      accessSync(path.resolve(rootPath, dateStr));
+      let filePath = path.resolve(rootPath, dateStr);
+      if (ext) {
+        filePath += ext;
+      }
+
+      accessSync(filePath);
       success = true;
       break;
     } catch (error) {
