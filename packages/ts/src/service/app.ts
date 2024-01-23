@@ -173,7 +173,7 @@ let filterStocksJob: Job;
 function runFilterStockJob() {
   console.log(`Start runFilterStockJob ...`);
 
-  // 每天晚上 22 点
+  // 每天 23:00
   const rule = new RecurrenceRule();
   rule.dayOfWeek = [1, 2, 3, 4, 5];
   rule.hour = 23;
@@ -185,7 +185,7 @@ let filterCurrentJob: Job;
 function runFilterCurrentJob() {
   console.log(`Start runFilterCurrentJob ...`);
 
-  // 每天晚上 22 点
+  // 每天 14:50
   const rule = new RecurrenceRule();
   rule.dayOfWeek = [1, 2, 3, 4, 5];
   rule.hour = 14;

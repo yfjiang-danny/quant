@@ -69,21 +69,17 @@ export namespace Strategies {
       return;
     }
 
-    const sheets: WorkSheet[] = [
-      { name: "cross", data: stocksToSheetData(crossStocks), options: {} },
-    ];
-
-    const filterStocks = minCapitalStocks.filter((v) => {
+    const filterStocks = crossStocks.filter((v) => {
       let bool = true;
-      if (!v.close) {
+      if (!v.close || !v.sma5) {
         return false;
       }
       if (v.sma5) {
-        bool = v.close >= v.sma5 && (v.close - v.sma5) / v.sma5 < 0.1;
+        bool = v.close >= v.sma5 && (v.close - v.sma5) / v.sma5 < 0.1; // 偏离五日线 10 个点以内
       }
 
-      if (v.sma10 && v.sma20) {
-        bool = bool && v.sma10 > v.sma20;
+      if (bool && v.sma10 && v.sma20) {
+        bool = v.sma10 > v.sma20;
       }
 
       return bool;
@@ -93,11 +89,9 @@ export namespace Strategies {
       logger.info(`filterStocks is empty`, logPath);
     }
 
-    sheets.push({
-      name: "filter",
-      data: stocksToSheetData(filterStocks),
-      options: {},
-    });
+    const sheets: WorkSheet[] = [
+      { name: "cross", data: stocksToSheetData(filterStocks), options: {} },
+    ];
 
     return sheets;
   }
@@ -210,6 +204,11 @@ export namespace Strategies {
     });
 
     const sheets: WorkSheet[] = [
+      {
+        name: "data",
+        data: stocksToSheetData(minCapitalStocks),
+        options: {},
+      },
       { name: "preRise", data: stocksToSheetData(filterRes), options: {} },
     ];
 

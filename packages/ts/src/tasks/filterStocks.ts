@@ -8,7 +8,7 @@ import { Strategies } from "../strategies";
 const logPath = path.resolve(logRootPath, "filterStocks.log");
 
 export function filterStocks(cb?: (msg?: string) => void) {
-  Strategies.filterStocks((filePath) => {
+  Strategies.filterStocks(async (filePath) => {
     if (!filePath) {
       cb?.(`Filter stocks error`);
       return;
@@ -16,14 +16,14 @@ export function filterStocks(cb?: (msg?: string) => void) {
     try {
       const mailer = new Mailer163();
 
-      mailer
+      await mailer
         .send({
           to: "michael593@163.com",
           subject: moment().format("YYYY-MM-DD"),
           attachments: [
             {
               fileName: `filter-${moment().format("YYYYMMDD")}.xlsx`,
-              filePath: filePath,
+              path: filePath,
             },
           ],
         })

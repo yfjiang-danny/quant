@@ -63,7 +63,7 @@ export async function filterCurrent(cb?: (msg?: string) => void) {
             attachments: [
               {
                 fileName: `filter-${moment().format("YYYYMMDD")}.xlsx`,
-                filePath: filePath,
+                path: filePath,
               },
             ],
           })

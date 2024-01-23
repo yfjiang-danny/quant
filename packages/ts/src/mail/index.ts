@@ -26,13 +26,14 @@ export class Mailer163 {
     subject,
     text,
     html,
+    attachments,
   }: {
     from?: string;
     to: string;
     subject: string;
     text?: string;
     html?: string;
-    attachments?: { fileName: string; filePath: string }[];
+    attachments?: { fileName: string; path: string }[];
   }): Promise<unknown> {
     const _this = this;
     return _this.transporter?.sendMail({
@@ -41,6 +42,7 @@ export class Mailer163 {
       subject: subject, // Subject line
       text: text, // plain text body
       html: html, // html body
+      attachments: attachments,
     });
   }
 }
