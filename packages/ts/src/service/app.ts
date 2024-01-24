@@ -11,7 +11,7 @@ import { initPath, logRootPath } from "../common/paths";
 import { logger } from "../logs";
 import { filterCurrent } from "../tasks/filterCurrent";
 import { filterStocks } from "../tasks/filterStocks";
-import { collectionTask } from "./collection/main";
+import { collectionTask } from "./collection/collection";
 import { StockService } from "./stock";
 
 dotenv.config();

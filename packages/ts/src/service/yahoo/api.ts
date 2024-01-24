@@ -1,12 +1,10 @@
 import axios, { AxiosRequestConfig } from "axios";
+import csvtojson from "csvtojson";
 import path from "path";
+import querystring from "querystring";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import { logRootPath } from "../../common/paths";
 import { logger } from "../../logs";
-import querystring from "querystring";
-import fs from "fs";
-import csvtojson from "csvtojson";
-import moment from "moment";
 
 export namespace YAHOO_API {
   const logPath = path.resolve(logRootPath, "yahoo.log");
@@ -16,7 +14,14 @@ export namespace YAHOO_API {
     logger.info(msg, logPath);
   }
 
+  let yahooReject = false;
+
   function get(url: string, options?: AxiosRequestConfig) {
+    if (yahooReject) {
+      return new Promise<null>((resolve, reject) => {
+        resolve(null);
+      });
+    }
     return axios
       .get(url, {
         ...options,
@@ -32,6 +37,7 @@ export namespace YAHOO_API {
         return res.data;
       })
       .catch((e) => {
+        yahooReject = true;
         log(e);
         return null;
       });
@@ -131,6 +137,10 @@ export namespace YAHOO_API {
       // 创建一个可读流
       const csvStream = response;
 
+      if (!csvStream) {
+        return null;
+      }
+
       // 将 CSV 流转换成 JSON 流
       return new Promise<unknown[]>((resolve) => {
         const res: unknown[] = [];
@@ -138,11 +148,10 @@ export namespace YAHOO_API {
           .fromStream(csvStream)
           .subscribe((json) => {
             // 处理每行转换后的 JSON 数据
-            // log(json);
-            res.push(res);
+            res.push(json);
           })
           .on("done", () => {
-            log(res);
+            log(`${url}`);
             resolve(res);
             log("CSV to JSON conversion completed.");
           });

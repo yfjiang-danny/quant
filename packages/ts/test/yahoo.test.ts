@@ -1,15 +1,14 @@
-import axios from "axios";
 import { SocksProxyAgent } from "socks-proxy-agent";
 
 import * as dotenv from "dotenv";
-import { YAHOO_API } from "../src/service/yahoo/api";
-import { Storage } from "../src/service/storage/storage";
-import pLimit from "p-limit";
-import { logger } from "../src/logs";
+import { access } from "fs/promises";
 import path from "path";
 import { dbRootPath, logRootPath } from "../src/common/paths";
-import { writeFile } from "fs/promises";
-import { iWriteFile, readJsonFile } from "../src/utils/fs";
+import { logger } from "../src/logs";
+import { StockModel } from "../src/models/type";
+import { Storage } from "../src/service/storage/storage";
+import { YAHOO_API } from "../src/service/yahoo/api";
+import { iWriteFile } from "../src/utils/fs";
 
 dotenv.config();
 
@@ -37,6 +36,25 @@ const socksAgent = new SocksProxyAgent("socks5://127.0.0.1:51837");
         v.symbol?.startsWith("6"))
   );
 
+  logger.info(`Valid: ${validStocks.length}`, logPath);
+
+  const filterStocks: StockModel[] = [];
+
+  for (const v of validStocks) {
+    const filePath = path.resolve(dbRootPath, "yahoo", `${v.symbol}.json`);
+    await access(filePath).then(
+      () => {
+        //
+        logger.info(`${filePath} already exist, pass.`);
+      },
+      (e) => {
+        filterStocks.push(v);
+      }
+    );
+  }
+
+  logger.info(`Total: ${filterStocks.length}`, logPath);
+
   function getMarket(symbol: string) {
     if (symbol?.startsWith("3") || symbol?.startsWith("0")) {
       return "SZ";
@@ -55,11 +73,12 @@ const socksAgent = new SocksProxyAgent("socks5://127.0.0.1:51837");
   //     return res;
   //   }, [] as Promise<unknown[] | null>[]);
 
-  const size = 10;
-  const len = validStocks.length;
+  const size = 5;
+  const len = filterStocks.length;
   const batch = Math.round(len / size);
 
-  let i = 0;
+  let i = 0,
+    count = 0;
 
   while (i < batch) {
     const start = i * batch;
@@ -67,7 +86,7 @@ const socksAgent = new SocksProxyAgent("socks5://127.0.0.1:51837");
     let j = start;
     const promises: Promise<any>[] = [];
     while (j < end) {
-      const v = validStocks[j];
+      const v = filterStocks[j];
       promises.push(
         YAHOO_API.getStockHistory(
           v.symbol as string,
@@ -75,14 +94,26 @@ const socksAgent = new SocksProxyAgent("socks5://127.0.0.1:51837");
         ).then(
           async (res) => {
             if (res) {
-              const b = await iWriteFile(
-                path.resolve(dbRootPath, "yahoo", `${v.symbol}.json`),
-                JSON.stringify(res),
-                false
-              ).catch((e) => {
-                logger.info(e, logPath);
-                return null;
-              });
+              const filePath = path.resolve(
+                dbRootPath,
+                "yahoo",
+                `${v.symbol}.json`
+              );
+              const b = await iWriteFile(filePath, JSON.stringify(res), false)
+                .then(
+                  () => {
+                    logger.info(`Write complete: ${filePath}`, logPath);
+                    return;
+                  },
+                  (e) => {
+                    logger.info(e, logPath);
+                    return;
+                  }
+                )
+                .catch((e) => {
+                  logger.info(e, logPath);
+                  return null;
+                });
               return b;
             } else {
               return res;
@@ -101,6 +132,11 @@ const socksAgent = new SocksProxyAgent("socks5://127.0.0.1:51837");
       (res) => {
         //
         logger.info(res, logPath);
+        res.forEach((v) => {
+          if (v.status === "fulfilled") {
+            count++;
+          }
+        });
       },
       (e) => {
         logger.info(e, logPath);
@@ -109,4 +145,6 @@ const socksAgent = new SocksProxyAgent("socks5://127.0.0.1:51837");
 
     i++;
   }
+
+  logger.info(`Complete ${count}`, logPath);
 })();
