@@ -220,7 +220,6 @@ export namespace Strategies {
 
     if (!minCapitalStocks) {
       logger.info(`minCapitalStocks is empty`, logPath);
-      cb?.();
       return;
     }
 
@@ -239,16 +238,26 @@ export namespace Strategies {
 
     if (sheets.length <= 0) {
       logger.info(`sheets is empty`, logPath);
-      cb?.();
       return;
     }
     const filePath = path.resolve(
       dbRootPath,
       `filter-${moment().format("YYYYMMDD")}.xlsx`
     );
-    return Excel.write(sheets, filePath).finally(() => {
-      logger.info(`Completely, ${filePath}`, logPath);
-      cb?.(filePath);
-    });
+    return Excel.write(sheets, filePath)
+      .then(
+        (res) => {
+          if (res) {
+            return filePath;
+          }
+          return null;
+        },
+        (e) => {
+          return null;
+        }
+      )
+      .finally(() => {
+        logger.info(`Completely, ${filePath}`, logPath);
+      });
   }
 }

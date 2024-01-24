@@ -32,29 +32,28 @@ function calculateAverage(histories: StockModel[]) {
 
 /**
  * 计算移动平均数
- * @param stocks 股票数据，最新日期在前面
+ * @param histories 股票数据，最新日期在前面
  * @param interval 间隔, 5——5日线 ...
  * @returns
  */
 export function calculateMovingAverage(
-  stocks: StockModel[],
+  histories: StockModel[],
   interval: number
 ): StockWithSMA[] {
   const result: StockWithSMA[] = [];
 
   // 检查输入有效性
-  if (interval <= 0 || stocks.length === 0) {
-    return result;
+  if (interval <= 0 || histories.length === 0) {
+    return histories;
   }
 
-  for (let i = 0; i < stocks.length; i++) {
-    const currentDateStock = stocks[i];
+  for (let i = 0; i < histories.length; i++) {
+    const currentDateStock = histories[i];
 
     // 如果当前索引加上间隔数超过数组长度，则无法计算移动平均数
-    if (i + interval > stocks.length) {
+    if (i + interval > histories.length) {
       result.push({
         ...currentDateStock,
-        close: currentDateStock.close,
         [`sma${interval}`]: null,
       });
       continue;
@@ -64,7 +63,7 @@ export function calculateMovingAverage(
     let validCount = 0;
 
     for (let j = 0; j < interval; j++) {
-      const closeValue = stocks[i + j].close;
+      const closeValue = histories[i + j].close;
 
       if (typeof closeValue === "number") {
         sum += closeValue;
@@ -76,7 +75,6 @@ export function calculateMovingAverage(
 
     result.push({
       ...currentDateStock,
-      close: currentDateStock.close,
       [`sma${interval}`]: smaValue,
     });
   }

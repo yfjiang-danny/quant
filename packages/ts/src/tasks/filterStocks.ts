@@ -7,36 +7,46 @@ import { Strategies } from "../strategies";
 
 const logPath = path.resolve(logRootPath, "filterStocks.log");
 
-export function filterStocks(cb?: (msg?: string) => void) {
-  Strategies.filterStocks(async (filePath) => {
-    if (!filePath) {
-      cb?.(`Filter stocks error`);
-      return;
-    }
-    try {
-      const mailer = new Mailer163();
+let sendMail = false;
+export async function filterStocks(cb?: (msg?: string) => void) {
+  sendMail = false;
+  await Strategies.filterStocks()
+    .then(async (filePath) => {
+      if (sendMail) {
+        logger.info(`Mail has been send`);
+        cb?.(`Mail has been send`);
+        return;
+      }
+      if (!filePath) {
+        cb?.(`Filter stocks error`);
+        return;
+      }
+      try {
+        const mailer = new Mailer163();
 
-      await mailer
-        .send({
-          to: "michael593@163.com",
-          subject: moment().format("YYYY-MM-DD"),
-          attachments: [
-            {
-              fileName: `filter-${moment().format("YYYYMMDD")}.xlsx`,
-              path: filePath,
-            },
-          ],
-        })
-        .then((res) => {
-          logger.info(res, logPath);
-        })
-        .catch((e) => {
-          logger.info(e, logPath);
-        });
-    } catch (error) {
-      logger.info(error, logPath);
-    }
-  }).finally(() => {
-    cb?.();
-  });
+        await mailer
+          .send({
+            to: "michael593@163.com",
+            subject: moment().format("YYYY-MM-DD"),
+            attachments: [
+              {
+                fileName: `filter-${moment().format("YYYYMMDD")}.xlsx`,
+                path: filePath,
+              },
+            ],
+          })
+          .then((res) => {
+            logger.info(res, logPath);
+            sendMail = true;
+          })
+          .catch((e) => {
+            logger.info(e, logPath);
+          });
+      } catch (error) {
+        logger.info(error, logPath);
+      }
+    })
+    .finally(() => {
+      cb?.();
+    });
 }
