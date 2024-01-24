@@ -1,6 +1,5 @@
 import * as dotenv from "dotenv";
 import { logger } from "../../logs";
-import { TushareStockModel } from "../../models/tushare/type";
 import { StockModel } from "../../models/type";
 import { fillStocksSMA } from "../factors/sma";
 import { Storage } from "../storage/storage";
@@ -56,6 +55,8 @@ export async function collectionTask() {
       }
       return res.data;
     });
+  } else {
+    await Storage.saveAllBasicStocks(allBasicStocks);
   }
 
   if (!allBasicStocks || allBasicStocks.length <= 0) {

@@ -1,4 +1,6 @@
 import axios from "axios";
+import path from "path";
+import { logRootPath } from "../../common/paths";
 import { logger } from "../../logs";
 import { TushareStockColumns } from "../../models/tushare/constant";
 import {
@@ -14,6 +16,10 @@ import { mockAllStockResponse } from "./mock";
 const StockFields: StockKeys[] = Object.keys(TushareStockColumns);
 
 export namespace TUSHARE_API {
+  function log(msg: unknown) {
+    logger.info(msg, path.resolve(logRootPath, "tushare.log"));
+  }
+
   function request<T>(
     path: string,
     params: Pick<ApiParams, "params" | "fields">
@@ -36,11 +42,11 @@ export namespace TUSHARE_API {
       params: params as Record<string, unknown>,
     })
       .then((res) => {
-        logger.info(res.data);
+        log(res.data);
         if (res.status == 200) {
           let responseData = res?.data as any;
           if (responseData?.code != 0) {
-            logger.info(`Use mock data`);
+            log(`Use mock data`);
             responseData = mockAllStockResponse;
           }
           const data = responseData?.data as {
@@ -65,7 +71,7 @@ export namespace TUSHARE_API {
         return null;
       })
       .catch((e) => {
-        console.log(e);
+        log(e);
         return null;
       });
   }
