@@ -161,7 +161,7 @@ function runCollectionJob() {
   const rule = new RecurrenceRule();
   rule.dayOfWeek = [1, 2, 3, 4, 5];
   rule.hour = 17;
-  // rule.minute = 12;
+  rule.minute = 0;
   job = scheduleJob(rule, collectionTask);
   // collectionTask();
 

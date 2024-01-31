@@ -1,10 +1,9 @@
-import moment from "moment";
+import path from "path";
+import { logRootPath } from "../../../common/paths";
 import { logger } from "../../../logs";
 import { StockWithSMA } from "../../../models/sma/type";
 import { StockModel } from "../../../models/type";
 import { Storage } from "../../storage/storage";
-import path from "path";
-import { logRootPath } from "../../../common/paths";
 
 const logPath = path.resolve(logRootPath, "sma.log");
 
@@ -103,15 +102,11 @@ export async function fillStockSMA(stock: StockModel) {
 
   const findIndex = histories.findIndex((v) => v.date === stock.date);
 
-  logger.info({ stock, histories }, logPath);
-
   if (findIndex === -1) {
     return stock;
   }
 
   histories = histories.slice(findIndex);
-
-  logger.info(histories, logPath);
 
   if (histories.length < 5) {
     return stock;
