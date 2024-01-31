@@ -6,4 +6,5 @@ test
 *.pid
 *.sh
 dist
+filter
 *.gz

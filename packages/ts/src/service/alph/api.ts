@@ -40,7 +40,7 @@ export namespace ALPH_API {
         return null;
       })
       .catch((e) => {
-        console.log(e);
+        logger.info(e, logPath);
 
         return null;
       });
@@ -64,7 +64,6 @@ export namespace ALPH_API {
       symbol: symbol,
       outputsize: "full",
     }).then((res) => {
-      logger.info({ symbol: symbol, data: res }, logPath);
       if (res) {
         if (res.Information) {
           isLimited = true;

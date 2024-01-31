@@ -56,7 +56,6 @@ export namespace EastMoney_API {
     return getQuoteSnapshot(symbol, market)
       .then((res) => {
         if (res) {
-          logger.info(res, logOutput);
           const close = Number(res.realtimequote.currentPrice);
           const volume = Number(res.realtimequote.volume);
           const turnover = Number(
@@ -85,8 +84,7 @@ export namespace EastMoney_API {
         return null;
       })
       .catch((err) => {
-        console.log(err);
-
+        logger.info(err, logOutput);
         return null;
       });
   }

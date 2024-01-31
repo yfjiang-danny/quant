@@ -9,6 +9,7 @@ import {
 import path from "path";
 import { initPath, logRootPath } from "../common/paths";
 import { logger } from "../logs";
+import { Mailer163 } from "../mail";
 import { filterCurrent } from "../tasks/filterCurrent";
 import { filterStocks } from "../tasks/filterStocks";
 import { collectionTask } from "./collection/collection";
@@ -156,10 +157,10 @@ function runCollectionJob() {
   initPath();
 
   logger.setFilePath(path.resolve(logRootPath, "collection.log"));
-  // 每天晚上 22 点
+  // 每天晚上 17 点
   const rule = new RecurrenceRule();
   rule.dayOfWeek = [1, 2, 3, 4, 5];
-  rule.hour = 22;
+  rule.hour = 17;
   // rule.minute = 12;
   job = scheduleJob(rule, collectionTask);
   // collectionTask();
@@ -169,16 +170,19 @@ function runCollectionJob() {
   });
 }
 
+const mailer = new Mailer163();
+
 let filterStocksJob: Job;
 function runFilterStockJob() {
   console.log(`Start runFilterStockJob ...`);
 
-  // 每天 23:00
+  // 每天 23
   const rule = new RecurrenceRule();
   rule.dayOfWeek = [1, 2, 3, 4, 5];
-  rule.hour = 23;
-  // rule.minute = 12;
-  filterStocksJob = scheduleJob(rule, filterStocks.bind(null, undefined));
+  rule.hour = 17;
+  rule.minute = 50;
+  const fn = filterStocks.bind(null, undefined, mailer);
+  filterStocksJob = scheduleJob(rule, fn);
 }
 
 let filterCurrentJob: Job;
@@ -190,5 +194,6 @@ function runFilterCurrentJob() {
   rule.dayOfWeek = [1, 2, 3, 4, 5];
   rule.hour = 14;
   rule.minute = 50;
-  filterCurrentJob = scheduleJob(rule, filterCurrent.bind(null, undefined));
+  const fn = filterCurrent.bind(null, undefined, mailer);
+  filterCurrentJob = scheduleJob(rule, fn);
 }

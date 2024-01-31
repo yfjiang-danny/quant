@@ -11,7 +11,10 @@ import { Excel } from "../utils/excel";
 
 const logPath = path.resolve(logRootPath, "filter_current.log");
 
-export async function filterCurrent(cb?: (msg?: string) => void) {
+export async function filterCurrent(
+  cb?: (msg?: string) => void,
+  mailer?: Mailer163
+) {
   const allStocks: StockModel[] = await Storage.getAllStocks().then((res) => {
     return res.data;
   });
@@ -54,10 +57,8 @@ export async function filterCurrent(cb?: (msg?: string) => void) {
   Excel.write(sheets, filePath)
     .then(() => {
       try {
-        const mailer = new Mailer163();
-
         mailer
-          .send({
+          ?.send({
             to: "michael593@163.com",
             subject: moment().format("YYYY-MM-DD"),
             attachments: [

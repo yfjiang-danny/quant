@@ -8,7 +8,10 @@ import { Strategies } from "../strategies";
 const logPath = path.resolve(logRootPath, "filterStocks.log");
 
 let sendMail = false;
-export async function filterStocks(cb?: (msg?: string) => void) {
+export async function filterStocks(
+  cb?: (msg?: string) => void,
+  mailer?: Mailer163
+) {
   sendMail = false;
   await Strategies.filterStocks()
     .then(async (filePath) => {
@@ -22,10 +25,10 @@ export async function filterStocks(cb?: (msg?: string) => void) {
         return;
       }
       try {
-        const mailer = new Mailer163();
+        // const mailer = new Mailer163();
 
         await mailer
-          .send({
+          ?.send({
             to: "michael593@163.com",
             subject: moment().format("YYYY-MM-DD"),
             attachments: [

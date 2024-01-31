@@ -42,7 +42,7 @@ export namespace TUSHARE_API {
       params: params as Record<string, unknown>,
     })
       .then((res) => {
-        log(res.data);
+        log(`getAllStock success`);
         if (res.status == 200) {
           let responseData = res?.data as any;
           if (responseData?.code != 0) {
