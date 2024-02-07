@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build": "tsc src/service/app.ts --outDir dist --esModuleInterop",
+    "build": "tsc src/**/*.ts --outDir dist --esModuleInterop",
     "start": "node dist/service/app.js",
     "build:allStocks": "tsc src/tasks/getAllStocks.ts --outDir dist --esModuleInterop",
     "run:allStocks": "node dist/tasks/getAllStocks.js >all_stocks.log 2>&1",
