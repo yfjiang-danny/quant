@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import { access, readdir, writeFile } from "fs/promises";
 import moment from "moment";
+import pLimit from "p-limit";
 import path from "path";
 import { allStockRootPath, historyRootPath } from "../../common/paths";
 import { StockModel } from "../../models/type";
@@ -12,7 +13,6 @@ import {
   readJsonFileInBatch,
 } from "../../utils/fs";
 import { Response } from "./type";
-import pLimit from "p-limit";
 
 export namespace Storage {
   export function getAllBasicStocks(
@@ -302,7 +302,11 @@ export namespace Storage {
                 path.resolve(historyRootPath, dateStr, `${symbol}.json`)
               )
             ).then((res) => {
-              resolve({ data: res.filter((v) => !!v) as StockModel[] });
+              resolve({
+                data: res
+                  .filter((v) => !!v && !!v.date)
+                  .sort((a, b) => Number(b) - Number(a)) as StockModel[],
+              });
             });
           },
           (e) => {
