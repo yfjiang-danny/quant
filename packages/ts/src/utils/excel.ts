@@ -37,6 +37,7 @@ export namespace Excel {
           if (err) {
             console.log("Write failed: " + err);
             resolve(false);
+            return;
           }
 
           console.log("Write completed.");

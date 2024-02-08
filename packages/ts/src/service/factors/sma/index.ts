@@ -88,22 +88,27 @@ export async function fillStockSMA(stock: StockModel) {
 
   const symbol = stock.symbol;
 
-  let histories = await Storage.getStockHistories(symbol).then((res) =>
-    res.data
-      .filter((v) => v && v.date)
-      .sort((a, b) => {
-        return Number(b.date) - Number(a.date);
-      })
+  let histories = await Storage.getStockHistories(symbol).then(
+    (res) => res.data
   );
 
   if (!histories) {
     return stock;
   }
 
-  const findIndex = histories.findIndex((v) => v.date === stock.date);
+  let findIndex = histories.findIndex((v) => v.date === stock.date);
 
   if (findIndex === -1) {
-    return stock;
+    if (
+      histories[0].date &&
+      stock.date &&
+      Number(stock.date) > Number(histories[0].date)
+    ) {
+      histories.unshift(stock);
+      findIndex = 0;
+    } else {
+      return stock;
+    }
   }
 
   histories = histories.slice(findIndex);

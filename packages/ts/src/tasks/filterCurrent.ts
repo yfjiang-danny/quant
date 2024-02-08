@@ -1,9 +1,10 @@
 import moment from "moment";
 import path from "path";
-import { dbRootPath, logRootPath } from "../common/paths";
+import { filterRootPath, logRootPath } from "../common/paths";
 import { logger } from "../logs";
 import { Mailer163 } from "../mail";
 import { StockModel } from "../models/type";
+import { fillStocksSMA } from "../service/factors/sma";
 import { Storage } from "../service/storage/storage";
 import { fillEastStockInfo } from "../service/utils";
 import { Strategies } from "../strategies";
@@ -42,15 +43,20 @@ export async function filterCurrent(
   // 获取实时行情
   const newStocks = await fillEastStockInfo(minCapitalStocks);
 
-  const sheets = await Strategies.filterCross(newStocks);
+  // 计算 sma
+  const smaStocks = await fillStocksSMA(newStocks);
+
+  const sheets = await Strategies.filterCross(smaStocks);
 
   if (!sheets) {
     cb?.(`filterCurrent sheets is empty`);
+    logger.info("filterCurrent sheets is empty", logPath);
+
     return;
   }
 
   const filePath = path.resolve(
-    dbRootPath,
+    filterRootPath,
     `filter_current_${moment().format("YYYYMMDD")}.xlsx`
   );
 

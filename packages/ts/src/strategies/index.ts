@@ -2,7 +2,7 @@ import moment from "moment";
 import { WorkSheet } from "node-xlsx";
 import path from "path";
 import { stocksToSheetData } from "../common";
-import { dbRootPath, logRootPath } from "../common/paths";
+import { filterRootPath, logRootPath } from "../common/paths";
 import { logger } from "../logs";
 import { StockModel } from "../models/type";
 import { calculateMaxRiseDay, fillMaxRiseDay } from "../service/factors/rise";
@@ -86,7 +86,8 @@ export namespace Strategies {
     });
 
     if (filterStocks.length <= 0) {
-      logger.info(`filterStocks is empty`, logPath);
+      logger.info(`filterCross -> filterStocks is empty`, logPath);
+      return;
     }
 
     const sheets: WorkSheet[] = [
@@ -241,7 +242,7 @@ export namespace Strategies {
       return;
     }
     const filePath = path.resolve(
-      dbRootPath,
+      filterRootPath,
       `filter-${moment().format("YYYYMMDD")}.xlsx`
     );
     return Excel.write(sheets, filePath)

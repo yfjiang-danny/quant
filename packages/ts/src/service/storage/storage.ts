@@ -305,7 +305,9 @@ export namespace Storage {
               resolve({
                 data: res
                   .filter((v) => !!v && !!v.date)
-                  .sort((a, b) => Number(b) - Number(a)) as StockModel[],
+                  .sort(
+                    (a, b) => Number(b?.date) - Number(a?.date)
+                  ) as StockModel[],
               });
             });
           },

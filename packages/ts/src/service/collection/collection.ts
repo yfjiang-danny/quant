@@ -1,5 +1,6 @@
 import * as dotenv from "dotenv";
 import { logger } from "../../logs";
+import { Mailer163 } from "../../mail";
 import { StockModel } from "../../models/type";
 import { fillStocksSMA } from "../factors/sma";
 import { Storage } from "../storage/storage";
@@ -41,7 +42,7 @@ async function fillHistoryByALPH() {
   }
 }
 
-export async function collectionTask() {
+export async function collectionTask(mailer?: Mailer163) {
   logger.info(`Start collection task`);
 
   //
@@ -87,4 +88,17 @@ export async function collectionTask() {
   await fillHistoryByALPH();
 
   console.log(`Collection Task complete`);
+
+  mailer
+    ?.send({
+      to: "michael593@163.com",
+      subject: "collection",
+      text: `Collection Task complete`,
+    })
+    .then((res) => {
+      logger.info(res);
+    })
+    .catch((e) => {
+      logger.info(e);
+    });
 }

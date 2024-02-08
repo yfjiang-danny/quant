@@ -8,6 +8,7 @@ export const rootPath = process.env.ROOT || path.resolve(".", ".");
 export const dbRootPath = process.env.DB_ROOT || path.resolve(rootPath, "db");
 export const historyRootPath = path.resolve(dbRootPath, "history");
 export const allStockRootPath = path.resolve(dbRootPath, "all");
+export const filterRootPath = path.resolve(dbRootPath, "filter");
 
 export const logRootPath =
   process.env.LOG_ROOT || path.resolve(rootPath, "logs");

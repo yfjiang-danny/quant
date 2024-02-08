@@ -72,7 +72,7 @@ app.post("/collection/start", (req: Request, res: Response) => {
 app.post("/collection/exec", (req: Request, res: Response) => {
   console.log(`/collection/exec`);
 
-  collectionTask();
+  collectionTask(mailer);
   res.send({ data: true });
 });
 
@@ -98,7 +98,7 @@ app.post("/task/filterStocks/start", (req: Request, res: Response) => {
 app.post("/task/filterStocks/exec", (req: Request, res: Response) => {
   console.log(`/task/filterStocks/exec`);
 
-  filterStocks();
+  filterStocks(undefined, mailer);
   res.send({ data: true });
 });
 
@@ -124,7 +124,7 @@ app.post("/task/filterCurrent/start", (req: Request, res: Response) => {
 app.post("/task/filterCurrent/exec", (req: Request, res: Response) => {
   console.log(`/task/filterCurrent/exec`);
 
-  filterCurrent();
+  filterCurrent(undefined, mailer);
   res.send({ data: true });
 });
 
@@ -162,8 +162,7 @@ function runCollectionJob() {
   rule.dayOfWeek = [1, 2, 3, 4, 5];
   rule.hour = 17;
   rule.minute = 0;
-  job = scheduleJob(rule, collectionTask);
-  // collectionTask();
+  job = scheduleJob(rule, collectionTask.bind(null, mailer));
 
   process.on("SIGINT", function () {
     gracefulShutdown().then(() => process.exit(0));
