@@ -166,7 +166,7 @@ export async function fillStockSMA(stock: StockModel) {
  * @returns
  */
 export function fillStocksSMA(stocks: StockModel[]) {
-  logger.info("fillAllStockSMA start...");
+  logger.info("fillAllStockSMA start...", logPath);
 
   const promises: Promise<StockWithSMA>[] = [];
   stocks.forEach((v) => {
@@ -182,7 +182,7 @@ export function fillStocksSMA(stocks: StockModel[]) {
         res.push({ ...stocks[i] } as StockModel);
       }
     });
-    logger.info("fillAllStockSMA finished...");
+    logger.info("fillAllStockSMA finished...", logPath);
     return res;
   });
 }
