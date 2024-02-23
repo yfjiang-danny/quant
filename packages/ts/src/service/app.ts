@@ -175,11 +175,11 @@ let filterStocksJob: Job;
 function runFilterStockJob() {
   console.log(`Start runFilterStockJob ...`);
 
-  // 每天 23
+  // 每天 17:30
   const rule = new RecurrenceRule();
   rule.dayOfWeek = [1, 2, 3, 4, 5];
   rule.hour = 17;
-  rule.minute = 50;
+  rule.minute = 30;
   const fn = filterStocks.bind(null, undefined, mailer);
   filterStocksJob = scheduleJob(rule, fn);
 }

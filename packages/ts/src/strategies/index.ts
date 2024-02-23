@@ -78,9 +78,9 @@ export namespace Strategies {
         bool = v.close >= v.sma5 && (v.close - v.sma5) / v.sma5 < 0.1; // 偏离五日线 10 个点以内
       }
 
-      if (bool && v.sma10 && v.sma20) {
-        bool = v.sma10 > v.sma20;
-      }
+      // if (bool && v.sma10 && v.sma20) {
+      //   bool = v.sma10 > v.sma20;
+      // }
 
       return bool;
     });
@@ -153,7 +153,7 @@ export namespace Strategies {
   /**
    * 寻找预启动的小票
    *
-   * 小市值,连涨 3 天,换手率环比增大,连涨 3 天,位于五日线上方
+   * 小市值,连涨 3 天,换手率环比增大,连涨 3 天,位于五日线上方,离 5 日线 10 个点内
    * @param params
    */
   export async function filterPreRise(minCapitalStocks?: StockModel[]) {
@@ -197,6 +197,7 @@ export namespace Strategies {
         v.close &&
         v.sma5 &&
         v.close >= v.sma5 &&
+        (v.close - v.sma5) / v.sma5 < 0.1 &&
         v.maxRiseDay &&
         v.maxRiseDay >= 3 &&
         v["maxTurnoverRiseDay"] &&
