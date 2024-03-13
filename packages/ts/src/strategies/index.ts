@@ -78,9 +78,9 @@ export namespace Strategies {
         bool = v.close >= v.sma5 && (v.close - v.sma5) / v.sma5 < 0.1; // 偏离五日线 10 个点以内
       }
 
-      // if (bool && v.sma10 && v.sma20) {
-      //   bool = v.sma10 > v.sma20;
-      // }
+      if (bool && v.sma10 && v.sma20) {
+        bool = v.sma10 > v.sma20;
+      }
 
       return bool;
     });
