@@ -12,4 +12,6 @@ export const EastMoneyColumns: Record<keyof EastMoneyStockModel, string> = {
   turnover: "换手率",
   volume: "成交量(手)",
   date: "日期",
+  topPrice: "涨停价",
+  bottomPrice: "跌停价"
 };

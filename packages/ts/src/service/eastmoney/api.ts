@@ -79,6 +79,8 @@ export namespace EastMoney_API {
             name: res.name,
             turnover: turnover,
             volume: volume,
+            topPrice: Number(res.topprice),
+            bottomPrice: Number(res.bottomprice)
           } as EastMoneyStockModel;
         }
         return null;

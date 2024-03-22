@@ -17,7 +17,7 @@ export namespace Strategies {
    * 获取小市值的票, 按照从小到大排序
    * @returns
    */
-  async function getMinCapitalStocks(minCapital = 100) {
+  export async function getMinCapitalStocks(minCapital = 100) {
     const allStocks: StockModel[] = await Storage.getAllStocks().then((res) => {
       return res.data;
     });
@@ -51,7 +51,7 @@ export namespace Strategies {
    */
   export async function filterCross(minCapitalStocks?: StockModel[]) {
     if (!minCapitalStocks) {
-      minCapitalStocks = await getMinCapitalStocks();
+      minCapitalStocks = await getMinCapitalStocks(300);
     }
 
     if (!minCapitalStocks || minCapitalStocks.length <= 0) {
@@ -218,12 +218,13 @@ export namespace Strategies {
   }
 
   export async function filterStocks(cb?: (filePath?: string) => void) {
-    const minCapitalStocks = await getMinCapitalStocks();
+    const minCapitalStocks = await getMinCapitalStocks(500);
 
     if (!minCapitalStocks) {
       logger.info(`minCapitalStocks is empty`, logPath);
       return;
     }
+
 
     const sheets: WorkSheet[] = [];
     const crossSheets = await filterCross(deepCopyWithJson(minCapitalStocks));

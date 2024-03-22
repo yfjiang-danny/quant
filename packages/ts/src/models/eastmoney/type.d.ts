@@ -5,8 +5,8 @@ interface QuoteSnapshotModel {
   name: string;
   sname: string;
   transType: number;
-  topprice: string;
-  bottomprice: string;
+  topprice: string; // 涨停价
+  bottomprice: string; // 跌停价
   status: number;
   fivequote: {
     yesClosePrice: string;
@@ -38,8 +38,8 @@ interface QuoteSnapshotModel {
     low: string;
     avg: string;
     zd: string; //"-0.37";
-    zdf: string; //"-2.53%";
-    turnover: string; //"5.28%";
+    zdf: string; //"-2.53%"; 涨跌幅
+    turnover: string; //"5.28%"; 换手率
     currentPrice: string; //"14.28";
     volume: string; //"63064";
     amount: string; //"90342443";
@@ -63,4 +63,6 @@ export interface EastMoneyStockModel {
   capital?: number;
   turnover?: number;
   avg?: number;
+  topPrice?: number;
+  bottomPrice?: number;
 }

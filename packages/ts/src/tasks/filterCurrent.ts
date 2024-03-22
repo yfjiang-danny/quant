@@ -16,32 +16,17 @@ export async function filterCurrent(
   cb?: (msg?: string) => void,
   mailer?: Mailer163
 ) {
-  const allStocks: StockModel[] = await Storage.getAllStocks().then((res) => {
-    return res.data;
-  });
 
-  if (allStocks.length <= 0) {
+  const minCapitalStocks = await Strategies.getMinCapitalStocks(300);
+
+  if (!minCapitalStocks || minCapitalStocks.length <= 0) {
     logger.info(`Storage.getAllStocks is empty`, logPath);
 
     return;
   }
 
-  const minCapitalStocks = allStocks
-    .filter((v) => {
-      const symbol = v.symbol;
-
-      const isFitSymbol =
-        !symbol ||
-        symbol.startsWith("3") ||
-        symbol.startsWith("60") ||
-        symbol.startsWith("0");
-      const capital = v.capital;
-      return isFitSymbol && capital && capital < 100;
-    })
-    .sort((a, b) => (a.capital as number) - (b.capital as number));
-
-  // 获取实时行情
-  const newStocks = await fillEastStockInfo(minCapitalStocks);
+  // 获取实时行情，过滤掉 ST
+  const newStocks = (await fillEastStockInfo(minCapitalStocks)).filter(v => !v.name || (v.name && !v.name.toUpperCase().includes('ST')));
 
   // 计算 sma
   const smaStocks = await fillStocksSMA(newStocks);
