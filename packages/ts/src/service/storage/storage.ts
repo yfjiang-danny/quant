@@ -3,7 +3,11 @@ import { access, readdir, writeFile } from "fs/promises";
 import moment from "moment";
 import pLimit from "p-limit";
 import path from "path";
-import { allStockRootPath, historyRootPath } from "../../common/paths";
+import {
+  allStockRootPath,
+  historyRootPath,
+  upperLimitRootPath,
+} from "../../common/paths";
 import { StockModel } from "../../models/type";
 import { findExistDate } from "../../utils/date";
 import {
@@ -63,8 +67,8 @@ export namespace Storage {
   }
 
   /**
-   *
-   * @param date
+   * Get all stocks data with a specify date, default latest date.
+   * @param date specify date
    * @returns
    */
   export function getAllStocks(date?: string): Promise<Response<StockModel[]>> {
@@ -319,6 +323,55 @@ export namespace Storage {
         .catch(() => {
           resolve({ data: [] });
         });
+    });
+  }
+
+  /**
+   *
+   * @param stocks
+   * @returns
+   */
+  export function saveUpperLimitStocks(
+    stocks: StockModel[]
+  ): Promise<Response<boolean>> {
+    return new Promise<Response<boolean>>((resolve) => {
+      const findIndex = stocks.findIndex((v) => !!v.date);
+
+      if (findIndex !== -1) {
+        const date = stocks[findIndex].date as string; // YYYYMMdd
+        const filePath = path.resolve(upperLimitRootPath, `${date}.json`);
+        writeFile(filePath, JSON.stringify(stocks)).then(
+          () => {
+            resolve({ data: true });
+          },
+          (e) => {
+            console.log(e);
+
+            resolve({ data: false, msg: "Write file error!" });
+          }
+        );
+      } else {
+        resolve({ data: false, msg: "Can't find date of stocks!" });
+      }
+    });
+  }
+
+  export function getUpperLimitStocks(date?: string) {
+    return new Promise<Response<StockModel[] | null>>((resolve) => {
+      const latestDateStr = findExistDate(upperLimitRootPath, date, ".json");
+      if (!latestDateStr) {
+        resolve({ data: null, msg: `Can not find latest data of ${date}` });
+        return;
+      }
+      const filePath = path.resolve(historyRootPath, `${latestDateStr}.json`);
+      readJsonFile<StockModel[]>(filePath).then(
+        (v) => {
+          resolve({ data: v });
+        },
+        (e) => {
+          resolve({ data: null, msg: e });
+        }
+      );
     });
   }
 }

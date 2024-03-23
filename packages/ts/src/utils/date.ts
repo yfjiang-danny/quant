@@ -9,8 +9,8 @@ import path from "path";
  * @returns
  */
 export function findExistDate(rootPath: string, d?: string, ext?: string) {
-  const date = moment(d);
-  let dateStr = date.format("YYYYMMDD");
+  const mDate = moment(d);
+  let dateStr = mDate.format("YYYYMMDD");
   let success = false;
   let max = 30;
 
@@ -25,8 +25,8 @@ export function findExistDate(rootPath: string, d?: string, ext?: string) {
       success = true;
       break;
     } catch (error) {
-      date.subtract(1, "days");
-      dateStr = date.format("YYYYMMDD");
+      mDate.subtract(1, "days");
+      dateStr = mDate.format("YYYYMMDD");
     }
 
     max--;

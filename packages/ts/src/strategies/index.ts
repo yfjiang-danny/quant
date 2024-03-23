@@ -225,7 +225,6 @@ export namespace Strategies {
       return;
     }
 
-
     const sheets: WorkSheet[] = [];
     const crossSheets = await filterCross(deepCopyWithJson(minCapitalStocks));
     if (crossSheets) {
@@ -262,5 +261,14 @@ export namespace Strategies {
       .finally(() => {
         logger.info(`Completely, ${filePath}`, logPath);
       });
+  }
+
+  /**
+   * 获取涨停
+   * @param stocks
+   * @returns
+   */
+  export function getUpperLimitStocks(stocks: StockModel[]): StockModel[] {
+    return stocks.filter((v) => v.close === v.topPrice);
   }
 }
