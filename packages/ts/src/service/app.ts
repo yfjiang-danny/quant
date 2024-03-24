@@ -14,6 +14,7 @@ import { filterCurrent } from "../tasks/filterCurrent";
 import { filterStocks } from "../tasks/filterStocks";
 import { collectionTask } from "./collection/collection";
 import { StockService } from "./stock";
+import { filterLadder } from "../tasks/filterLadder";
 
 dotenv.config();
 
@@ -136,6 +137,12 @@ app.post("/task/filterCurrent/stop", (req: Request, res: Response) => {
     cancel = filterCurrentJob.cancel();
   }
   res.send({ data: cancel });
+});
+
+app.post("/task/filterLadder/start", (req: Request, res: Response) => {
+  console.log(`/task/filterLadder/start`);
+  filterLadder();
+  res.send({ data: true });
 });
 
 app.get("/", (req: Request, res: Response) => {

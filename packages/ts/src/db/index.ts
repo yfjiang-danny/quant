@@ -1,4 +1,11 @@
-import { Pool, PoolConfig, QueryConfig, QueryConfigValues } from "pg";
+import {
+  Pool,
+  PoolConfig,
+  QueryConfig,
+  QueryConfigValues,
+  QueryResult,
+  QueryResultRow,
+} from "pg";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -27,15 +34,41 @@ async function connect() {
   }
 }
 
+interface QueryOptionModel<I> {
+  text: string | QueryConfig<I>;
+  values?: QueryConfigValues<I>;
+}
+
 // Function to execute a query
-async function dbQuery<T>(
-  text: string | QueryConfig<T>,
-  values?: QueryConfigValues<T>
-) {
+async function dbQuery<T extends any[] = any[], I extends any[] = any[]>(
+  query: QueryOptionModel<I> | QueryOptionModel<I>[]
+): Promise<QueryResult<T>> {
   const client = await connect(); // Get a client from the pool
   try {
-    const result = await client.query(text, values);
-    return result;
+    if (Array.isArray(query) && query.length > 0) {
+      try {
+        let result = await client.query<T, I>(query[0].text, query[0].values);
+        await client.query("BEGIN");
+        for (let i = 1; i < query.length; i++) {
+          const element = query[i];
+          const res = await client.query<T, I>(element.text, element.values);
+          if (result.rowCount && res.rowCount) {
+            result.rowCount += res.rowCount;
+          }
+          result.rows.push(...res.rows);
+        }
+        await client.query("COMMIT");
+        return result;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
+    } else {
+      return client.query<T, I>(
+        (query as QueryOptionModel<I>).text,
+        (query as QueryOptionModel<I>).values
+      );
+    }
   } catch (err) {
     console.error("Query error:", err);
     throw err; // Re-throw to handle in the calling function

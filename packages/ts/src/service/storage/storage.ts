@@ -17,6 +17,10 @@ import {
   readJsonFileInBatch,
 } from "../../utils/fs";
 import { Response } from "./type";
+import { TushareStockModel } from "../../models/tushare/type";
+import { IStockInfoTable } from "../../db/interface/stockInfo";
+import { IStockHistoryTable } from "../../db/interface/history";
+import { StockHistoryTableModel } from "../../db/model";
 
 export namespace Storage {
   export function getAllBasicStocks(
@@ -38,6 +42,29 @@ export namespace Storage {
           resolve({ data: [], msg: e });
         }
       );
+    });
+  }
+
+  export function getBasicStocks(): Promise<Response<StockModel[]>> {
+    return new Promise<Response<StockModel[]>>((resolve, reject) => {
+      IStockInfoTable.getAllStocks()
+        .then(
+          (res) => {
+            console.log(res);
+
+            if (res && res.rows) {
+              resolve({ data: res.rows as unknown as StockModel[] });
+            } else {
+              resolve({ data: [] });
+            }
+          },
+          (e) => {
+            resolve({ data: [], msg: e });
+          }
+        )
+        .catch((e) => {
+          resolve({ data: [], msg: e });
+        });
     });
   }
 
@@ -63,6 +90,25 @@ export namespace Storage {
           }
         );
       }
+    });
+  }
+
+  export function insertBasicStocks(
+    stocks: TushareStockModel[]
+  ): Promise<Response<boolean>> {
+    return new Promise<Response<boolean>>((resolve, reject) => {
+      IStockInfoTable.insert(stocks)
+        .then(
+          (res) => {
+            resolve({ data: true });
+          },
+          (e) => {
+            resolve({ data: false });
+          }
+        )
+        .catch((e) => {
+          resolve({ data: false });
+        });
     });
   }
 
@@ -290,6 +336,32 @@ export namespace Storage {
         (e) => {
           resolve({ data: null, msg: e });
         }
+      );
+    });
+  }
+
+  export function saveHistories(
+    stocks: StockModel[]
+  ): Promise<Response<boolean>> {
+    return new Promise<Response<boolean>>((resolve, reject) => {
+      IStockHistoryTable.insert(
+        stocks.map((v) => {
+          function toString(v: any) {
+            return v ? String(v) : null;
+          }
+          return {
+            ...v,
+            close: toString(v.close),
+            open: toString(v.open),
+            high: toString(v.high),
+            low: toString(v.low),
+            avg: toString(v.avg),
+            top_price: toString(v.topPrice),
+            bottom_price: toString(v.bottomPrice),
+            turnover: toString(v.turnover),
+            volume: toString(v.volume),
+          } as StockHistoryTableModel;
+        })
       );
     });
   }

@@ -7,12 +7,12 @@ import { StockLadder } from "./upperlimit/type";
 export interface StockBasicModel extends Record<string, unknown> {
   code?: string;
   name?: string;
-  close?: number;
-  open?: number;
-  high?: number;
-  low?: number;
+  close?: string;
+  open?: string;
+  high?: string;
+  low?: string;
   date?: string;
-  volume?: number;
+  volume?: string;
 }
 
 export type StockModel = TushareStockModel &

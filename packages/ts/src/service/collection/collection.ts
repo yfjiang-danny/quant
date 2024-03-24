@@ -58,6 +58,7 @@ export async function collectionTask(mailer?: Mailer163) {
     });
   } else {
     await Storage.saveAllBasicStocks(allBasicStocks);
+    await Storage.insertBasicStocks(allBasicStocks);
   }
 
   if (!allBasicStocks || allBasicStocks.length <= 0) {
@@ -72,6 +73,8 @@ export async function collectionTask(mailer?: Mailer163) {
     console.log(`fillTradeInfo is empty. collection task stop.`);
     return;
   }
+
+  Storage.saveHistories(fillResult);
 
   const smaResult = await fillStocksSMA(fillResult);
 

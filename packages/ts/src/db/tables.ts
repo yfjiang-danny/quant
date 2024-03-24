@@ -1,19 +1,36 @@
 import sql from "sql";
-import { BasicStockModel, LadderStockModel } from "./model";
+import {
+  StockInfoTableModel,
+  StockLadderTableModel,
+  StockHistoryTableModel,
+} from "./model";
 
 sql.setDialect("postgres");
 
-export const BasicStockTable = sql.define<string, BasicStockModel>({
-  name: "basic_stocks",
+const dateDataType = "varchar(8)";
+const symbolDataType = "varchar(20)";
+const nameDataType = "varchar(250)";
+const numberFixedDataType = "varchar(10)";
+
+const baseColumns = {
+  createAt: {
+    dataType: "varchar(19)",
+    notNull: true,
+  },
+  updateAt: {
+    dataType: "varchar(19)",
+    notNull: true,
+  },
+};
+
+export const StockInfoTable = sql.define<string, StockInfoTableModel>({
+  name: "stock_info",
   schema: "",
   columns: {
-    id: {
-      name: "id",
-      dataType: "integer",
-    },
+    ...baseColumns,
     name: {
       name: "name",
-      dataType: "varchar(250)",
+      dataType: nameDataType,
     },
     fullname: {
       name: "fullname",
@@ -33,7 +50,7 @@ export const BasicStockTable = sql.define<string, BasicStockModel>({
     },
     symbol: {
       name: "symbol",
-      dataType: "varchar(20)",
+      dataType: symbolDataType,
       notNull: true,
       unique: true,
     },
@@ -47,11 +64,11 @@ export const BasicStockTable = sql.define<string, BasicStockModel>({
     },
     list_date: {
       name: "list_date",
-      dataType: "varchar(8)",
+      dataType: dateDataType,
     },
     delist_date: {
       name: "delist_date",
-      dataType: "varchar(20)",
+      dataType: dateDataType,
     },
     industry: {
       name: "industry",
@@ -84,27 +101,81 @@ export const BasicStockTable = sql.define<string, BasicStockModel>({
   },
 });
 
-export const LadderTable = sql.define<string, LadderStockModel>({
-  name: "ladder",
+export const StockLadderTable = sql.define<string, StockLadderTableModel>({
+  name: "stock_ladder",
   schema: "",
   columns: {
+    ...baseColumns,
     date: {
       name: "date",
-      dataType: "varchar(8)",
+      dataType: dateDataType,
       notNull: true,
+      primaryKey: true,
     },
     symbol: {
       name: "symbol",
-      dataType: "varchar(20)",
+      dataType: symbolDataType,
       notNull: true,
+      primaryKey: true,
     },
     name: {
       name: "name",
-      dataType: "varchar(100)",
+      dataType: nameDataType,
     },
     ladder: {
       name: "ladder",
       dataType: "smallint",
+    },
+  },
+});
+
+export const StockHistoriesTable = sql.define<string, StockHistoryTableModel>({
+  name: "stock_histories",
+  schema: "",
+  columns: {
+    ...baseColumns,
+    date: {
+      dataType: dateDataType,
+      notNull: true,
+      primaryKey: true,
+    },
+    symbol: {
+      dataType: symbolDataType,
+      notNull: true,
+      primaryKey: true,
+    },
+    name: {
+      dataType: nameDataType,
+    },
+    open: {
+      dataType: numberFixedDataType,
+    },
+    close: {
+      dataType: numberFixedDataType,
+    },
+    avg: {
+      dataType: numberFixedDataType,
+    },
+    high: {
+      dataType: numberFixedDataType,
+    },
+    low: {
+      dataType: numberFixedDataType,
+    },
+    top_price: {
+      dataType: numberFixedDataType,
+    },
+    bottom_price: {
+      dataType: numberFixedDataType,
+    },
+    change: {
+      dataType: numberFixedDataType,
+    },
+    turnover: {
+      dataType: numberFixedDataType,
+    },
+    volume: {
+      dataType: numberFixedDataType,
     },
   },
 });
