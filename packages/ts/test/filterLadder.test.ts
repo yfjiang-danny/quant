@@ -1,10 +1,10 @@
 import * as dotenv from "dotenv";
-import { filterLadder } from "../src/tasks/filterLadder";
+import { fillingLadder } from "../src/service/collection/derivative";
 
 dotenv.config();
 
 (async function test() {
-  filterLadder().then((res) => {
+  fillingLadder().then((res) => {
     console.log(res);
   });
 })();

@@ -417,6 +417,27 @@ export namespace Storage {
     });
   }
 
+  export function getStockDailysByDate(
+    date: string
+  ): Promise<Response<StockHistoryTableModel[]>> {
+    return new Promise<Response<StockHistoryTableModel[]>>((resolve) => {
+      IStockHistoryTable.getStocksByDate(date)
+        .then(
+          (res) => {
+            console.log(res);
+
+            resolve({ data: res.rows as unknown as StockHistoryTableModel[] });
+          },
+          (e) => {
+            resolve({ data: [], msg: e });
+          }
+        )
+        .catch((e) => {
+          resolve({ data: [], msg: e });
+        });
+    });
+  }
+
   export function updateStockHistories(
     stocks: StockHistoryTableModel[]
   ): Promise<Response<boolean>> {

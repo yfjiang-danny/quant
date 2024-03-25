@@ -9,8 +9,6 @@ import { StockLadderTableModel } from "../db/model";
 
 const logPath = path.resolve(logRootPath, "filter_ladder.log");
 
-
-
 async function calcLadder(stock: StockModel) {
   const histories = await Storage.getStockHistories(
     stock.symbol as string
