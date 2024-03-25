@@ -15,6 +15,7 @@ import { filterStocks } from "../tasks/filterStocks";
 import { collectionTask } from "./collection/collection";
 import { StockService } from "./stock";
 import { filterLadder } from "../tasks/filterLadder";
+import { dailyCollection } from "./collection/collection.next";
 
 dotenv.config();
 
@@ -151,6 +152,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
+  runDBCollectionJob();
   runCollectionJob();
   runFilterStockJob();
   runFilterCurrentJob();
@@ -170,6 +172,22 @@ function runCollectionJob() {
   rule.hour = 17;
   rule.minute = 0;
   job = scheduleJob(rule, collectionTask.bind(null, mailer));
+
+  process.on("SIGINT", function () {
+    gracefulShutdown().then(() => process.exit(0));
+  });
+}
+
+let dbJob: Job;
+function runDBCollectionJob() {
+  console.log(`Start runDBCollectionJob ...`);
+
+  // 每天晚上 17 点
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 17;
+  rule.minute = 0;
+  dbJob = scheduleJob(rule, dailyCollection.bind(null, mailer));
 
   process.on("SIGINT", function () {
     gracefulShutdown().then(() => process.exit(0));

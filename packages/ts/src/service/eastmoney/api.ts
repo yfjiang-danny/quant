@@ -80,7 +80,8 @@ export namespace EastMoney_API {
             turnover: turnover,
             volume: volume,
             topPrice: Number(res.topprice),
-            bottomPrice: Number(res.bottomprice)
+            bottomPrice: Number(res.bottomprice),
+            change: res.realtimequote.zdf
           } as EastMoneyStockModel;
         }
         return null;

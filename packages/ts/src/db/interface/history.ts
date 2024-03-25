@@ -140,7 +140,7 @@ export namespace IStockHistoryTable {
     }
 
     return dbQuery<StockHistoryTableModel[]>(
-      mQuery.order(StockHistoriesTable.symbol).toQuery()
+      mQuery.order(StockHistoriesTable.date).toQuery()
     );
   }
 }

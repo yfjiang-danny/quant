@@ -3,22 +3,13 @@ import { logRootPath } from "../common/paths";
 import { logger } from "../logs";
 import { StockModel } from "../models/type";
 import { Storage } from "../service/storage/storage";
-import { fillEastStockInfo } from "../service/utils";
+import { calcTopPriceLimit, fillEastStockInfo } from "../service/utils";
 import { IStockLadderTable } from "../db/interface/ladder";
 import { StockLadderTableModel } from "../db/model";
 
 const logPath = path.resolve(logRootPath, "filter_ladder.log");
 
-function calcNextDateLimit(stock: StockModel) {
-  const close = Number(stock.close);
-  const maxChange =
-    stock.symbol?.startsWith("0") || stock.symbol?.startsWith("60")
-      ? 0.1
-      : stock.symbol?.startsWith("8") || stock.symbol?.startsWith("4")
-      ? 0.3
-      : 0.2;
-  return parseFloat((close * (1 + maxChange)).toFixed(2));
-}
+
 
 async function calcLadder(stock: StockModel) {
   const histories = await Storage.getStockHistories(
@@ -27,7 +18,7 @@ async function calcLadder(stock: StockModel) {
 
   let i = 0;
   while (i < histories.length - 1) {
-    histories[i].topPrice = calcNextDateLimit(histories[i + 1]);
+    histories[i].topPrice = Number(calcTopPriceLimit(histories[i + 1]));
     if (histories[i].close !== histories[i].topPrice) {
       return i;
     }
@@ -38,7 +29,7 @@ async function calcLadder(stock: StockModel) {
 }
 
 export async function filterLadder() {
-  const allStocks = await Storage.getBasicStocks().then((res) => res.data);
+  const allStocks = await Storage.getStockInfosFromDB().then((res) => res.data);
   if (!allStocks || allStocks.length <= 0) {
     logger.info(`stocks is empty`, logPath);
 

@@ -8,3 +8,5 @@ COPY package-lock.json /opt/quant/package-lock.json
 
 RUN npm install
 
+COPY sql.types.d.ts /opt/quant/node_modules/sql/lib/types.d.ts
+

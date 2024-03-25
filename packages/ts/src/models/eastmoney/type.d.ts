@@ -60,6 +60,7 @@ export interface EastMoneyStockModel {
   low?: number;
   date?: string;
   volume?: number;
+  change?: string;
   capital?: number;
   turnover?: number;
   avg?: number;

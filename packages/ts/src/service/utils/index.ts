@@ -1,3 +1,4 @@
+import { StockHistoryTableModel } from "../../db/model";
 import { logger } from "../../logs";
 import { ALPHStockModel } from "../../models/alph/type";
 import { EastMoneyStockModel } from "../../models/eastmoney/type";
@@ -92,4 +93,46 @@ export function fillStockHistoryByALPH(stock: StockModel) {
       resolve(true);
     }
   });
+}
+
+export function convertToHistoryModel(v: StockModel): StockHistoryTableModel {
+  function toString(v: any) {
+    return v ? String(v) : null;
+  }
+  return {
+    date: v.date,
+    name: v.name,
+    symbol: v.symbol,
+    change: v.change,
+    close: toString(v.close),
+    open: toString(v.open),
+    high: toString(v.high),
+    low: toString(v.low),
+    avg: toString(v.avg),
+    top_price: toString(v.topPrice),
+    bottom_price: toString(v.bottomPrice),
+    turnover: toString(v.turnover),
+    volume: toString(v.volume),
+  } as StockHistoryTableModel;
+}
+
+export function getLimitPercentage(symbol?: string): number {
+  if (!symbol) return 0
+  return symbol?.startsWith("0") || symbol?.startsWith("60")
+  ? 0.1
+  : symbol?.startsWith("8") || symbol?.startsWith("4")
+  ? 0.3
+  : 0.2
+}
+
+export function calcTopPriceLimit(stock: StockModel) {
+  const close = Number(stock.close);
+  const maxChange =getLimitPercentage(stock.symbol);
+  return (close * (1 + maxChange)).toFixed(2);
+}
+
+export function calcBottomPriceLimit(stock: StockModel) {
+  const close = Number(stock.close);
+  const maxChange =getLimitPercentage(stock.symbol);
+  return ((close * (1 - maxChange)).toFixed(2));
 }

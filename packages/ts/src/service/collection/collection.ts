@@ -58,7 +58,7 @@ export async function collectionTask(mailer?: Mailer163) {
     });
   } else {
     await Storage.saveAllBasicStocks(allBasicStocks);
-    await Storage.insertBasicStocks(allBasicStocks);
+    await Storage.insertStockInfos(allBasicStocks);
   }
 
   if (!allBasicStocks || allBasicStocks.length <= 0) {
@@ -74,7 +74,7 @@ export async function collectionTask(mailer?: Mailer163) {
     return;
   }
 
-  Storage.saveHistories(fillResult);
+  Storage.insertStockHistories(fillResult);
 
   const smaResult = await fillStocksSMA(fillResult);
 

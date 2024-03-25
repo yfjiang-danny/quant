@@ -21,6 +21,8 @@ import { TushareStockModel } from "../../models/tushare/type";
 import { IStockInfoTable } from "../../db/interface/stockInfo";
 import { IStockHistoryTable } from "../../db/interface/history";
 import { StockHistoryTableModel } from "../../db/model";
+import { convertToHistoryModel } from "../utils";
+import { BinaryNode } from "sql";
 
 export namespace Storage {
   export function getAllBasicStocks(
@@ -45,13 +47,11 @@ export namespace Storage {
     });
   }
 
-  export function getBasicStocks(): Promise<Response<StockModel[]>> {
+  export function getStockInfosFromDB(): Promise<Response<StockModel[]>> {
     return new Promise<Response<StockModel[]>>((resolve, reject) => {
       IStockInfoTable.getAllStocks()
         .then(
           (res) => {
-            console.log(res);
-
             if (res && res.rows) {
               resolve({ data: res.rows as unknown as StockModel[] });
             } else {
@@ -93,7 +93,7 @@ export namespace Storage {
     });
   }
 
-  export function insertBasicStocks(
+  export function insertStockInfos(
     stocks: TushareStockModel[]
   ): Promise<Response<boolean>> {
     return new Promise<Response<boolean>>((resolve, reject) => {
@@ -340,29 +340,28 @@ export namespace Storage {
     });
   }
 
-  export function saveHistories(
-    stocks: StockModel[]
+  export function insertStockHistories(
+    stocks: StockModel[],
+    shouldUpdate?: boolean
   ): Promise<Response<boolean>> {
-    return new Promise<Response<boolean>>((resolve, reject) => {
+    return new Promise<Response<boolean>>((resolve) => {
       IStockHistoryTable.insert(
         stocks.map((v) => {
-          function toString(v: any) {
-            return v ? String(v) : null;
+          return convertToHistoryModel(v);
+        }),
+        shouldUpdate
+      )
+        .then(
+          (res) => {
+            resolve({ data: true });
+          },
+          (e) => {
+            resolve({ data: false, msg: e });
           }
-          return {
-            ...v,
-            close: toString(v.close),
-            open: toString(v.open),
-            high: toString(v.high),
-            low: toString(v.low),
-            avg: toString(v.avg),
-            top_price: toString(v.topPrice),
-            bottom_price: toString(v.bottomPrice),
-            turnover: toString(v.turnover),
-            volume: toString(v.volume),
-          } as StockHistoryTableModel;
-        })
-      );
+        )
+        .catch((e) => {
+          resolve({ data: false, msg: e });
+        });
     });
   }
 
@@ -394,6 +393,45 @@ export namespace Storage {
         )
         .catch(() => {
           resolve({ data: [] });
+        });
+    });
+  }
+
+  export function getStockHistoriesFromDB(
+    symbol: string,
+    node?: BinaryNode
+  ): Promise<Response<StockHistoryTableModel[]>> {
+    return new Promise<Response<StockHistoryTableModel[]>>((resolve) => {
+      IStockHistoryTable.getStocksBySymbol(symbol, node)
+        .then(
+          (res) => {
+            resolve({ data: res.rows as unknown as StockHistoryTableModel[] });
+          },
+          (e) => {
+            resolve({ data: [], msg: e });
+          }
+        )
+        .catch((e) => {
+          resolve({ data: [], msg: e });
+        });
+    });
+  }
+
+  export function updateStockHistories(
+    stocks: StockHistoryTableModel[]
+  ): Promise<Response<boolean>> {
+    return new Promise<Response<boolean>>((resolve) => {
+      IStockHistoryTable.update(stocks)
+        .then(
+          (res) => {
+            resolve({ data: true });
+          },
+          (e) => {
+            resolve({ data: false, msg: e });
+          }
+        )
+        .catch((e) => {
+          resolve({ data: false, msg: e });
         });
     });
   }

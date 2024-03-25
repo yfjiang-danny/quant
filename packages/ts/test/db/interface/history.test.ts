@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import { Storage } from "../../../src/service/storage/storage";
 import { IStockHistoryTable } from "../../../src/db/interface/history";
 import { StockHistoryTableModel } from "../../../src/db/model";
+import { convertToHistoryModel } from "../../../src/service/utils";
 
 dotenv.config();
 
@@ -10,9 +11,11 @@ dotenv.config();
     (res) => res.data
   );
 
-  const insertRes = await IStockHistoryTable.insert(
-    allStocks as unknown as StockHistoryTableModel[]
-  );
+  if (!allStocks || allStocks.length < 0) {
+    return;
+  }
+
+  const insertRes = await IStockHistoryTable.insert(allStocks.map(v => convertToHistoryModel(v)));
 
   console.log(insertRes);
 })();
