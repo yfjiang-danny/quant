@@ -96,7 +96,7 @@ export namespace IStockLadderTable {
     return dbQuery(query);
   }
 
-  export function getStocksByDate(
+  export function getStockLadderByDate(
     date: string,
     ladder?: number
   ): Promise<QueryResult<StockLadderTableModel[]>> {

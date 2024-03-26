@@ -88,6 +88,12 @@ app.post("/collection/stop", (req: Request, res: Response) => {
   res.send({ data: cancel });
 });
 
+app.post("/db/collection/exec", (req: Request, res: Response) => {
+  console.log(`/db/collection/exec`);
+  dailyCollection(mailer);
+  res.send({ data: true });
+});
+
 app.post("/task/filterStocks/start", (req: Request, res: Response) => {
   console.log(`/task/filterStocks/start`);
 
@@ -193,6 +199,7 @@ function runDBCollectionJob() {
     gracefulShutdown().then(() => process.exit(0));
   });
 }
+
 
 const mailer = new Mailer163();
 

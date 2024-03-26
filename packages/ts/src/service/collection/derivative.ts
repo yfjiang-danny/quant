@@ -39,6 +39,8 @@ export async function fillingLadder(date?: string) {
     return;
   }
 
+  // const preLadder = await IStockLadderTable.getStockLadderByDate
+
   const upperLimit: StockLadderTableModel[] = [];
   for (const v of limitedStocks) {
     upperLimit.push({
