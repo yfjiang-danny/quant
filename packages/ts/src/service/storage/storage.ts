@@ -424,8 +424,6 @@ export namespace Storage {
       IStockHistoryTable.getStocksByDate(date)
         .then(
           (res) => {
-            console.log(res);
-
             resolve({ data: res.rows as unknown as StockHistoryTableModel[] });
           },
           (e) => {

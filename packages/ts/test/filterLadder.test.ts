@@ -4,7 +4,7 @@ import { fillingLadder } from "../src/service/collection/derivative";
 dotenv.config();
 
 (async function test() {
-  fillingLadder().then((res) => {
+  fillingLadder('20240325').then((res) => {
     console.log(res);
   });
 })();

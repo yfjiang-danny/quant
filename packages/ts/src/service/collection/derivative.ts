@@ -27,8 +27,8 @@ async function calcLadder(symbol: string) {
   return i;
 }
 
-export async function fillingLadder() {
-  const date = moment().format("YYYYMMDD");
+export async function fillingLadder(date?: string) {
+  date = date??moment().format("YYYYMMDD");
 
   const limitedStocks = await Storage.getStockDailysByDate(date).then((res) =>
     res.data.filter((v) => v.close == v.top_price)

@@ -121,7 +121,7 @@ export namespace IStockHistoryTable {
       mQuery = mQuery.where(node);
     }
 
-    const query = mQuery.order(StockHistoriesTable.symbol).limit(100).toQuery();
+    const query = mQuery.order(StockHistoriesTable.symbol).toQuery();
 
     return dbQuery<StockHistoryTableModel[]>(query);
   }

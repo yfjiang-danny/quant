@@ -6,19 +6,19 @@ import { convertToHistoryModel } from "../../../src/service/utils";
 
 dotenv.config();
 
-(async function testInsert() {
-  const allStocks = await Storage.getAllStocks("20240119").then(
-    (res) => res.data
-  );
+// (async function testInsert() {
+//   const allStocks = await Storage.getAllStocks("20240119").then(
+//     (res) => res.data
+//   );
 
-  if (!allStocks || allStocks.length < 0) {
-    return;
-  }
+//   if (!allStocks || allStocks.length < 0) {
+//     return;
+//   }
 
-  const insertRes = await IStockHistoryTable.insert(allStocks.map(v => convertToHistoryModel(v)));
+//   const insertRes = await IStockHistoryTable.insert(allStocks.map(v => convertToHistoryModel(v)));
 
-  console.log(insertRes);
-})();
+//   console.log(insertRes);
+// })();
 
 // (async function testUpdate() {
 //   const allStocks = await Storage.getAllBasicStocks("20240119").then((res) =>
@@ -43,8 +43,9 @@ dotenv.config();
 //   });
 // })();
 
-// (async function testGetAllStocks() {
-//   IBasicStockTable.getAllStocks().then((res) => {
-//     console.log(res.rowCount);
-//   });
-// })();
+(async function testGetStockDailysByDate() {
+  IStockHistoryTable.getStocksByDate('20240325').then(res => {
+    console.log(res.rows);
+    
+  })
+})();
