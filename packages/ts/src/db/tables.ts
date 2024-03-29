@@ -3,6 +3,7 @@ import {
   StockInfoTableModel,
   StockLadderTableModel,
   StockHistoryTableModel,
+  StockSnapshotTableModel,
 } from "./model";
 
 sql.setDialect("postgres");
@@ -11,6 +12,8 @@ const dateDataType = "varchar(8)";
 const symbolDataType = "varchar(20)";
 const nameDataType = "varchar(250)";
 const numberFixedDataType = "varchar(10)";
+
+const numberDataType = "varchar(10)";
 
 const baseColumns = {
   createAt: {
@@ -169,6 +172,55 @@ export const StockHistoriesTable = sql.define<string, StockHistoryTableModel>({
       dataType: numberFixedDataType,
     },
     change: {
+      dataType: numberFixedDataType,
+    },
+    turnover: {
+      dataType: numberFixedDataType,
+    },
+    volume: {
+      dataType: numberFixedDataType,
+    },
+  },
+});
+
+
+export const StockSnapshotTable = sql.define<string, StockSnapshotTableModel>({
+  name: "stock_histories",
+  schema: "",
+  columns: {
+    ...baseColumns,
+    date: {
+      dataType: dateDataType,
+      notNull: true,
+      primaryKey: true,
+    },
+    symbol: {
+      dataType: symbolDataType,
+      notNull: true,
+      primaryKey: true,
+    },
+    name: {
+      dataType: nameDataType,
+    },
+    open: {
+      dataType: numberFixedDataType,
+    },
+    close: {
+      dataType: numberFixedDataType,
+    },
+    avg: {
+      dataType: numberFixedDataType,
+    },
+    high: {
+      dataType: numberFixedDataType,
+    },
+    low: {
+      dataType: numberFixedDataType,
+    },
+    top_price: {
+      dataType: numberFixedDataType,
+    },
+    bottom_price: {
       dataType: numberFixedDataType,
     },
     turnover: {

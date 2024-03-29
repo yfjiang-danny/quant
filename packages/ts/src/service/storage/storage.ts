@@ -417,7 +417,7 @@ export namespace Storage {
     });
   }
 
-  export function getStockDailysByDate(
+  export function getStockSnapshotByDate(
     date: string
   ): Promise<Response<StockHistoryTableModel[]>> {
     return new Promise<Response<StockHistoryTableModel[]>>((resolve) => {

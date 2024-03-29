@@ -13,7 +13,7 @@ dotenv.config();
 (async function test() {
   const date = moment().format("YYYYMMDD");
 
-  const limitedStocks = await Storage.getStockDailysByDate('20240325').then((res) =>
+  const limitedStocks = await Storage.getStockSnapshotByDate('20240325').then((res) =>
     res.data.filter((v) => v.close == v.top_price)
   );
 

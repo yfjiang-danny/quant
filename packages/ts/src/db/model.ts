@@ -31,3 +31,18 @@ export interface StockHistoryTableModel extends BaseTableModel {
   top_price?: string;
   bottom_price?: string;
 }
+
+export interface StockSnapshotTableModel extends BaseTableModel {
+  symbol: string;
+  name: string;
+  close: number;
+  open: number;
+  high: number;
+  low: number;
+  date: number;
+  volume: number;
+  turnover: number;
+  avg: number;
+  top_price: number;
+  bottom_price: number;
+}

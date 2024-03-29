@@ -30,7 +30,7 @@ async function calcLadder(symbol: string) {
 export async function fillingLadder(date?: string) {
   date = date??moment().format("YYYYMMDD");
 
-  const limitedStocks = await Storage.getStockDailysByDate(date).then((res) =>
+  const limitedStocks = await Storage.getStockSnapshotByDate(date).then((res) =>
     res.data.filter((v) => v.close == v.top_price)
   );
   if (!limitedStocks || limitedStocks.length <= 0) {
