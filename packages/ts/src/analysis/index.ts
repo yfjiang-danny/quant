@@ -5,7 +5,7 @@ import { dbRootPath, logRootPath } from "../common/paths";
 import { logger } from "../logs";
 import { StockWithSMA } from "../models/sma/type";
 import { StockModel } from "../models/type";
-import { YahooStockModel } from "../models/yahoo/type";
+import { YahooStockModel } from "../../third/yahoo/type";
 import { calculateMovingAverage } from "../service/factors/sma";
 import { Storage } from "../service/storage/storage";
 import { readJsonFileInBatch } from "../utils/fs";

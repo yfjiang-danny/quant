@@ -7,7 +7,7 @@ import { dbRootPath, logRootPath } from "../src/common/paths";
 import { logger } from "../src/logs";
 import { StockModel } from "../src/models/type";
 import { Storage } from "../src/service/storage/storage";
-import { YAHOO_API } from "../src/service/yahoo/api";
+import { YAHOO_API } from "../third/yahoo/api";
 import { iWriteFile } from "../src/utils/fs";
 
 dotenv.config();

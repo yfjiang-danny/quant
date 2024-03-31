@@ -4,7 +4,7 @@ import { logger } from "../logs";
 import { StockModel } from "../models/type";
 import { Storage } from "../service/storage/storage";
 import { calcTopPriceLimit, fillEastStockInfo } from "../service/utils";
-import { IStockLadderTable } from "../db/interface/ladder";
+import { IStockLadderTable } from "../../models/interface/ladder";
 import { StockLadderTableModel } from "../db/model";
 
 const logPath = path.resolve(logRootPath, "filter_ladder.log");

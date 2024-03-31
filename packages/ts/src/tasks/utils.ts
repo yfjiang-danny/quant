@@ -1,9 +1,9 @@
 import { logger } from "../logs";
-import { EastMoneyStockModel, MarketType } from "../models/eastmoney/type";
+import { EastMoneyStockModel, MarketType } from "../../third/eastmoney/type";
 import { StockWithSMA } from "../models/sma/type";
-import { TushareStockModel } from "../models/tushare/type";
+import { TushareStockModel } from "../../third/tushare/type";
 import { StockModel } from "../models/type";
-import { EastMoney_API } from "../service/eastmoney/api";
+import { EastMoney_API } from "../../third/eastmoney/api";
 import { fillStockSMA } from "../service/factors/sma";
 
 function getMarket(symbol: string): MarketType {

@@ -1,7 +1,7 @@
-import { EastMoneyStockModel } from "./eastmoney/type";
+import { EastMoneyStockModel } from "../../third/eastmoney/type";
 import { StockMaxRiseDay } from "./rise/type";
 import { StockWithSMA } from "./sma/type";
-import { TushareStockModel } from "./tushare/type";
+import { TushareStockModel } from "../../third/tushare/type";
 import { StockLadder } from "./upperlimit/type";
 
 export interface StockBasicModel extends Record<string, unknown> {

@@ -1,16 +1,29 @@
 import * as dotenv from "dotenv";
-import { readdir } from "fs/promises";
-import { historyRootPath, logRootPath } from "../common/paths";
 import { Storage } from "../service/storage/storage";
-import path from "path";
-import { logger } from "../logs";
-import { StockHistoryTableModel } from "../db/model";
+
 import { StockModel } from "../models/type";
-import { StockHistoriesTable } from "../db/tables";
 import { calcBottomPriceLimit, calcTopPriceLimit } from "../service/utils";
 dotenv.config();
 
-async function fillTopAndBottomPrise(symbol: string) {
+async function fillingChange(symbol: string) {
+  const histories = await Storage.getStockHistoriesFromDB(symbol).then(
+    (res) => res.data
+  );
+  // console.log(histories);
+  let i = 0;
+  while (i < histories.length - 1) {
+    if (histories[i].close && histories[i + 1].close) {
+      histories[i].change = (
+        Number(histories[i].close) - Number(histories[i + 1].close)
+      ).toFixed(2);
+    }
+
+    i++;
+  }
+  await Storage.updateStockHistories(histories);
+}
+
+async function fillingTopAndBottomPrise(symbol: string) {
   const histories = await Storage.getStockHistoriesFromDB(symbol).then(
     (res) => res.data
   );
@@ -33,11 +46,16 @@ async function fillTopAndBottomPrise(symbol: string) {
 }
 
 (async function main() {
-  const allStocks = await Storage.getStockInfosFromDB().then((res) => res.data);
+  const allStocks = await Storage.getStockInfosFromDB().then((res) => {
+    if (res.msg) {
+      console.log(res.msg);
+    }
+    return res.data;
+  });
 
   let i = 0;
   while (i < allStocks.length) {
-    await fillTopAndBottomPrise(allStocks[i].symbol as string);
+    await fillingChange(allStocks[i].symbol as string);
     i++;
   }
 })();

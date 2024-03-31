@@ -17,12 +17,12 @@ import {
   readJsonFileInBatch,
 } from "../../utils/fs";
 import { Response } from "./type";
-import { TushareStockModel } from "../../models/tushare/type";
-import { IStockInfoTable } from "../../db/interface/stockInfo";
-import { IStockHistoryTable } from "../../db/interface/history";
-import { StockHistoryTableModel } from "../../db/model";
+import { TushareStockModel } from "../../../third/tushare/type";
 import { convertToHistoryModel } from "../utils";
 import { BinaryNode } from "sql";
+import { IStockInfoTable } from "../../../models/interface/stockInfo";
+import { IStockSnapshotTable } from "../../../models/interface/snapshot";
+import { StockSnapshotTableModel } from "../../../models/tables/snapshot";
 
 export namespace Storage {
   export function getAllBasicStocks(
@@ -345,7 +345,7 @@ export namespace Storage {
     shouldUpdate?: boolean
   ): Promise<Response<boolean>> {
     return new Promise<Response<boolean>>((resolve) => {
-      IStockHistoryTable.insert(
+      IStockSnapshotTable.insert(
         stocks.map((v) => {
           return convertToHistoryModel(v);
         }),
@@ -400,12 +400,12 @@ export namespace Storage {
   export function getStockHistoriesFromDB(
     symbol: string,
     node?: BinaryNode
-  ): Promise<Response<StockHistoryTableModel[]>> {
-    return new Promise<Response<StockHistoryTableModel[]>>((resolve) => {
-      IStockHistoryTable.getStocksBySymbol(symbol, node)
+  ): Promise<Response<StockSnapshotTableModel[]>> {
+    return new Promise<Response<StockSnapshotTableModel[]>>((resolve) => {
+      IStockSnapshotTable.getStocksBySymbol(symbol, node)
         .then(
           (res) => {
-            resolve({ data: res.rows as unknown as StockHistoryTableModel[] });
+            resolve({ data: res.rows as unknown as StockSnapshotTableModel[] });
           },
           (e) => {
             resolve({ data: [], msg: e });
@@ -419,12 +419,12 @@ export namespace Storage {
 
   export function getStockSnapshotByDate(
     date: string
-  ): Promise<Response<StockHistoryTableModel[]>> {
-    return new Promise<Response<StockHistoryTableModel[]>>((resolve) => {
-      IStockHistoryTable.getStocksByDate(date)
+  ): Promise<Response<StockSnapshotTableModel[]>> {
+    return new Promise<Response<StockSnapshotTableModel[]>>((resolve) => {
+      IStockSnapshotTable.getStocksByDate(date)
         .then(
           (res) => {
-            resolve({ data: res.rows as unknown as StockHistoryTableModel[] });
+            resolve({ data: res.rows as unknown as StockSnapshotTableModel[] });
           },
           (e) => {
             resolve({ data: [], msg: e });
@@ -437,10 +437,10 @@ export namespace Storage {
   }
 
   export function updateStockHistories(
-    stocks: StockHistoryTableModel[]
+    stocks: StockSnapshotTableModel[]
   ): Promise<Response<boolean>> {
     return new Promise<Response<boolean>>((resolve) => {
-      IStockHistoryTable.update(stocks)
+      IStockSnapshotTable.update(stocks)
         .then(
           (res) => {
             resolve({ data: true });

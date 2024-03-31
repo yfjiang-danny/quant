@@ -1,6 +1,6 @@
 import { StockModel } from "../../models/type";
 import { getMarket } from "../../utils/convert";
-import { EastMoney_API } from "../eastmoney/api";
+import { EastMoney_API } from "../../../third/eastmoney/api";
 import { Storage } from "../storage/storage";
 import { Response } from "../storage/type";
 

@@ -1,13 +1,13 @@
-import { StockHistoryTableModel } from "../../db/model";
 import { logger } from "../../logs";
-import { ALPHStockModel } from "../../models/alph/type";
-import { EastMoneyStockModel } from "../../models/eastmoney/type";
-import { TushareStockModel } from "../../models/tushare/type";
+import { ALPHStockModel } from "../../../third/alph/type";
+import { EastMoneyStockModel } from "../../../third/eastmoney/type";
+import { TushareStockModel } from "../../../third/tushare/type";
 import { StockModel } from "../../models/type";
 import { getMarket } from "../../utils/convert";
-import { ALPH_API } from "../alph/api";
-import { EastMoney_API } from "../eastmoney/api";
+import { ALPH_API } from "../../../third/alph/api";
+import { EastMoney_API } from "../../../third/eastmoney/api";
 import { Storage } from "../storage/storage";
+import { StockSnapshotTableModel } from "../../../models/tables/snapshot";
 
 const batch = 10;
 
@@ -95,7 +95,7 @@ export function fillStockHistoryByALPH(stock: StockModel) {
   });
 }
 
-export function convertToHistoryModel(v: StockModel): StockHistoryTableModel {
+export function convertToHistoryModel(v: StockModel): StockSnapshotTableModel {
   function toString(v: any) {
     return v ? String(v) : null;
   }
@@ -113,26 +113,26 @@ export function convertToHistoryModel(v: StockModel): StockHistoryTableModel {
     bottom_price: toString(v.bottomPrice),
     turnover: toString(v.turnover),
     volume: toString(v.volume),
-  } as StockHistoryTableModel;
+  } as StockSnapshotTableModel;
 }
 
 export function getLimitPercentage(symbol?: string): number {
-  if (!symbol) return 0
+  if (!symbol) return 0;
   return symbol?.startsWith("0") || symbol?.startsWith("60")
-  ? 0.1
-  : symbol?.startsWith("8") || symbol?.startsWith("4")
-  ? 0.3
-  : 0.2
+    ? 0.1
+    : symbol?.startsWith("8") || symbol?.startsWith("4")
+    ? 0.3
+    : 0.2;
 }
 
 export function calcTopPriceLimit(stock: StockModel) {
   const close = Number(stock.close);
-  const maxChange =getLimitPercentage(stock.symbol);
+  const maxChange = getLimitPercentage(stock.symbol);
   return (close * (1 + maxChange)).toFixed(2);
 }
 
 export function calcBottomPriceLimit(stock: StockModel) {
   const close = Number(stock.close);
-  const maxChange =getLimitPercentage(stock.symbol);
-  return ((close * (1 - maxChange)).toFixed(2));
+  const maxChange = getLimitPercentage(stock.symbol);
+  return (close * (1 - maxChange)).toFixed(2);
 }

@@ -12,10 +12,10 @@ import { logger } from "../logs";
 import { Mailer163 } from "../mail";
 import { filterCurrent } from "../tasks/filterCurrent";
 import { filterStocks } from "../tasks/filterStocks";
-import { collectionTask } from "./collection/collection";
+import { collectionTask } from "../collection/collection";
 import { StockService } from "./stock";
 import { filterLadder } from "../tasks/filterLadder";
-import { dailyCollection } from "./collection/collection.next";
+import { dailyCollection } from "../collection/collection.next";
 
 dotenv.config();
 
@@ -199,7 +199,6 @@ function runDBCollectionJob() {
     gracefulShutdown().then(() => process.exit(0));
   });
 }
-
 
 const mailer = new Mailer163();
 

@@ -1,7 +1,6 @@
 import * as dotenv from "dotenv";
+import { IStockSnapshotTable } from "../../../models/interface/snapshot";
 import { Storage } from "../../../src/service/storage/storage";
-import { IStockHistoryTable } from "../../../src/db/interface/history";
-import { StockHistoryTableModel } from "../../../src/db/model";
 import { convertToHistoryModel } from "../../../src/service/utils";
 
 dotenv.config();
@@ -15,7 +14,7 @@ dotenv.config();
 //     return;
 //   }
 
-//   const insertRes = await IStockHistoryTable.insert(allStocks.map(v => convertToHistoryModel(v)));
+//   const insertRes = await IStockSnapshotTable.insert(allStocks.map(v => convertToHistoryModel(v)));
 
 //   console.log(insertRes);
 // })();
@@ -44,8 +43,7 @@ dotenv.config();
 // })();
 
 (async function testGetStockDailysByDate() {
-  IStockHistoryTable.getStocksByDate('20240325').then(res => {
+  IStockSnapshotTable.getStocksByDate("20240325").then((res) => {
     console.log(res.rows);
-    
-  })
+  });
 })();

@@ -1,7 +1,7 @@
-import { EastMoneyColumns } from "./eastmoney/constant";
+import { EastMoneyColumns } from "../../third/eastmoney/constant";
+import { TushareStockColumns } from "../../third/tushare/constant";
 import { MaxRiseColumns } from "./rise/constant";
 import { SMAColumns } from "./sma/constant";
-import { TushareStockColumns } from "./tushare/constant";
 import { StockModel } from "./type";
 import { LadderColumns } from "./upperlimit/constant";
 
