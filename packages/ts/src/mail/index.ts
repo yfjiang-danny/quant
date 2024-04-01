@@ -22,14 +22,14 @@ export class Mailer163 {
 
   send({
     from = process.env.QQ_MAIL_USER_NAME,
-    to,
+    to = "michael593@163.com",
     subject,
     text,
     html,
     attachments,
   }: {
     from?: string;
-    to: string;
+    to?: string;
     subject: string;
     text?: string;
     html?: string;
