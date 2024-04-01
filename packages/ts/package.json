@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "build": "tsc src/**/*.ts --outDir dist --esModuleInterop",
-    "start": "node dist/service/app.js",
+    "start": "node dist/src/service/app.js",
     "build:allStocks": "tsc src/tasks/getAllStocks.ts --outDir dist --esModuleInterop",
     "run:allStocks": "node dist/tasks/getAllStocks.js >all_stocks.log 2>&1",
     "build:capital": "tsc src/tasks/fillCapital.ts --outDir dist --esModuleInterop",

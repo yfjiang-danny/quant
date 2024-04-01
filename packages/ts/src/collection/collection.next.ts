@@ -78,10 +78,10 @@ export function dailyCollection(mailer?: Mailer163) {
   queue.add(snapshot);
   queue.add(fillingLadder);
 
-  while (queue.tasks.length === 0) {
-    log("Daily collection complete");
-    break;
+  while (queue.tasks.length !== 0) {
+    //
   }
+  log("Daily collection complete");
 
   // mailer
   // ?.send({

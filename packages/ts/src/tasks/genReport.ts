@@ -21,8 +21,7 @@ async function genReport(date?: string) {
     }
     if (Number(stock.close) > Number(stock.open)) {
       numOfPositive++;
-    }
-    if (Number(stock.close) < Number(stock.open)) {
+    } else if (Number(stock.close) < Number(stock.open)) {
       numOfNegative++;
     }
   }
