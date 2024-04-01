@@ -16,6 +16,7 @@ import { collectionTask } from "../collection/collection";
 import { StockService } from "./stock";
 import { filterLadder } from "../tasks/filterLadder";
 import { dailyCollection } from "../collection/collection.next";
+import { genReport } from "../tasks/genReport";
 
 dotenv.config();
 
@@ -152,6 +153,12 @@ app.post("/task/filterLadder/start", (req: Request, res: Response) => {
   res.send({ data: true });
 });
 
+app.post("/task/genReport/exec", (req: Request, res: Response) => {
+  console.log(`/task/genReport/exec`);
+  genReport(undefined, mailer);
+  res.send({ data: true });
+});
+
 app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to quant");
 });
@@ -162,6 +169,7 @@ app.listen(port, () => {
   runCollectionJob();
   runFilterStockJob();
   runFilterCurrentJob();
+  runGenReportJob();
 });
 
 let job: Job;
@@ -226,4 +234,17 @@ function runFilterCurrentJob() {
   rule.minute = 50;
   const fn = filterCurrent.bind(null, undefined, mailer);
   filterCurrentJob = scheduleJob(rule, fn);
+}
+
+let genReportJob: Job;
+function runGenReportJob() {
+  console.log(`Start runFilterStockJob ...`);
+
+  // 每天 17:30
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 18;
+  rule.minute = 0;
+  const fn = genReport.bind(null, undefined, mailer);
+  genReportJob = scheduleJob(rule, fn);
 }
