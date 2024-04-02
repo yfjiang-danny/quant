@@ -41,35 +41,41 @@ export namespace TUSHARE_API {
       fields: StockFields.join(","),
       params: params as Record<string, unknown>,
     })
-      .then((res) => {
-        log(`getAllStock success`);
-        if (res.status == 200) {
-          let responseData = res?.data as any;
-          if (responseData?.code != 0) {
-            log(`Use mock data`);
-            responseData = mockAllStockResponse;
-          }
-          const data = responseData?.data as {
-            fields: string[];
-            items: (string | null)[][];
-          };
-          if (data) {
-            const stocks: TushareStockModel[] = [];
-            data.items.forEach((item) => {
-              const stock: TushareStockModel = {};
-              item.forEach((v, i) => {
-                const key = data.fields[i];
-                if (key) {
-                  stock[key] = v;
-                }
+      .then(
+        (res) => {
+          log(`getAllStock success`);
+          if (res.status == 200) {
+            let responseData = res?.data as any;
+            if (responseData?.code != 0) {
+              log(`Use mock data`);
+              responseData = mockAllStockResponse;
+            }
+            const data = responseData?.data as {
+              fields: string[];
+              items: (string | null)[][];
+            };
+            if (data) {
+              const stocks: TushareStockModel[] = [];
+              data.items.forEach((item) => {
+                const stock: TushareStockModel = {};
+                item.forEach((v, i) => {
+                  const key = data.fields[i];
+                  if (key) {
+                    stock[key] = v;
+                  }
+                });
+                stocks.push(stock);
               });
-              stocks.push(stock);
-            });
-            return stocks;
+              return stocks;
+            }
           }
+          return null;
+        },
+        (e) => {
+          log(e);
+          return null;
         }
-        return null;
-      })
+      )
       .catch((e) => {
         log(e);
         return null;

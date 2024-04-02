@@ -8,6 +8,7 @@ import { logger } from "../logs";
 import path from "path";
 import { logRootPath } from "../common/paths";
 import { fillingLadder } from "./derivative";
+import { sleep } from "../utils/sleep";
 
 dotenv.config();
 
@@ -54,7 +55,7 @@ async function snapshot() {
   }
 }
 
-export function dailyCollection(mailer?: Mailer163) {
+export async function dailyCollection(mailer?: Mailer163) {
   queue.process(({ data }, done) => {
     if (typeof data === "function") {
       const res = data();
@@ -79,7 +80,7 @@ export function dailyCollection(mailer?: Mailer163) {
   queue.add(fillingLadder);
 
   while (queue.tasks.length !== 0) {
-    //
+    await sleep(1000 * 10);
   }
   log("Daily collection complete");
 
