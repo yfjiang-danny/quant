@@ -10,6 +10,7 @@ export class Queue {
   exec: ExecFn = (task: TaskModel, done: () => void) => {
     done();
   };
+  last: Function | undefined;
   constructor() {
     this.tasks = [];
   }
@@ -25,6 +26,7 @@ export class Queue {
   runNext = () => {
     const _this = this;
     if (_this.tasks.length === 0) {
+      _this.last?.()
       return;
     }
 
@@ -46,4 +48,9 @@ export class Queue {
     const _this = this;
     _this.exec = fn;
   };
+
+  setLast = (fn: Function) => {
+    const _this = this;
+    _this.last = fn;
+  }
 }

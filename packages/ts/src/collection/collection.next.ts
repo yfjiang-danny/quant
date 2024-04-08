@@ -8,7 +8,6 @@ import { logger } from "../logs";
 import path from "path";
 import { logRootPath } from "../common/paths";
 import { fillingLadder } from "./derivative";
-import { sleep } from "../utils/sleep";
 import { isHoliday } from "chinese-calendar-ts";
 
 dotenv.config();
@@ -82,14 +81,14 @@ export async function dailyCollection(mailer?: Mailer163) {
       done();
     }
   });
+  queue.setLast(() => {
+    log("Daily collection complete");
+  })
+  
   queue.add(stockInfo);
   queue.add(snapshot);
   queue.add(fillingLadder);
 
-  while (queue.tasks.length !== 0) {
-    await sleep(1000 * 10);
-  }
-  log("Daily collection complete");
 
   // mailer
   // ?.send({
