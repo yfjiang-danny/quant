@@ -22,6 +22,12 @@ export interface StockSnapshotTableModel extends BaseTableModel {
   change: string | null | undefined;
   top_price: string | null | undefined;
   bottom_price: string | null | undefined;
+  internal: string | null | undefined;
+  external: string | null | undefined;
+  buy1: string | null | undefined;
+  buy2: string | null | undefined;
+  sale1: string | null | undefined;
+  sale2: string | null | undefined;
 }
 
 export const StockSnapshotTable = sql.define<string, StockSnapshotTableModel>({
@@ -70,6 +76,24 @@ export const StockSnapshotTable = sql.define<string, StockSnapshotTableModel>({
       dataType: numberFixedDataType,
     },
     volume: {
+      dataType: numberFixedDataType,
+    },
+    internal: {
+      dataType: numberFixedDataType,
+    },
+    external: {
+      dataType: numberFixedDataType,
+    },
+    buy1: {
+      dataType: numberFixedDataType,
+    },
+    buy2: {
+      dataType: numberFixedDataType,
+    },
+    sale1: {
+      dataType: numberFixedDataType,
+    },
+    sale2: {
       dataType: numberFixedDataType,
     },
   },

@@ -15,4 +15,10 @@ export const EastMoneyColumns: Record<keyof EastMoneyStockModel, string> = {
   topPrice: "涨停价",
   bottomPrice: "跌停价",
   change: "涨跌幅",
+  internal: "内盘",
+  external: "外盘",
+  buy1: "买1",
+  buy2: "买2",
+  sale1: "卖1",
+  sale2: "卖2",
 };

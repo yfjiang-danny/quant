@@ -113,6 +113,12 @@ export function convertToHistoryModel(v: StockModel): StockSnapshotTableModel {
     bottom_price: toString(v.bottomPrice),
     turnover: toString(v.turnover),
     volume: toString(v.volume),
+    external: v.external,
+    internal: v.internal,
+    buy1: v.buy1,
+    buy2: v.buy2,
+    sale1: v.sale1,
+    sale2: v.sale2
   } as StockSnapshotTableModel;
 }
 

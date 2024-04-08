@@ -9,6 +9,7 @@ import path from "path";
 import { logRootPath } from "../common/paths";
 import { fillingLadder } from "./derivative";
 import { sleep } from "../utils/sleep";
+import { isHoliday } from "chinese-calendar-ts";
 
 dotenv.config();
 
@@ -56,6 +57,12 @@ async function snapshot() {
 }
 
 export async function dailyCollection(mailer?: Mailer163) {
+
+  if (isHoliday(new Date())) {
+    log(`${new Date().toDateString()} is holiday, return`)
+    return;
+  }
+
   queue.process(({ data }, done) => {
     if (typeof data === "function") {
       const res = data();

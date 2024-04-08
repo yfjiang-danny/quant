@@ -78,6 +78,12 @@ export namespace EastMoney_API {
             topPrice: Number(res.topprice),
             bottomPrice: Number(res.bottomprice),
             change: res.realtimequote.zd,
+            internal: res.realtimequote.np,
+            external: res.realtimequote.wp,
+            sale1: res.fivequote.sale1,
+            sale2: res.fivequote.sale2,
+            buy1: res.fivequote.buy1,
+            buy2: res.fivequote.buy2
           } as EastMoneyStockModel;
         }
         return null;

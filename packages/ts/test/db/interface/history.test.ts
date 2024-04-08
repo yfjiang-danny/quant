@@ -43,7 +43,7 @@ dotenv.config();
 // })();
 
 (async function testGetStockDailysByDate() {
-  IStockSnapshotTable.getStocksByDate("20240325").then((res) => {
+  IStockSnapshotTable.getStocksByDate("20240403").then((res) => {
     console.log(res.rows);
   });
 })();

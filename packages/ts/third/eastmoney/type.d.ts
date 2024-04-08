@@ -66,4 +66,10 @@ export interface EastMoneyStockModel {
   avg?: number;
   topPrice?: number;
   bottomPrice?: number;
+  external?: string;
+  internal?: string;
+  sale1?: string;
+  sale2?: string;
+  buy1?: string;
+  buy2?: string;
 }

@@ -6,6 +6,7 @@ import { fillStocksSMA } from "../service/factors/sma";
 import { Storage } from "../service/storage/storage";
 import { TUSHARE_API } from "../../third/tushare/api";
 import { fillEastStockInfo, fillStockHistoryByALPH } from "../service/utils";
+import { isHoliday } from "chinese-calendar-ts";
 
 dotenv.config();
 
@@ -43,6 +44,12 @@ async function fillHistoryByALPH() {
 }
 
 export async function collectionTask(mailer?: Mailer163) {
+
+  if (isHoliday(new Date())) {
+    logger.info(`${new Date().toDateString()} is holiday, return`)
+    return;
+  }
+
   logger.info(`Start collection task`);
 
   //
