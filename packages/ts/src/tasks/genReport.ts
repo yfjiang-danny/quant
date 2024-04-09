@@ -129,6 +129,7 @@ export async function genReport(date?: string, mail?: Mailer163) {
     if (Object.prototype.hasOwnProperty.call(ColumnMap, key)) {
       htmlStr += "<br />";
       htmlStr += ColumnMap[key];
+      htmlStr += "："
       htmlStr += result[key];
     }
   }

@@ -97,7 +97,11 @@ export namespace Storage {
     stocks: TushareStockModel[]
   ): Promise<Response<boolean>> {
     return new Promise<Response<boolean>>((resolve, reject) => {
-      IStockInfoTable.insert(stocks)
+      IStockInfoTable.insert(stocks.map(v => {
+        const nv = {...v};
+        delete nv.ts_code;
+        return nv
+      }))
         .then(
           (res) => {
             resolve({ data: true });
