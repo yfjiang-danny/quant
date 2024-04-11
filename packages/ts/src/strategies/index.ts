@@ -10,6 +10,8 @@ import { Storage } from "../service/storage/storage";
 import { Excel } from "../utils/excel";
 import { deepCopyWithJson } from "../utils/util";
 import { fitTurnover, isCross } from "./util";
+import { StockSnapshotTableModel } from "../../models/tables/snapshot";
+import { fillStocksSMA } from "../service/factors/sma";
 
 export namespace Strategies {
   const logPath = path.resolve(logRootPath, "strategy.log");
@@ -17,8 +19,8 @@ export namespace Strategies {
    * 获取小市值的票, 按照从小到大排序
    * @returns
    */
-  export async function getMinCapitalStocks(minCapital = 100) {
-    const allStocks: StockModel[] = await Storage.getAllStocks().then((res) => {
+  export async function getMinCapitalStocks(minCapital = 100, date?: string) {
+    const allStocks: StockSnapshotTableModel[] = await Storage.getStockDetailsByDate(date).then((res) => {
       return res.data;
     });
 
@@ -28,7 +30,16 @@ export namespace Strategies {
       return;
     }
 
-    const minCapitalStocks = allStocks
+    const minCapitalStocks = allStocks.map(v => {
+      const nv: Record<string, unknown> = {...v};
+      Object.keys(nv).forEach(key => {
+        if (!isNaN(Number(nv[key])) && key !== "symbol" && key !== "date") {
+          nv[key] = Number(nv[key])
+        }
+      })
+      nv.capital = ((Number(v.volume) / (Number(v.turnover) / 100)) * Number(v.close)) / Math.pow(10, 6)
+      return nv as StockModel
+    })
       .filter((v) => {
         const symbol = v.symbol;
 
@@ -71,11 +82,12 @@ export namespace Strategies {
 
     const filterStocks = crossStocks.filter((v) => {
       let bool = true;
-      if (!v.close || !v.sma5) {
+      const close = Number(v.close);
+      if (!close || !v.sma5) {
         return false;
       }
       if (v.sma5) {
-        bool = v.close >= v.sma5 && (v.close - v.sma5) / v.sma5 < 0.1; // 偏离五日线 10 个点以内
+        bool = close >= v.sma5 && (close - v.sma5) / v.sma5 < 0.1; // 偏离五日线 10 个点以内
       }
 
       if (bool && v.sma10 && v.sma20) {
@@ -115,8 +127,8 @@ export namespace Strategies {
       return stock;
     }
     if (fns.length) {
-      const histories = await Storage.getStockHistories(stock.symbol).then(
-        (res) => res.data as StockModel[]
+      const histories = await Storage.getStockHistoriesFromDB(stock.symbol, 120).then(
+        (res) => res.data as unknown as StockModel[]
       );
       if (histories && histories.length > 0) {
         let res = stock;
@@ -193,11 +205,12 @@ export namespace Strategies {
     await Promise.allSettled(promises);
 
     const filterRes = minCapitalStocks.filter((v) => {
+      const close = Number(v.close);
       return (
-        v.close &&
+        close &&
         v.sma5 &&
-        v.close >= v.sma5 &&
-        (v.close - v.sma5) / v.sma5 < 0.1 &&
+        close >= v.sma5 &&
+        (close - v.sma5) / v.sma5 < 0.1 &&
         v.maxRiseDay &&
         v.maxRiseDay >= 3 &&
         v["maxTurnoverRiseDay"] &&
@@ -217,16 +230,19 @@ export namespace Strategies {
     return sheets;
   }
 
-  export async function filterStocks(cb?: (filePath?: string) => void) {
-    const minCapitalStocks = await getMinCapitalStocks(500);
+  export async function filterStocks(cb?: (filePath?: string) => void, date?: string) {
+    const minCapitalStocks = await getMinCapitalStocks(500, date);
 
     if (!minCapitalStocks) {
       logger.info(`minCapitalStocks is empty`, logPath);
       return;
     }
 
+    const smaStocks = await fillStocksSMA(minCapitalStocks)
+
+
     const sheets: WorkSheet[] = [];
-    const crossSheets = await filterCross(deepCopyWithJson(minCapitalStocks));
+    const crossSheets = await filterCross(deepCopyWithJson(smaStocks));
     if (crossSheets) {
       sheets.push(...crossSheets);
     }
@@ -244,7 +260,7 @@ export namespace Strategies {
     }
     const filePath = path.resolve(
       filterRootPath,
-      `filter-${moment().format("YYYYMMDD")}.xlsx`
+      `filter-${date??moment().format("YYYYMMDD")}.xlsx`
     );
     return Excel.write(sheets, filePath)
       .then(

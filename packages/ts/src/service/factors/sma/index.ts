@@ -7,26 +7,34 @@ import { Storage } from "../../storage/storage";
 
 const logPath = path.resolve(logRootPath, "sma.log");
 
-function calculateIntervalAverage(histories: StockModel[], interval: number) {
+interface CoreModel extends Record<string, unknown> {
+  symbol: string;
+  date: string;
+  close: number;
+}
+
+
+export function calculateIntervalAverage<T extends CoreModel>(histories: T[], interval: number) {
   if (histories.length < interval) {
     return null;
   }
   return calculateAverage(histories.slice(0, interval));
 }
 
-function calculateAverage(histories: StockModel[]) {
+function calculateAverage<T extends CoreModel>(histories: T[]) {
   let i = 0,
     count = 0,
     sum = 0;
   while (i < histories.length) {
     const stock = histories[i];
-    if (stock && stock.close) {
-      sum += stock.close;
+    const close = Number(stock.close)
+    if (stock && stock.close && !isNaN(close)) {
+      sum += close;
       count++;
     }
     i++;
   }
-  return sum / count;
+  return Number((sum / count).toFixed(2))
 }
 
 /**
@@ -81,20 +89,27 @@ export function calculateMovingAverage(
   return result;
 }
 
-export async function fillStockSMA(stock: StockModel) {
+export async function fillStockSMA<T extends CoreModel>(stock: T) {
   if (!stock.symbol) {
     return stock;
   }
 
   const symbol = stock.symbol;
 
-  let histories = await Storage.getStockHistories(symbol).then(
-    (res) => res.data
+
+  let histories = await Storage.getStockHistoriesFromDB(symbol, 120).then(
+    (res) => {
+      if (res.msg) {
+        console.log(res.msg);
+      }
+      return res.data as unknown as CoreModel[]
+    }
   );
 
   if (!histories) {
     return stock;
   }
+  
 
   let findIndex = histories.findIndex((v) => v.date === stock.date);
 
@@ -118,7 +133,7 @@ export async function fillStockSMA(stock: StockModel) {
   }
 
   if (!stock.sma5) {
-    stock.sma5 = calculateIntervalAverage(histories, 5) ?? undefined;
+    (stock as any).sma5 = calculateIntervalAverage(histories, 5) ?? undefined;
   }
 
   if (histories.length < 10) {
@@ -126,35 +141,35 @@ export async function fillStockSMA(stock: StockModel) {
   }
 
   if (!stock.sma10) {
-    stock.sma10 = calculateIntervalAverage(histories, 10) ?? undefined;
+    (stock as any).sma10 = calculateIntervalAverage(histories, 10) ?? undefined;
   }
 
   if (histories.length < 20) {
     return stock;
   }
   if (!stock.sma20) {
-    stock.sma20 = calculateIntervalAverage(histories, 20) ?? undefined;
+    (stock as any).sma20 = calculateIntervalAverage(histories, 20) ?? undefined;
   }
 
   if (histories.length < 30) {
     return stock;
   }
   if (!stock.sma30) {
-    stock.sma30 = calculateIntervalAverage(histories, 30) ?? undefined;
+    (stock as any).sma30 = calculateIntervalAverage(histories, 30) ?? undefined;
   }
 
   if (histories.length < 60) {
     return stock;
   }
   if (!stock.sma60) {
-    stock.sma60 = calculateIntervalAverage(histories, 60) ?? undefined;
+    (stock as any).sma60 = calculateIntervalAverage(histories, 60) ?? undefined;
   }
 
   if (histories.length < 120) {
     return stock;
   }
   if (!stock.sma120) {
-    stock.sma120 = calculateIntervalAverage(histories, 120) ?? undefined;
+    (stock as any).sma120 = calculateIntervalAverage(histories, 120) ?? undefined;
   }
 
   return stock;
@@ -170,7 +185,7 @@ export function fillStocksSMA(stocks: StockModel[]) {
 
   const promises: Promise<StockWithSMA>[] = [];
   stocks.forEach((v) => {
-    promises.push(fillStockSMA(v));
+    promises.push(fillStockSMA(v as CoreModel));
   });
 
   return Promise.allSettled(promises).then((responses) => {

@@ -6,6 +6,7 @@ import {
   StockSnapshotTableModel,
 } from "../tables/snapshot";
 import { dbQuery } from "../con";
+import { StockInfoTable, StockInfoTableModel } from "../tables/stockInfo";
 
 export namespace IStockSnapshotTable {
   export function insert(
@@ -130,19 +131,39 @@ export namespace IStockSnapshotTable {
 
   export function getStocksBySymbol(
     symbol: string,
-    node?: BinaryNode
+    limit?: number, offset?: number
   ): Promise<QueryResult<StockSnapshotTableModel[]>> {
     //
     let mQuery = StockSnapshotTable.select(StockSnapshotTable.star()).where(
       StockSnapshotTable.symbol.equals(symbol)
-    );
+    ).order(StockSnapshotTable.date.descending);
 
-    if (node) {
-      mQuery = mQuery.where(node);
+    if (typeof limit === "number") {
+      if (typeof offset === "number") {
+        mQuery = mQuery.offset(offset)
+      }
+      mQuery = mQuery.limit(limit);
     }
 
     return dbQuery<StockSnapshotTableModel[]>(
-      mQuery.order(StockSnapshotTable.date.descending).toQuery()
+      mQuery.toQuery()
     );
+  }
+
+  export function getStockDetailsByDate(date: string, offset?: number, limit?: number) {
+    let str = `SELECT a.*,b.*
+    FROM "stock_snapshots" a
+    left outer join stock_info b
+    on a.symbol = b.symbol
+    where a.date = '${date}'
+    and a.symbol is not null
+    and b.symbol is not null
+    order by a.symbol`
+    if (typeof offset === "number" && limit) {
+      str += ` offset ${offset} limit ${limit}`
+    }
+    return dbQuery<(StockInfoTableModel & StockSnapshotTableModel)[]>({
+      text: str
+    })
   }
 }

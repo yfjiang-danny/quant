@@ -34,7 +34,7 @@ export async function genReport(date?: string, mail?: Mailer163) {
       return {
         ...v,
         changePercentage: Number(
-          (Number(v.change) / (Number(v.close) - Number(v.change))).toFixed(2)
+          (Number(v.change) / (Number(v.close) - Number(v.change))).toFixed(4)
         ),
       };
     })
@@ -102,11 +102,11 @@ export async function genReport(date?: string, mail?: Mailer163) {
         (stocks[Math.round(stocks.length / 2)].changePercentage +
           stocks[Math.round(stocks.length / 2) - 1].changePercentage) /
         2
-      ).toFixed()
+      ).toFixed(4)
     );
   }
 
-  const result: Record<string, number> = {
+  const result: Record<string, number | string> = {
     totalVolume,
     numOfPositive,
     numOfNegative,
@@ -114,7 +114,7 @@ export async function genReport(date?: string, mail?: Mailer163) {
     reachBottom,
     topLimitted,
     bottomLimitted,
-    median: median,
+    median: (median * 100).toString() + '%',
     between0And1,
     between1And5,
     moreThan5,

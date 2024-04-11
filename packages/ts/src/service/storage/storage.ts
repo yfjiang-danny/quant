@@ -22,7 +22,8 @@ import { convertToHistoryModel } from "../utils";
 import { BinaryNode } from "sql";
 import { IStockInfoTable } from "../../../models/interface/stockInfo";
 import { IStockSnapshotTable } from "../../../models/interface/snapshot";
-import { StockSnapshotTableModel } from "../../../models/tables/snapshot";
+import { StockSnapshotTable, StockSnapshotTableModel } from "../../../models/tables/snapshot";
+import { StockInfoTableModel } from "../../../models/tables/stockInfo";
 
 export namespace Storage {
   export function getAllBasicStocks(
@@ -403,10 +404,13 @@ export namespace Storage {
 
   export function getStockHistoriesFromDB(
     symbol: string,
-    node?: BinaryNode
+    limit?: number,
+    offset?: number
   ): Promise<Response<StockSnapshotTableModel[]>> {
+
+
     return new Promise<Response<StockSnapshotTableModel[]>>((resolve) => {
-      IStockSnapshotTable.getStocksBySymbol(symbol, node)
+      IStockSnapshotTable.getStocksBySymbol(symbol, limit, offset)
         .then(
           (res) => {
             resolve({ data: res.rows as unknown as StockSnapshotTableModel[] });
@@ -422,13 +426,38 @@ export namespace Storage {
   }
 
   export function getStockSnapshotByDate(
-    date: string
+    date?: string
   ): Promise<Response<StockSnapshotTableModel[]>> {
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
     return new Promise<Response<StockSnapshotTableModel[]>>((resolve) => {
-      IStockSnapshotTable.getStocksByDate(date)
+      IStockSnapshotTable.getStocksByDate(date as string)
         .then(
           (res) => {
             resolve({ data: res.rows as unknown as StockSnapshotTableModel[] });
+          },
+          (e) => {
+            resolve({ data: [], msg: e });
+          }
+        )
+        .catch((e) => {
+          resolve({ data: [], msg: e });
+        });
+    });
+  }
+
+  export function getStockDetailsByDate(
+    date?: string
+  ): Promise<Response<(StockSnapshotTableModel & StockInfoTableModel)[]>> {
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+    return new Promise<Response<(StockSnapshotTableModel & StockInfoTableModel)[]>>((resolve) => {
+      IStockSnapshotTable.getStockDetailsByDate(date as string)
+        .then(
+          (res) => {
+            resolve({ data: res.rows as unknown as (StockSnapshotTableModel & StockInfoTableModel)[] });
           },
           (e) => {
             resolve({ data: [], msg: e });

@@ -1,7 +1,6 @@
 import { TushareStockModel } from "./type";
 
 export const TushareStockColumns: Record<keyof TushareStockModel, string> = {
-  ts_code: "TS代码",
   symbol: "股票代码",
   name: "股票名称",
   area: "地域",

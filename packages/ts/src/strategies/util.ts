@@ -11,13 +11,17 @@ const highLowPercentage = 0.02; // >2%
 export function isCross(stock: StockModel): boolean {
   let res = false;
 
-  if (stock.close && stock.open && stock.high && stock.low) {
+  const close = Number(stock.close);
+  const open = Number(stock.open);
+  const high = Number(stock.high);
+  const low = Number(stock.low); 
+  if (!isNaN(close) && !isNaN(open) && !isNaN(high) && !isNaN(low)) {
     if (
-      Math.abs(stock.close - stock.open) / stock.open <= openClosePercentage &&
-      stock.high > stock.open &&
-      stock.low < stock.open &&
-      (stock.high - stock.open) / stock.open > highLowPercentage &&
-      (stock.open - stock.low) / stock.open > highLowPercentage
+      Math.abs(close - open) / open <= openClosePercentage &&
+      high > open &&
+      low < open &&
+      (high - open) / open > highLowPercentage &&
+      (open - low) / open > highLowPercentage
     ) {
       res = true;
     }
@@ -33,10 +37,12 @@ export function fitTurnover(
 ): boolean {
   let res = false;
 
+  const turnover = Number(stock.turnover)
+
   if (
-    stock.turnover &&
-    stock.turnover >= minTurnover &&
-    (!maxTurnover || (maxTurnover && stock.turnover <= maxTurnover))
+    !isNaN(turnover) &&
+    turnover >= minTurnover &&
+    (!maxTurnover || (maxTurnover && turnover <= maxTurnover))
   ) {
     res = true;
   }
