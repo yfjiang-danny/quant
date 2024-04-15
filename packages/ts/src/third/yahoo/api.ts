@@ -3,8 +3,8 @@ import csvtojson from "csvtojson";
 import path from "path";
 import querystring from "querystring";
 import { SocksProxyAgent } from "socks-proxy-agent";
-import { logRootPath } from "../../src/common/paths";
-import { logger } from "../../src/logs";
+import { logRootPath } from "../../common/paths";
+import { logger } from "../../logs";
 
 export namespace YAHOO_API {
   const logPath = path.resolve(logRootPath, "yahoo.log");

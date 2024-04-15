@@ -4,7 +4,7 @@ import { Mailer163 } from "../mail";
 import { StockModel } from "../models/type";
 import { fillStocksSMA } from "../service/factors/sma";
 import { Storage } from "../service/storage/storage";
-import { TUSHARE_API } from "../../third/tushare/api";
+import { TUSHARE_API } from "../third/tushare/api";
 import { fillEastStockInfo, fillStockHistoryByALPH } from "../service/utils";
 import { isHoliday } from "chinese-calendar-ts";
 

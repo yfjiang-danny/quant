@@ -10,7 +10,7 @@ import { Storage } from "../service/storage/storage";
 import { Excel } from "../utils/excel";
 import { deepCopyWithJson } from "../utils/util";
 import { fitTurnover, isCross } from "./util";
-import { StockSnapshotTableModel } from "../../models/tables/snapshot";
+import { StockSnapshotTableModel } from "../db/tables/snapshot";
 import { fillStocksSMA } from "../service/factors/sma";
 
 export namespace Strategies {

@@ -66,6 +66,6 @@
     /* Advanced Options */
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
   },
-  "include": ["src","models","third"],
+  "include": ["src"],
   "exclude": ["sql.types.d.ts"]
 }

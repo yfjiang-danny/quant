@@ -5,18 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build": "tsc src/**/*.ts --outDir dist --esModuleInterop",
-    "start": "node dist/src/service/app.js",
-    "build:allStocks": "tsc src/tasks/getAllStocks.ts --outDir dist --esModuleInterop",
-    "run:allStocks": "node dist/tasks/getAllStocks.js >all_stocks.log 2>&1",
-    "build:capital": "tsc src/tasks/fillCapital.ts --outDir dist --esModuleInterop",
-    "run:capital": "node dist/tasks/fillCapital.js >all_capital_stocks.log 2>&1",
-    "build:sma": "tsc src/tasks/fillSMA.ts --outDir dist --esModuleInterop",
-    "run:sma": "node dist/tasks/fillSMA.js >sma_stocks.log 2>&1",
-    "build:minCapital": "tsc src/tasks/minCapital.ts --outDir dist --esModuleInterop",
-    "run:minCapital": "node dist/tasks/minCapital.js >min_capital_stocks.log 2>&1",
-    "build:filter": "tsc src/tasks/filterStocks.ts --outDir dist --esModuleInterop",
-    "run:filter": "node dist/tasks/filterStocks.js >filter_stocks.log 2>&1"
+    "build": "rm -fr dist && tsc src/**/*.ts --outDir dist --esModuleInterop",
+    "start": "node dist/service/app.js"
   },
   "keywords": [],
   "author": "",

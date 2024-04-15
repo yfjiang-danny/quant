@@ -1,8 +1,8 @@
 import * as dotenv from "dotenv";
-import { dbQuery } from "../../models/con";
-import { StockLadderTable } from "../../models/tables/ladder";
-import { StockSnapshotTable } from "../../models/tables/snapshot";
-import { StockInfoTable } from "../../models/tables/stockInfo";
+import { dbQuery } from "../db/con";
+import { StockLadderTable } from "../db/tables/ladder";
+import { StockSnapshotTable } from "../db/tables/snapshot";
+import { StockInfoTable } from "../db/tables/stockInfo";
 
 dotenv.config();
 

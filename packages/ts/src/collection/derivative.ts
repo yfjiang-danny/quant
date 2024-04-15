@@ -2,10 +2,10 @@ import * as dotenv from "dotenv";
 import moment from "moment";
 import path from "path";
 import { logRootPath } from "../common/paths";
-import { IStockLadderTable } from "../../models/interface/ladder";
+import { IStockLadderTable } from "../db/interface/ladder";
 import { logger } from "../logs";
 import { Storage } from "../service/storage/storage";
-import { StockLadderTableModel } from "../../models/tables/ladder";
+import { StockLadderTableModel } from "../db/tables/ladder";
 
 dotenv.config();
 

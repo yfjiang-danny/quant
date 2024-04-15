@@ -72,4 +72,8 @@ export interface EastMoneyStockModel {
   sale2?: string;
   buy1?: string;
   buy2?: string;
+  buy1_count?: number;
+  buy2_count?: number;
+  sale1_count?: number;
+  sale2_count?: number;
 }

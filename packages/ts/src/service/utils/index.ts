@@ -1,13 +1,13 @@
 import { logger } from "../../logs";
-import { ALPHStockModel } from "../../../third/alph/type";
-import { EastMoneyStockModel } from "../../../third/eastmoney/type";
-import { TushareStockModel } from "../../../third/tushare/type";
+import { ALPHStockModel } from "../../third/alph/type";
+import { EastMoneyStockModel } from "../../third/eastmoney/type";
+import { TushareStockModel } from "../../third/tushare/type";
 import { StockModel } from "../../models/type";
 import { getMarket } from "../../utils/convert";
-import { ALPH_API } from "../../../third/alph/api";
-import { EastMoney_API } from "../../../third/eastmoney/api";
+import { ALPH_API } from "../../third/alph/api";
+import { EastMoney_API } from "../../third/eastmoney/api";
 import { Storage } from "../storage/storage";
-import { StockSnapshotTableModel } from "../../../models/tables/snapshot";
+import { StockSnapshotTableModel } from "../../db/tables/snapshot";
 
 const batch = 10;
 

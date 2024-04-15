@@ -1,7 +1,7 @@
 import axios from "axios";
 import path from "path";
-import { logRootPath } from "../../src/common/paths";
-import { logger } from "../../src/logs";
+import { logRootPath } from "../../common/paths";
+import { logger } from "../../logs";
 import { EastMoneyStockModel, MarketType, QuoteSnapshotModel } from "./type";
 import { MockEastMoneyData } from "./mock";
 
@@ -82,8 +82,12 @@ export namespace EastMoney_API {
             external: res.realtimequote.wp,
             sale1: res.fivequote.sale1,
             sale2: res.fivequote.sale2,
+            sale1_count: res.fivequote.sale1_count,
+            sale2_count: res.fivequote.sale2_count,
             buy1: res.fivequote.buy1,
-            buy2: res.fivequote.buy2
+            buy2: res.fivequote.buy2,
+            buy1_count: res.fivequote.buy1_count,
+            buy2_count: res.fivequote.buy2_count
           } as EastMoneyStockModel;
         }
         return null;

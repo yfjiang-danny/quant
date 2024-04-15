@@ -1,9 +1,9 @@
 import { logger } from "../logs";
-import { EastMoneyStockModel, MarketType } from "../../third/eastmoney/type";
+import { EastMoneyStockModel, MarketType } from "../third/eastmoney/type";
 import { StockWithSMA } from "../models/sma/type";
-import { TushareStockModel } from "../../third/tushare/type";
+import { TushareStockModel } from "../third/tushare/type";
 import { StockModel } from "../models/type";
-import { EastMoney_API } from "../../third/eastmoney/api";
+import { EastMoney_API } from "../third/eastmoney/api";
 import { fillStockSMA } from "../service/factors/sma";
 
 function getMarket(symbol: string): MarketType {
@@ -88,6 +88,7 @@ export async function fillAllStockSMA(stocks: StockModel[]) {
     if (arr.length > 0) {
       const promises: Promise<StockWithSMA>[] = [];
       arr.forEach((v) => {
+        // @ts-ignore
         promises.push(fillStockSMA(v));
       });
 

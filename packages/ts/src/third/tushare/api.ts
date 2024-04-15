@@ -1,7 +1,7 @@
 import axios from "axios";
 import path from "path";
-import { logRootPath } from "../../src/common/paths";
-import { logger } from "../../src/logs";
+import { logRootPath } from "../../common/paths";
+import { logger } from "../../logs";
 import { TushareStockColumns } from "./constant";
 import {
   AllStockApiParams,

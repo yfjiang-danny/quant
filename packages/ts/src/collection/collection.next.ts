@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import { Queue } from "../utils/queue";
-import { TUSHARE_API } from "../../third/tushare/api";
+import { TUSHARE_API } from "../third/tushare/api";
 import { Storage } from "../service/storage/storage";
 import { fillEastStockInfo } from "../service/utils";
 import { Mailer163 } from "../mail";

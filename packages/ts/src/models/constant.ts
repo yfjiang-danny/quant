@@ -1,5 +1,5 @@
-import { EastMoneyColumns } from "../../third/eastmoney/constant";
-import { TushareStockColumns } from "../../third/tushare/constant";
+import { EastMoneyColumns } from "../third/eastmoney/constant";
+import { TushareStockColumns } from "../third/tushare/constant";
 import { MaxRiseColumns } from "./rise/constant";
 import { SMAColumns } from "./sma/constant";
 import { StockModel } from "./type";

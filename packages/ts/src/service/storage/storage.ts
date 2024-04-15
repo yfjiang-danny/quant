@@ -17,13 +17,13 @@ import {
   readJsonFileInBatch,
 } from "../../utils/fs";
 import { Response } from "./type";
-import { TushareStockModel } from "../../../third/tushare/type";
+import { TushareStockModel } from "../../third/tushare/type";
 import { convertToHistoryModel } from "../utils";
 import { BinaryNode } from "sql";
-import { IStockInfoTable } from "../../../models/interface/stockInfo";
-import { IStockSnapshotTable } from "../../../models/interface/snapshot";
-import { StockSnapshotTable, StockSnapshotTableModel } from "../../../models/tables/snapshot";
-import { StockInfoTableModel } from "../../../models/tables/stockInfo";
+import { IStockInfoTable } from "../../db/interface/stockInfo";
+import { IStockSnapshotTable } from "../../db/interface/snapshot";
+import { StockSnapshotTable, StockSnapshotTableModel } from "../../db/tables/snapshot";
+import { StockInfoTableModel } from "../../db/tables/stockInfo";
 
 export namespace Storage {
   export function getAllBasicStocks(
