@@ -3,6 +3,7 @@ import {
   baseColumns,
   BaseTableModel,
   dateDataType,
+  IntegerDataType,
   nameDataType,
   numberFixedDataType,
   symbolDataType,
@@ -28,6 +29,10 @@ export interface StockSnapshotTableModel extends BaseTableModel {
   buy2: string | null | undefined;
   sale1: string | null | undefined;
   sale2: string | null | undefined;
+  buy1_count: number | null | undefined;
+  buy2_count: number | null | undefined;
+  sale1_count: number | null | undefined;
+  sale2_count: number | null | undefined;
 }
 
 export const StockSnapshotTable = sql.define<string, StockSnapshotTableModel>({
@@ -95,6 +100,18 @@ export const StockSnapshotTable = sql.define<string, StockSnapshotTableModel>({
     },
     sale2: {
       dataType: numberFixedDataType,
+    },
+    buy1_count: {
+      dataType: IntegerDataType,
+    },
+    buy2_count: {
+      dataType: IntegerDataType,
+    },
+    sale1_count: {
+      dataType: IntegerDataType,
+    },
+    sale2_count: {
+      dataType: IntegerDataType,
     },
   },
 });

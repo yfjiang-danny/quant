@@ -118,7 +118,11 @@ export function convertToHistoryModel(v: StockModel): StockSnapshotTableModel {
     buy1: v.buy1,
     buy2: v.buy2,
     sale1: v.sale1,
-    sale2: v.sale2
+    sale2: v.sale2,
+    sale1_count: v.sale1_count,
+    sale2_count: v.sale2_count,
+    buy1_count: v.buy1_count,
+    buy2_count: v.buy2_count
   } as StockSnapshotTableModel;
 }
 

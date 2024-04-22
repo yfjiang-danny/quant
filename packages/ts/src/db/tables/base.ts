@@ -8,6 +8,7 @@ export const dateTimeDataType = "varchar(19)";
 export const symbolDataType = "varchar(20)";
 export const nameDataType = "varchar(250)";
 export const numberFixedDataType = "varchar(10)";
+export const IntegerDataType = "integer";
 
 export const baseColumns = {
   createAt: {
