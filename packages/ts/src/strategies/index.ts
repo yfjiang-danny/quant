@@ -149,9 +149,9 @@ export namespace Strategies {
     let max = 0,
       i = 1;
     while (i < histories.length) {
-      const cur = histories[i - 1].turnover;
-      const pre = histories[i].turnover;
-      if (cur && pre && cur > pre) {
+      const cur = Number(histories[i - 1].turnover);
+      const pre = Number(histories[i].turnover);
+      if (!isNaN(cur) && !isNaN(pre) && cur > pre) {
         max++;
         i++;
       } else {

@@ -5,6 +5,6 @@ import { Strategies } from "../src/strategies";
 dotenv.config();
 
 (async function test() {
-    Strategies.filterStocks(undefined, '20240410')
+    Strategies.filterStocks()
 })();
   

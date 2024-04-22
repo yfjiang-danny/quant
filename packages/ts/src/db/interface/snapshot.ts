@@ -157,7 +157,7 @@ export namespace IStockSnapshotTable {
     on a.symbol = b.symbol
     where a.date = '${date}'
     and a.symbol is not null
-    and b.symbol is not null
+    and b.symbol is not null\n
     order by a.symbol`
     if (typeof offset === "number" && limit) {
       str += ` offset ${offset} limit ${limit}`

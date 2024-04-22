@@ -14,9 +14,9 @@ export function calculateMaxRiseDay(histories: StockModel[]) {
   let max = 0,
     i = 1;
   while (i < histories.length) {
-    const cur = histories[i - 1].close;
-    const pre = histories[i].close;
-    if (cur && pre && cur > pre) {
+    const cur = Number(histories[i - 1].close)
+    const pre = Number(histories[i].close);
+    if (!isNaN(cur) && !isNaN(pre) && cur > pre) {
       max++;
       i++;
     } else {

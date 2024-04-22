@@ -4,6 +4,7 @@ import { logger } from "../../../logs";
 import { StockWithSMA } from "../../../models/sma/type";
 import { StockModel } from "../../../models/type";
 import { Storage } from "../../storage/storage";
+import pLimit from "p-limit";
 
 const logPath = path.resolve(logRootPath, "sma.log");
 
@@ -13,8 +14,10 @@ interface CoreModel extends Record<string, unknown> {
   close: number;
 }
 
-
-export function calculateIntervalAverage<T extends CoreModel>(histories: T[], interval: number) {
+export function calculateIntervalAverage<T extends CoreModel>(
+  histories: T[],
+  interval: number
+) {
   if (histories.length < interval) {
     return null;
   }
@@ -27,14 +30,14 @@ function calculateAverage<T extends CoreModel>(histories: T[]) {
     sum = 0;
   while (i < histories.length) {
     const stock = histories[i];
-    const close = Number(stock.close)
-    if (stock && stock.close && !isNaN(close)) {
+    const close = Number(stock.close);
+    if (!isNaN(close)) {
       sum += close;
       count++;
     }
     i++;
   }
-  return Number((sum / count).toFixed(2))
+  return Number((sum / count).toFixed(2));
 }
 
 /**
@@ -70,9 +73,9 @@ export function calculateMovingAverage(
     let validCount = 0;
 
     for (let j = 0; j < interval; j++) {
-      const closeValue = histories[i + j].close;
+      const closeValue = Number(histories[i + j].close);
 
-      if (typeof closeValue === "number") {
+      if (!isNaN(closeValue)) {
         sum += closeValue;
         validCount++;
       }
@@ -96,20 +99,18 @@ export async function fillStockSMA<T extends CoreModel>(stock: T) {
 
   const symbol = stock.symbol;
 
-
   let histories = await Storage.getStockHistoriesFromDB(symbol, 120).then(
     (res) => {
       if (res.msg) {
         console.log(res.msg);
       }
-      return res.data as unknown as CoreModel[]
+      return res.data as unknown as CoreModel[];
     }
   );
 
   if (!histories) {
     return stock;
   }
-  
 
   let findIndex = histories.findIndex((v) => v.date === stock.date);
 
@@ -169,7 +170,8 @@ export async function fillStockSMA<T extends CoreModel>(stock: T) {
     return stock;
   }
   if (!stock.sma120) {
-    (stock as any).sma120 = calculateIntervalAverage(histories, 120) ?? undefined;
+    (stock as any).sma120 =
+      calculateIntervalAverage(histories, 120) ?? undefined;
   }
 
   return stock;
@@ -183,10 +185,14 @@ export async function fillStockSMA<T extends CoreModel>(stock: T) {
 export function fillStocksSMA(stocks: StockModel[]) {
   logger.info("fillAllStockSMA start...", logPath);
 
-  const promises: Promise<StockWithSMA>[] = [];
-  stocks.forEach((v) => {
-    promises.push(fillStockSMA(v as CoreModel));
-  });
+  const limit = pLimit(20);
+
+  const promises = stocks.map((v) => limit(() => fillStockSMA(v as CoreModel)));
+
+  // const promises: Promise<StockWithSMA>[] = [];
+  // stocks.forEach((v) => {
+  //   promises.push(fillStockSMA(v as CoreModel));
+  // });
 
   return Promise.allSettled(promises).then((responses) => {
     const res: StockModel[] = [];

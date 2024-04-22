@@ -17,7 +17,11 @@ export async function filterCurrent(
   mailer?: Mailer163
 ) {
 
-  const minCapitalStocks = await Strategies.getMinCapitalStocks(300);
+  const latestStock = await Storage.getStockHistoriesFromDB('000001', 1).then(res => {
+    return res.data?.[0]
+  })
+
+  const minCapitalStocks = await Strategies.getMinCapitalStocks(300, latestStock?.date);
 
   if (!minCapitalStocks || minCapitalStocks.length <= 0) {
     logger.info(`Storage.getAllStocks is empty`, logPath);

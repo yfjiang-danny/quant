@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
-import { IStockSnapshotTable } from "../../../models/interface/snapshot";
 import { Storage } from "../../../src/service/storage/storage";
 import { convertToHistoryModel } from "../../../src/service/utils";
+import { IStockSnapshotTable } from "../../../src/db/interface/snapshot";
 
 dotenv.config();
 
@@ -43,7 +43,7 @@ dotenv.config();
 // })();
 
 (async function testGetStockDailysByDate() {
-  IStockSnapshotTable.getStockDetailsByDate("20240410", 0, 1).then((res) => {
+  IStockSnapshotTable.getStocksBySymbol("000001", 1).then((res) => {
     console.log(res.rows);
   });
 })();

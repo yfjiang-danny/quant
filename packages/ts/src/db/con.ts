@@ -25,7 +25,7 @@ const pool = new Pool(dbConfig);
 async function connect() {
   try {
     const con = pool.connect();
-    console.log("Connected to PostgreSQL database");
+    // console.log("Connected to PostgreSQL database");
     return con;
   } catch (err) {
     console.error("Connection error:", err);
