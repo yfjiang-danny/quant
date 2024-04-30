@@ -21,7 +21,7 @@ const ColumnMap: Record<string, string> = {
 
 export async function genReport(date?: string, mail?: Mailer163) {
   date = date ?? moment().format("YYYYMMDD");
-  const allStocks = await Storage.getStockSnapshotByDate(date).then(
+  const allStocks = await Storage.getStockDetailsByDate(date).then(
     (res) => res.data
   );
 
