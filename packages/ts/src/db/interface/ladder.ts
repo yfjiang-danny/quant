@@ -2,7 +2,7 @@ import { QueryResult } from "pg";
 import { BinaryNode, QueryLike } from "sql";
 import moment from "moment";
 import { StockLadderTable, StockLadderTableModel } from "../tables/ladder";
-import { dbQuery } from "../con";
+import { dbQuery } from "../connect";
 
 export namespace IStockLadderTable {
   export function insert(stocks: StockLadderTableModel[]) {

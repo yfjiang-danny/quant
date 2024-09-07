@@ -2,7 +2,7 @@ import { QueryResult } from "pg";
 import { QueryLike } from "sql";
 import moment from "moment";
 import { StockInfoTable, StockInfoTableModel } from "../tables/stockInfo";
-import { dbQuery } from "../con";
+import { dbQuery } from "../connect";
 
 export namespace IStockInfoTable {
   export function insert(stocks: StockInfoTableModel[]) {

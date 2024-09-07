@@ -5,7 +5,7 @@ import {
   StockSnapshotTable,
   StockSnapshotTableModel,
 } from "../tables/snapshot";
-import { dbQuery } from "../con";
+import { dbQuery } from "../connect";
 import { StockInfoTable, StockInfoTableModel } from "../tables/stockInfo";
 
 export namespace IStockSnapshotTable {
@@ -131,26 +131,29 @@ export namespace IStockSnapshotTable {
 
   export function getStocksBySymbol(
     symbol: string,
-    limit?: number, offset?: number
+    limit?: number,
+    offset?: number
   ): Promise<QueryResult<StockSnapshotTableModel[]>> {
     //
-    let mQuery = StockSnapshotTable.select(StockSnapshotTable.star()).where(
-      StockSnapshotTable.symbol.equals(symbol)
-    ).order(StockSnapshotTable.date.descending);
+    let mQuery = StockSnapshotTable.select(StockSnapshotTable.star())
+      .where(StockSnapshotTable.symbol.equals(symbol))
+      .order(StockSnapshotTable.date.descending);
 
     if (typeof limit === "number") {
       if (typeof offset === "number") {
-        mQuery = mQuery.offset(offset)
+        mQuery = mQuery.offset(offset);
       }
       mQuery = mQuery.limit(limit);
     }
 
-    return dbQuery<StockSnapshotTableModel[]>(
-      mQuery.toQuery()
-    );
+    return dbQuery<StockSnapshotTableModel[]>(mQuery.toQuery());
   }
 
-  export function getStockDetailsByDate(date: string, offset?: number, limit?: number) {
+  export function getStockDetailsByDate(
+    date: string,
+    offset?: number,
+    limit?: number
+  ) {
     let str = `SELECT a.*,b.*
     FROM "stock_snapshots" a
     left outer join stock_info b
@@ -158,12 +161,12 @@ export namespace IStockSnapshotTable {
     where a.date = '${date}'
     and a.symbol is not null
     and b.symbol is not null\n
-    order by a.symbol`
+    order by a.symbol`;
     if (typeof offset === "number" && limit) {
-      str += ` offset ${offset} limit ${limit}`
+      str += ` offset ${offset} limit ${limit}`;
     }
     return dbQuery<(StockInfoTableModel & StockSnapshotTableModel)[]>({
-      text: str
-    })
+      text: str,
+    });
   }
 }

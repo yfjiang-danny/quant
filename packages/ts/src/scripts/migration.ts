@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import { dbQuery } from "../db/con";
+import { dbQuery } from "../db/connect";
 import { StockLadderTable } from "../db/tables/ladder";
 import { StockSnapshotTable } from "../db/tables/snapshot";
 import { StockInfoTable } from "../db/tables/stockInfo";
