@@ -44,9 +44,8 @@ async function fillHistoryByALPH() {
 }
 
 export async function collectionTask(mailer?: Mailer163) {
-
   if (isHoliday(new Date())) {
-    logger.info(`${new Date().toDateString()} is holiday, return`)
+    logger.info(`${new Date().toDateString()} is holiday, return`);
     return;
   }
 
@@ -101,7 +100,7 @@ export async function collectionTask(mailer?: Mailer163) {
 
   mailer
     ?.send({
-      to: "michael593@163.com",
+      to: process.env.MAIL_USER_NAME,
       subject: "collection",
       text: `Collection Task complete`,
     })

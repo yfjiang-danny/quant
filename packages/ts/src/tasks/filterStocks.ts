@@ -29,11 +29,11 @@ export async function filterStocks(
 
         await mailer
           ?.send({
-            to: "michael593@163.com",
+            to: process.env.MAIL_USER_NAME,
             subject: moment().format("YYYY-MM-DD"),
             attachments: [
               {
-                fileName: `filter-${moment().format("YYYYMMDD")}.xlsx`,
+                filename: `filter-${moment().format("YYYYMMDD")}.xlsx`,
                 path: filePath,
               },
             ],

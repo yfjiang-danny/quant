@@ -1,6 +1,7 @@
 "use strict";
 
 import { createTransport } from "nodemailer";
+import Mail from "nodemailer/lib/mailer";
 
 export class Mailer163 {
   transporter: any;
@@ -22,19 +23,12 @@ export class Mailer163 {
 
   send({
     from = process.env.QQ_MAIL_USER_NAME,
-    to = "michael593@163.com",
+    to = process.env.MAIL_USER_NAME,
     subject,
     text,
     html,
     attachments,
-  }: {
-    from?: string;
-    to?: string;
-    subject: string;
-    text?: string;
-    html?: string;
-    attachments?: { fileName: string; path: string }[];
-  }): Promise<unknown> {
+  }: Mail.Options): Promise<unknown> {
     const _this = this;
     return _this.transporter?.sendMail({
       from: from, // sender address

@@ -16,12 +16,16 @@ export async function filterCurrent(
   cb?: (msg?: string) => void,
   mailer?: Mailer163
 ) {
+  const latestStock = await Storage.getStockHistoriesFromDB("000001", 1).then(
+    (res) => {
+      return res.data?.[0];
+    }
+  );
 
-  const latestStock = await Storage.getStockHistoriesFromDB('000001', 1).then(res => {
-    return res.data?.[0]
-  })
-
-  const minCapitalStocks = await Strategies.getMinCapitalStocks(300, latestStock?.date);
+  const minCapitalStocks = await Strategies.getMinCapitalStocks(
+    300,
+    latestStock?.date
+  );
 
   if (!minCapitalStocks || minCapitalStocks.length <= 0) {
     logger.info(`Storage.getAllStocks is empty`, logPath);
@@ -30,7 +34,9 @@ export async function filterCurrent(
   }
 
   // 获取实时行情，过滤掉 ST
-  const newStocks = (await fillEastStockInfo(minCapitalStocks)).filter(v => !v.name || (v.name && !v.name.toUpperCase().includes('ST')));
+  const newStocks = (await fillEastStockInfo(minCapitalStocks)).filter(
+    (v) => !v.name || (v.name && !v.name.toUpperCase().includes("ST"))
+  );
 
   // 计算 sma
   const smaStocks = await fillStocksSMA(newStocks);
@@ -54,11 +60,11 @@ export async function filterCurrent(
       try {
         mailer
           ?.send({
-            to: "michael593@163.com",
+            to: process.env.MAIL_USER_NAME,
             subject: moment().format("YYYY-MM-DD"),
             attachments: [
               {
-                fileName: `filter-${moment().format("YYYYMMDD")}.xlsx`,
+                filename: `filter-${moment().format("YYYYMMDD")}.xlsx`,
                 path: filePath,
               },
             ],

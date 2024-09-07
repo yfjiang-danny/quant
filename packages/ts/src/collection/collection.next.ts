@@ -56,9 +56,8 @@ async function snapshot() {
 }
 
 export async function dailyCollection(mailer?: Mailer163) {
-
   if (isHoliday(new Date())) {
-    log(`${new Date().toDateString()} is holiday, return`)
+    log(`${new Date().toDateString()} is holiday, return`);
     return;
   }
 
@@ -83,23 +82,9 @@ export async function dailyCollection(mailer?: Mailer163) {
   });
   queue.setLast(() => {
     log("Daily collection complete");
-  })
-  
+  });
+
   queue.add(stockInfo);
   queue.add(snapshot);
   queue.add(fillingLadder);
-
-
-  // mailer
-  // ?.send({
-  //   to: "michael593@163.com",
-  //   subject: "collection",
-  //   text: `Daily Collection Task completed`,
-  // })
-  // .then((res) => {
-  //   //
-  // })
-  // .catch((e) => {
-  //   //
-  // });
 }
