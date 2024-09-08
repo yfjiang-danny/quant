@@ -60,7 +60,9 @@ app.get("/stock/getStockTradeInfo", (req: Request, res: Response) => {
     res.send({ data: null, msg: "Empty symbol" });
     return;
   }
-  stockService.getStockTradeInfo(req.query.symbol).then((v) => res.send(v));
+  stockService
+    .getStockTradeInfo(req.query.symbol)
+    .then((v: any) => res.send(v));
 });
 
 app.post("/collection/start", (req: Request, res: Response) => {

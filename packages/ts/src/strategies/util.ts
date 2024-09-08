@@ -1,7 +1,33 @@
 import { StockModel } from "../models/type";
 
-const openClosePercentage = 0.01; // <1%
+const openClosePercentage = 0.02; // <1%
 const highLowPercentage = 0.02; // >2%
+const downCrossPercentage = 0.01;
+
+/**
+ * 下影线
+ */
+export function isDownCross(stock: StockModel): boolean {
+  let res = false;
+
+  const close = Number(stock.close);
+  const open = Number(stock.open);
+  const high = Number(stock.high);
+  const low = Number(stock.low);
+  if (!isNaN(close) && !isNaN(open) && !isNaN(high) && !isNaN(low)) {
+    const minBox = Math.min(close, open);
+    const maxBox = Math.max(close, open);
+    if (
+      low < minBox &&
+      (minBox - low) / minBox > downCrossPercentage &&
+      (high - maxBox) / maxBox < downCrossPercentage
+    ) {
+      res = true;
+    }
+  }
+
+  return res;
+}
 
 /**
  * 十字星线
@@ -14,7 +40,7 @@ export function isCross(stock: StockModel): boolean {
   const close = Number(stock.close);
   const open = Number(stock.open);
   const high = Number(stock.high);
-  const low = Number(stock.low); 
+  const low = Number(stock.low);
   if (!isNaN(close) && !isNaN(open) && !isNaN(high) && !isNaN(low)) {
     if (
       Math.abs(close - open) / open <= openClosePercentage &&
@@ -37,7 +63,7 @@ export function fitTurnover(
 ): boolean {
   let res = false;
 
-  const turnover = Number(stock.turnover)
+  const turnover = Number(stock.turnover);
 
   if (
     !isNaN(turnover) &&

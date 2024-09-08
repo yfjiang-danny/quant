@@ -1,6 +1,7 @@
 import * as PImage from "pureimage";
 import * as fs from "fs";
 import moment from "moment";
+import { imgRootPath } from "../common/paths";
 
 export interface DrawColumnModel {
   name: string;
@@ -10,7 +11,8 @@ export interface DrawColumnModel {
 
 export function drawTable(
   columns: DrawColumnModel[],
-  data: Record<string, string | number>[]
+  data: Record<string, string | number>[],
+  filename: string
 ) {
   const fontSize = 24;
 
@@ -26,7 +28,7 @@ export function drawTable(
     h = (data.length + 1) * (fontSize + gap) + fontSize * 2;
 
   const fnt = PImage.registerFont(
-    "src/assets/fonts/QingNiaoHuaGuangJianMeiHei-2.ttf",
+    `src/assets/fonts/QingNiaoHuaGuangJianMeiHei-2.ttf`,
     "Noto Sans SC"
   );
   fnt.loadSync();
@@ -68,7 +70,7 @@ export function drawTable(
   });
 
   return new Promise<boolean>((resolve) => {
-    const fileName = `${moment().format("YYYYMMDD")}.png`;
+    const fileName = `${imgRootPath}/${filename}.png`;
     PImage.encodePNGToStream(img1, fs.createWriteStream(fileName))
       .then(() => {
         console.log(`Wrote out the png file to ${fileName}`);

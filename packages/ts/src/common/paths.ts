@@ -10,6 +10,7 @@ export const historyRootPath = path.resolve(dbRootPath, "history");
 export const allStockRootPath = path.resolve(dbRootPath, "all");
 export const filterRootPath = path.resolve(dbRootPath, "filter");
 export const upperLimitRootPath = path.resolve(dbRootPath, "upper_limit");
+export const imgRootPath = path.resolve(rootPath, "imgs");
 
 export const logRootPath =
   process.env.LOG_ROOT || path.resolve(rootPath, "logs");
