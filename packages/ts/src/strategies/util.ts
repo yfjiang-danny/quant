@@ -17,10 +17,12 @@ export function isDownCross(stock: StockModel): boolean {
   if (!isNaN(close) && !isNaN(open) && !isNaN(high) && !isNaN(low)) {
     const minBox = Math.min(close, open);
     const maxBox = Math.max(close, open);
+    const currentDownPercentage = (minBox - low) / minBox;
+    const currentUpPercentage = (high - maxBox) / maxBox;
     if (
       low < minBox &&
-      (minBox - low) / minBox > downCrossPercentage &&
-      (high - maxBox) / maxBox < downCrossPercentage
+      currentDownPercentage > downCrossPercentage &&
+      currentUpPercentage < currentDownPercentage
     ) {
       res = true;
     }

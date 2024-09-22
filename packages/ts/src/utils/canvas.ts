@@ -1,6 +1,5 @@
 import * as PImage from "pureimage";
 import * as fs from "fs";
-import moment from "moment";
 import { imgRootPath } from "../common/paths";
 
 export interface DrawColumnModel {
@@ -12,7 +11,8 @@ export interface DrawColumnModel {
 export function drawTable(
   columns: DrawColumnModel[],
   data: Record<string, string | number>[],
-  filename: string
+  filename: string,
+  fileDir = imgRootPath
 ) {
   const fontSize = 24;
 
@@ -69,16 +69,16 @@ export function drawTable(
     });
   });
 
-  return new Promise<boolean>((resolve) => {
-    const fileName = `${imgRootPath}/${filename}.png`;
+  return new Promise<string | undefined>((resolve) => {
+    const fileName = `${fileDir}/${filename}.png`;
     PImage.encodePNGToStream(img1, fs.createWriteStream(fileName))
       .then(() => {
         console.log(`Wrote out the png file to ${fileName}`);
-        resolve(true);
+        resolve(fileName);
       })
       .catch((e) => {
         console.log(`There was an error on writing to ${fileName}`);
-        resolve(false);
+        resolve(undefined);
       });
   });
 }

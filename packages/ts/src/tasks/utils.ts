@@ -5,6 +5,14 @@ import { TushareStockModel } from "../third/tushare/type";
 import { StockModel } from "../models/type";
 import { EastMoney_API } from "../third/eastmoney/api";
 import { fillStockSMA } from "../service/factors/sma";
+import { createDir } from "../utils/fs";
+import path from "path";
+import { imgRootPath } from "../common/paths";
+import moment from "moment";
+import { drawTable } from "../utils/canvas";
+import Mail from "nodemailer/lib/mailer";
+import { access, readdir } from "fs/promises";
+import * as fs from "fs";
 
 function getMarket(symbol: string): MarketType {
   switch (symbol.slice(0, 1)) {
@@ -106,4 +114,55 @@ export async function fillAllStockSMA(stocks: StockModel[]) {
 
   logger.info("fillAllStockSMA finished...");
   return res;
+}
+
+export function drawCodeToImg(stocks: StockModel[], fileDir?: string) {
+  const defaultFileDir = path.resolve(imgRootPath, moment().format(`YYYYMMDD`));
+
+  const dir = fileDir || defaultFileDir;
+
+  return new Promise<string[] | undefined>((resolve, reject) => {
+    if (stocks.length <= 0) {
+      resolve(undefined);
+    }
+    createDir(dir)
+      .then(() => {
+        const promise: Promise<string | undefined>[] = [];
+        const newArr = Array.from(stocks);
+        let i = 0;
+        while (newArr.length > 0) {
+          i++;
+          promise.push(
+            drawTable(
+              [
+                // { key: "name", name: "股票名称", width: 140 },
+                { key: "symbol", name: "股票代码", width: 140 },
+              ],
+              newArr.splice(0, 15) as Record<string, string | number>[],
+              `${i}`,
+              dir
+            )
+          );
+        }
+        Promise.allSettled(promise)
+          .then((res) => {
+            const files = res.reduce((res, cur) => {
+              if (cur.status === "fulfilled") {
+                if (typeof cur.value === "string") {
+                  res.push(cur.value);
+                }
+              }
+              return res;
+            }, [] as string[]);
+            resolve(files);
+          })
+          .catch((e) => {
+            reject(e);
+          });
+      })
+      .catch((e) => {
+        //
+        reject(e);
+      });
+  });
 }

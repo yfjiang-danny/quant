@@ -6,6 +6,7 @@ import { Storage } from "../service/storage/storage";
 import { calcTopPriceLimit, fillEastStockInfo } from "../service/utils";
 import { IStockLadderTable } from "../db/interface/ladder";
 import { StockLadderTableModel } from "../db/tables/ladder";
+import { isHoliday } from "chinese-calendar-ts";
 
 const logPath = path.resolve(logRootPath, "filter_ladder.log");
 
@@ -27,6 +28,10 @@ async function calcLadder(stock: StockModel) {
 }
 
 export async function filterLadder() {
+  if (isHoliday(new Date())) {
+    logger.info(`${new Date().toDateString()} is holiday, return`);
+    return;
+  }
   const allStocks = await Storage.getStockInfosFromDB().then((res) => res.data);
   if (!allStocks || allStocks.length <= 0) {
     logger.info(`stocks is empty`, logPath);

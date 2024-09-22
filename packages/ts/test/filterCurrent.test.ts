@@ -6,5 +6,5 @@ dotenv.config();
 
 (async function test() {
   const mailer = new Mailer163();
-  await filterCurrent(undefined, mailer);
+  await filterCurrent(undefined, mailer, true);
 })();

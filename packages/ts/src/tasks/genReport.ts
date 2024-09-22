@@ -1,3 +1,4 @@
+import { isHoliday } from "chinese-calendar-ts";
 import moment from "moment";
 import { Mailer163 } from "../mail";
 import { Storage } from "../service/storage/storage";
@@ -20,6 +21,9 @@ const ColumnMap: Record<string, string> = {
 };
 
 export async function genReport(date?: string, mail?: Mailer163) {
+  if (isHoliday(new Date())) {
+    return;
+  }
   date = date ?? moment().format("YYYYMMDD");
   const allStocks = await Storage.getStockDetailsByDate(date).then(
     (res) => res.data
@@ -114,7 +118,7 @@ export async function genReport(date?: string, mail?: Mailer163) {
     reachBottom,
     topLimitted,
     bottomLimitted,
-    median: (median * 100).toString() + '%',
+    median: (median * 100).toString() + "%",
     between0And1,
     between1And5,
     moreThan5,
@@ -129,7 +133,7 @@ export async function genReport(date?: string, mail?: Mailer163) {
     if (Object.prototype.hasOwnProperty.call(ColumnMap, key)) {
       htmlStr += "<br />";
       htmlStr += ColumnMap[key];
-      htmlStr += "："
+      htmlStr += "：";
       htmlStr += result[key];
     }
   }

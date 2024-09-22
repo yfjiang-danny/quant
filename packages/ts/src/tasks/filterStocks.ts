@@ -1,3 +1,4 @@
+import { isHoliday } from "chinese-calendar-ts";
 import moment from "moment";
 import path from "path";
 import { logRootPath } from "../common/paths";
@@ -12,6 +13,10 @@ export async function filterStocks(
   cb?: (msg?: string) => void,
   mailer?: Mailer163
 ) {
+  if (isHoliday(new Date())) {
+    logger.info(`${new Date().toDateString()} is holiday, return`);
+    return;
+  }
   sendMail = false;
   await Strategies.filterStocks()
     .then(async (filePath) => {
@@ -31,6 +36,7 @@ export async function filterStocks(
           ?.send({
             to: process.env.MAIL_USER_NAME,
             subject: moment().format("YYYY-MM-DD"),
+            html: `具体查看附件`,
             attachments: [
               {
                 filename: `filter-${moment().format("YYYYMMDD")}.xlsx`,
