@@ -123,14 +123,14 @@ app.post("/task/filterStocks/stop", (req: Request, res: Response) => {
   res.send({ data: cancel });
 });
 
-app.post("/task/filterCurrent/start", (req: Request, res: Response) => {
-  console.log(`/task/filterCurrent/start`);
+// app.post("/task/filterCurrent/start", (req: Request, res: Response) => {
+//   console.log(`/task/filterCurrent/start`);
 
-  if (!filterCurrentJob) {
-    runFilterCurrentJob();
-  }
-  res.send({ data: true });
-});
+//   if (!filterCurrentJob) {
+//     runFilterCurrentJob();
+//   }
+//   res.send({ data: true });
+// });
 
 app.post("/task/filterCurrent/exec", (req: Request, res: Response) => {
   console.log(`/task/filterCurrent/exec`);
@@ -139,15 +139,15 @@ app.post("/task/filterCurrent/exec", (req: Request, res: Response) => {
   res.send({ data: true });
 });
 
-app.post("/task/filterCurrent/stop", (req: Request, res: Response) => {
-  console.log(`/task/filterCurrent/stop`);
+// app.post("/task/filterCurrent/stop", (req: Request, res: Response) => {
+//   console.log(`/task/filterCurrent/stop`);
 
-  let cancel = true;
-  if (filterCurrentJob) {
-    cancel = filterCurrentJob.cancel();
-  }
-  res.send({ data: cancel });
-});
+//   let cancel = true;
+//   if (filterCurrentJob) {
+//     cancel = filterCurrentJob.cancel();
+//   }
+//   res.send({ data: cancel });
+// });
 
 app.post("/task/filterLadder/start", (req: Request, res: Response) => {
   console.log(`/task/filterLadder/start`);
@@ -170,7 +170,7 @@ app.listen(port, () => {
   runDBCollectionJob();
   // runCollectionJob();
   runFilterStockJob();
-  runFilterCurrentJob();
+  // runFilterCurrentJob();
   runGenReportJob();
 });
 
@@ -225,18 +225,18 @@ function runFilterStockJob() {
   filterStocksJob = scheduleJob(rule, fn);
 }
 
-let filterCurrentJob: Job;
-function runFilterCurrentJob() {
-  console.log(`Start runFilterCurrentJob ...`);
+// let filterCurrentJob: Job;
+// function runFilterCurrentJob() {
+//   console.log(`Start runFilterCurrentJob ...`);
 
-  // 每天 14:50
-  const rule = new RecurrenceRule();
-  rule.dayOfWeek = [1, 2, 3, 4, 5];
-  rule.hour = 14;
-  rule.minute = 50;
-  const fn = filterCurrent.bind(null, undefined, mailer);
-  filterCurrentJob = scheduleJob(rule, fn);
-}
+//   // 每天 14:50
+//   const rule = new RecurrenceRule();
+//   rule.dayOfWeek = [1, 2, 3, 4, 5];
+//   rule.hour = 14;
+//   rule.minute = 50;
+//   const fn = filterCurrent.bind(null, undefined, mailer, false);
+//   filterCurrentJob = scheduleJob(rule, fn);
+// }
 
 let genReportJob: Job;
 function runGenReportJob() {

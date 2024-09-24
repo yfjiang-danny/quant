@@ -12,6 +12,7 @@ import { deepCopyWithJson } from "../utils/util";
 import { fitTurnover, isCross, isDownCross } from "./util";
 import { StockSnapshotTableModel } from "../db/tables/snapshot";
 import { fillStocksSMA } from "../service/factors/sma";
+import { getLatestTradeDates } from "../utils/date";
 
 export namespace Strategies {
   const logPath = path.resolve(logRootPath, "strategy.log");
@@ -242,49 +243,37 @@ export namespace Strategies {
       return;
     }
 
-    const smaStocks = await fillStocksSMA(minCapitalStocks);
+    const dates = getLatestTradeDates(5);
+    const upperLimitStocks = await Storage.queryUpperLimitStockSymbolByDates(
+      dates
+    ).then((res) => res.data);
 
-    const sheets: WorkSheet[] = [];
-    const crossStocks = await filterCross(deepCopyWithJson(smaStocks));
-
-    if (crossStocks) {
-      sheets.push({
-        name: "cross",
-        data: stocksToSheetData(crossStocks),
-        options: {},
-      });
-    }
-
-    const preRiseSheet = await filterPreRise(
-      deepCopyWithJson(minCapitalStocks)
-    );
-    if (preRiseSheet) {
-      sheets.push(...preRiseSheet);
-    }
-
-    if (sheets.length <= 0) {
-      logger.info(`sheets is empty`, logPath);
-      return;
-    }
-    const filePath = path.resolve(
-      filterRootPath,
-      `filter-${date ?? moment().format("YYYYMMDD")}.xlsx`
-    );
-    return Excel.write(sheets, filePath)
-      .then(
-        (res) => {
-          if (res) {
-            return filePath;
-          }
-          return null;
-        },
-        (e) => {
-          return null;
-        }
+    const smaStocks = await fillStocksSMA(
+      minCapitalStocks.filter(
+        (v) =>
+          (!v.name || (v.name && !v.name.toUpperCase().includes("ST"))) &&
+          v.symbol &&
+          upperLimitStocks.includes(v.symbol)
       )
-      .finally(() => {
-        logger.info(`Completely, ${filePath}`, logPath);
-      });
+    );
+
+    return smaStocks.filter((v) => {
+      if (!v.open || !v.close) return false;
+
+      if (!isDownCross(v) || !fitTurnover(v, 3, 60)) return false;
+
+      return (
+        (v.sma5 &&
+          ((v.open > v.sma5 && v.close < v.sma5) ||
+            (v.close > v.sma5 && v.open < v.sma5))) ||
+        (v.sma10 &&
+          ((v.open > v.sma10 && v.close < v.sma10) ||
+            (v.close > v.sma10 && v.open < v.sma10))) ||
+        (v.sma20 &&
+          ((v.open > v.sma20 && v.close < v.sma20) ||
+            (v.close > v.sma20 && v.open < v.sma20)))
+      );
+    });
   }
 
   /**

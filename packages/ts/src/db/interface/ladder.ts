@@ -3,6 +3,7 @@ import { BinaryNode, QueryLike } from "sql";
 import moment from "moment";
 import { StockLadderTable, StockLadderTableModel } from "../tables/ladder";
 import { dbQuery } from "../connect";
+import { LadderColumns } from "../../models/upperlimit/constant";
 
 export namespace IStockLadderTable {
   export function insert(stocks: StockLadderTableModel[]) {
@@ -111,5 +112,18 @@ export namespace IStockLadderTable {
     return dbQuery<StockLadderTableModel[]>(
       mQuery.order(StockLadderTable.ladder).toQuery()
     );
+  }
+
+  export function getStockLadderSymbolByDates(dates: string[]) {
+    //
+    let mQuery = StockLadderTable.select(StockLadderTable.symbol)
+      .where(
+        StockLadderTable.date.in(dates).and(StockLadderTable.symbol.isNotNull())
+      )
+      .group(StockLadderTable.symbol);
+
+    const query = mQuery.order(StockLadderTable.symbol).toQuery();
+
+    return dbQuery<Pick<StockLadderTableModel, "symbol">[]>(query);
   }
 }

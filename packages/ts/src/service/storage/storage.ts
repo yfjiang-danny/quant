@@ -22,8 +22,13 @@ import { convertToHistoryModel } from "../utils";
 import { BinaryNode } from "sql";
 import { IStockInfoTable } from "../../db/interface/stockInfo";
 import { IStockSnapshotTable } from "../../db/interface/snapshot";
-import { StockSnapshotTable, StockSnapshotTableModel } from "../../db/tables/snapshot";
+import {
+  StockSnapshotTable,
+  StockSnapshotTableModel,
+} from "../../db/tables/snapshot";
 import { StockInfoTableModel } from "../../db/tables/stockInfo";
+import { IStockLadderTable } from "../../db/interface/ladder";
+import { StockLadderTableModel } from "../../db/tables/ladder";
 
 export namespace Storage {
   export function getAllBasicStocks(
@@ -98,11 +103,13 @@ export namespace Storage {
     stocks: TushareStockModel[]
   ): Promise<Response<boolean>> {
     return new Promise<Response<boolean>>((resolve, reject) => {
-      IStockInfoTable.insert(stocks.map(v => {
-        const nv = {...v};
-        delete nv.ts_code;
-        return nv
-      }))
+      IStockInfoTable.insert(
+        stocks.map((v) => {
+          const nv = { ...v };
+          delete nv.ts_code;
+          return nv;
+        })
+      )
         .then(
           (res) => {
             resolve({ data: true });
@@ -407,8 +414,6 @@ export namespace Storage {
     limit?: number,
     offset?: number
   ): Promise<Response<StockSnapshotTableModel[]>> {
-
-
     return new Promise<Response<StockSnapshotTableModel[]>>((resolve) => {
       IStockSnapshotTable.getStocksBySymbol(symbol, limit, offset)
         .then(
@@ -453,11 +458,16 @@ export namespace Storage {
     if (!date) {
       date = moment().format("YYYYMMDD");
     }
-    return new Promise<Response<(StockSnapshotTableModel & StockInfoTableModel)[]>>((resolve) => {
+    return new Promise<
+      Response<(StockSnapshotTableModel & StockInfoTableModel)[]>
+    >((resolve) => {
       IStockSnapshotTable.getStockDetailsByDate(date as string)
         .then(
           (res) => {
-            resolve({ data: res.rows as unknown as (StockSnapshotTableModel & StockInfoTableModel)[] });
+            resolve({
+              data: res.rows as unknown as (StockSnapshotTableModel &
+                StockInfoTableModel)[],
+            });
           },
           (e) => {
             resolve({ data: [], msg: e });
@@ -532,6 +542,23 @@ export namespace Storage {
         },
         (e) => {
           resolve({ data: null, msg: e });
+        }
+      );
+    });
+  }
+
+  export function queryUpperLimitStockSymbolByDates(dates: string[]) {
+    return new Promise<Response<string[]>>((resolve, reject) => {
+      IStockLadderTable.getStockLadderSymbolByDates(dates).then(
+        (res) => {
+          resolve({
+            data: (
+              res.rows as unknown as Pick<StockLadderTableModel, "symbol">[]
+            ).map<string>((v) => v.symbol),
+          });
+        },
+        (e) => {
+          resolve({ data: [], msg: e });
         }
       );
     });

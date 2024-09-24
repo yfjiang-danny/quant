@@ -1,3 +1,4 @@
+import { isHoliday } from "chinese-calendar-ts";
 import { accessSync } from "fs";
 import moment from "moment";
 import path from "path";
@@ -34,6 +35,29 @@ export function findExistDate(rootPath: string, d?: string, ext?: string) {
   return success ? dateStr : undefined;
 }
 
-export function isWorkday(date?: string) {
-  return moment(date).isoWeekday() < 6;
+export function isTradeDate(d: Date) {
+  const day = d.getDay();
+
+  return !isHoliday(d) && day > 0 && day < 6;
+}
+
+export function getLatestTradeDates(
+  num = 1,
+  from = new Date(),
+  format = "YYYYMMDD"
+) {
+  const res: string[] = [];
+
+  const m = moment(from);
+
+  let i = 0;
+  while (i < num) {
+    if (isTradeDate(m.toDate())) {
+      res.push(m.format(format));
+      i++;
+    }
+    m.add(-1, "d");
+  }
+
+  return res;
 }
