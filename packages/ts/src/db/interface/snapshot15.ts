@@ -7,12 +7,10 @@ import {
   StockSnapshot25Table,
   StockSnapshot30Table,
   StockSnapshotTable,
-  StockSnapshotTableModel,
   StockTimeSnapshotTableModel,
 } from "../tables/snapshot";
 import { dbQuery } from "../connect";
 import { StockInfoTableModel } from "../tables/stockInfo";
-import sql, { ColumnDefinition, TableDefinition } from "sql";
 
 export namespace IStockTimeSnapshotTable {
   export type TableType = 15 | 18 | 25 | 30;
