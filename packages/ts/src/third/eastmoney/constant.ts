@@ -25,4 +25,5 @@ export const EastMoneyColumns: Record<keyof EastMoneyStockModel, string> = {
   buy2_count: "买2数量",
   sale1_count: "卖1数量",
   sale2_count: "卖2数量",
+  time: "时间",
 };

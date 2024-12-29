@@ -1,20 +1,29 @@
 import * as dotenv from "dotenv";
 import { dbQuery } from "../db/connect";
 import { StockLadderTable } from "../db/tables/ladder";
-import { StockSnapshotTable } from "../db/tables/snapshot";
+import {
+  StockSnapshot15Table,
+  StockSnapshot18Table,
+  StockSnapshot25Table,
+  StockSnapshot30Table,
+  StockSnapshotTable,
+} from "../db/tables/snapshot";
 import { StockInfoTable } from "../db/tables/stockInfo";
 
 dotenv.config();
 
 async function main() {
-  const basicStockTable = StockInfoTable.create().ifNotExists().toQuery();
-  await dbQuery(basicStockTable);
+  const snapshot15Table = StockSnapshot15Table.create().ifNotExists().toQuery();
+  await dbQuery(snapshot15Table);
 
-  const snapshotTable = StockSnapshotTable.create().ifNotExists().toQuery();
-  await dbQuery(snapshotTable);
+  const snapshot18Table = StockSnapshot18Table.create().ifNotExists().toQuery();
+  await dbQuery(snapshot18Table);
 
-  const ladderTable = StockLadderTable.create().ifNotExists().toQuery();
-  await dbQuery(ladderTable);
+  const snapshot25Table = StockSnapshot25Table.create().ifNotExists().toQuery();
+  await dbQuery(snapshot25Table);
+
+  const snapshot30Table = StockSnapshot30Table.create().ifNotExists().toQuery();
+  await dbQuery(snapshot30Table);
 }
 
 main();

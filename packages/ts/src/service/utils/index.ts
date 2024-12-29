@@ -7,7 +7,10 @@ import { getMarket } from "../../utils/convert";
 import { ALPH_API } from "../../third/alph/api";
 import { EastMoney_API } from "../../third/eastmoney/api";
 import { Storage } from "../storage/storage";
-import { StockSnapshotTableModel } from "../../db/tables/snapshot";
+import {
+  StockSnapshotTableModel,
+  StockTimeSnapshotTableModel,
+} from "../../db/tables/snapshot";
 
 const batch = 10;
 
@@ -101,6 +104,7 @@ export function convertToHistoryModel(v: StockModel): StockSnapshotTableModel {
   }
   return {
     date: v.date,
+    time: v.time,
     name: v.name,
     symbol: v.symbol,
     change: v.change,
@@ -122,8 +126,42 @@ export function convertToHistoryModel(v: StockModel): StockSnapshotTableModel {
     sale1_count: v.sale1_count,
     sale2_count: v.sale2_count,
     buy1_count: v.buy1_count,
-    buy2_count: v.buy2_count
+    buy2_count: v.buy2_count,
   } as StockSnapshotTableModel;
+}
+
+export function convertToHistoryTimeModel(
+  v: StockModel
+): StockTimeSnapshotTableModel {
+  function toString(v: any) {
+    return v ? String(v) : null;
+  }
+  return {
+    date: v.date,
+    time: v.time,
+    name: v.name,
+    symbol: v.symbol,
+    change: v.change,
+    close: toString(v.close),
+    open: toString(v.open),
+    high: toString(v.high),
+    low: toString(v.low),
+    avg: toString(v.avg),
+    top_price: toString(v.topPrice),
+    bottom_price: toString(v.bottomPrice),
+    turnover: toString(v.turnover),
+    volume: toString(v.volume),
+    external: v.external,
+    internal: v.internal,
+    buy1: v.buy1,
+    buy2: v.buy2,
+    sale1: v.sale1,
+    sale2: v.sale2,
+    sale1_count: v.sale1_count,
+    sale2_count: v.sale2_count,
+    buy1_count: v.buy1_count,
+    buy2_count: v.buy2_count,
+  } as StockTimeSnapshotTableModel;
 }
 
 export function getLimitPercentage(symbol?: string): number {

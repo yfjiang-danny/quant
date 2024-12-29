@@ -72,6 +72,7 @@ export namespace EastMoney_API {
             avg: avg,
             code: res.code,
             date: res.realtimequote.date,
+            time: res.realtimequote.time,
             name: res.name,
             turnover: turnover,
             volume: volume,
@@ -87,13 +88,52 @@ export namespace EastMoney_API {
             buy1: res.fivequote.buy1,
             buy2: res.fivequote.buy2,
             buy1_count: res.fivequote.buy1_count,
-            buy2_count: res.fivequote.buy2_count
+            buy2_count: res.fivequote.buy2_count,
           } as EastMoneyStockModel;
         }
         return null;
       })
       .catch((err) => {
         logger.info(err, logOutput);
+        return null;
+      });
+  }
+
+  export function getStockCapitalFlow(symbol: string, market: MarketType) {
+    const callbackKey = "jQueryH";
+    const timestamp = new Date().getTime();
+    if (process.env.TEST) {
+      logger.info(`process.env.TEST is ${process.env.TEST}, use mock data.`);
+      return new Promise<QuoteSnapshotModel | null>((resolve) => {
+        resolve(MockEastMoneyData.find((v) => v.code === symbol) || null);
+      });
+    }
+    return axios
+      .get(
+        `${
+          process.env.EASTMONEY_API
+        }?id=${symbol}&market=${market}&DC_APP_KEY=dcquotes-service-tweb&DC_TIMESTAMP=${timestamp}&DC_SIGN=81160C38A19B3006FD96BC54300AD889&callback=${callbackKey}&_=${
+          timestamp + 1
+        }`
+      )
+      .then((res) => {
+        if (res.status == 200) {
+          try {
+            const jsonStr = (res.data as string).slice(
+              callbackKey.length + 1,
+              res.data.length - 2
+            );
+            const data = JSON.parse(jsonStr) as QuoteSnapshotModel;
+            return data;
+          } catch (error) {
+            return null;
+          }
+        }
+        return null;
+      })
+      .catch((e) => {
+        console.log(e);
+
         return null;
       });
   }

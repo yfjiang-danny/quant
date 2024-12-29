@@ -51,6 +51,57 @@ interface QuoteSnapshotModel {
   tradeperiod: number; //6;
 }
 
+interface CapitalFlowResponseModel {
+  rc: number; //0,
+  rt: number; //11,
+  svr: number; //180606409,
+  lt: number; //1,
+  full: number; //1,
+  dlmkts: string; //"",
+  data: {
+    total: number; //1,
+    diff: [
+      {
+        f6: number; //2509481114.54,
+        f62: number; //93752992.0, // 主力净流入
+        f64: number; //556867328.0, 超大单流入
+        f65: number; //469632352.0, 超大单流出
+        f66: number; //87234976.0, 超大单净流入
+        f69: number; //3.48, 超大单净比
+        f70: number; //640597888.0, 大单流入
+        f71: number; //634079872.0, 大单流出
+        f72: number; //6518016.0, 大单净流入
+        f75: number; //0.26, 大单净比
+        f76: number; //708613696.0, 中单流入
+        f77: number; //739852304.0, 中单流出
+        f78: number; //-31238608.0, 中单净流入
+        f81: number; //-1.24, 中单净比
+        f82: number; //566140336.0, 小单流入
+        f83: number; //628654720.0, 小单流出
+        f84: number; //-62514384.0, 中单净流入
+        f87: number; //-2.49, 小单净比
+        f124: number; //1735284882,
+        f164: number; //492604592.0,
+        f166: number; //305985104.0,
+        f168: number; //186619488.0,
+        f170: number; //-400426512.0,
+        f172: number; //-92178080.0,
+        f184: number; //3.74, 主力净比
+        f252: number; //1669446914.0,
+        f253: number; //1243503202.0,
+        f254: number; //425943712.0,
+        f255: number; //-1380302368.0,
+        f256: number; //-289144688.0,
+        f278: number; //492604592.0,
+        f279: number; //305985104.0,
+        f280: number; //186619488.0,
+        f281: number; //-400426512.0,
+        f282: number; //-92178080.0
+      }
+    ];
+  };
+}
+
 export interface EastMoneyStockModel {
   code?: string;
   name?: string;
@@ -59,6 +110,7 @@ export interface EastMoneyStockModel {
   high?: number;
   low?: number;
   date?: string;
+  time?: string;
   volume?: number;
   change?: string;
   capital?: number;

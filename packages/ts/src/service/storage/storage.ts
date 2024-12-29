@@ -18,17 +18,19 @@ import {
 } from "../../utils/fs";
 import { Response } from "./type";
 import { TushareStockModel } from "../../third/tushare/type";
-import { convertToHistoryModel } from "../utils";
+import { convertToHistoryModel, convertToHistoryTimeModel } from "../utils";
 import { BinaryNode } from "sql";
 import { IStockInfoTable } from "../../db/interface/stockInfo";
 import { IStockSnapshotTable } from "../../db/interface/snapshot";
 import {
   StockSnapshotTable,
   StockSnapshotTableModel,
+  StockTimeSnapshotTableModel,
 } from "../../db/tables/snapshot";
 import { StockInfoTableModel } from "../../db/tables/stockInfo";
 import { IStockLadderTable } from "../../db/interface/ladder";
 import { StockLadderTableModel } from "../../db/tables/ladder";
+import { IStockTimeSnapshotTable } from "../../db/interface/snapshot15";
 
 export namespace Storage {
   export function getAllBasicStocks(
@@ -494,6 +496,110 @@ export namespace Storage {
         )
         .catch((e) => {
           resolve({ data: false, msg: e });
+        });
+    });
+  }
+
+  export function insertStockTimeHistories(
+    type: IStockTimeSnapshotTable.TableType,
+    stocks: StockModel[],
+    shouldUpdate?: boolean
+  ): Promise<Response<boolean>> {
+    return new Promise<Response<boolean>>((resolve) => {
+      IStockTimeSnapshotTable.insert(
+        type,
+        stocks.map((v) => {
+          return convertToHistoryTimeModel(v);
+        }),
+        shouldUpdate
+      )
+        .then(
+          (res) => {
+            resolve({ data: true });
+          },
+          (e) => {
+            resolve({ data: false, msg: e });
+          }
+        )
+        .catch((e) => {
+          resolve({ data: false, msg: e });
+        });
+    });
+  }
+
+  export function getStockTimeHistories(
+    type: IStockTimeSnapshotTable.TableType,
+    symbol: string,
+    limit?: number,
+    offset?: number
+  ): Promise<Response<StockTimeSnapshotTableModel[]>> {
+    return new Promise<Response<StockTimeSnapshotTableModel[]>>((resolve) => {
+      IStockTimeSnapshotTable.getStocksBySymbol(type, symbol, limit, offset)
+        .then(
+          (res) => {
+            resolve({
+              data: res.rows as unknown as StockTimeSnapshotTableModel[],
+            });
+          },
+          (e) => {
+            resolve({ data: [], msg: e });
+          }
+        )
+        .catch((e) => {
+          resolve({ data: [], msg: e });
+        });
+    });
+  }
+
+  export function getStockTimeSnapshotByDate(
+    type: IStockTimeSnapshotTable.TableType,
+    date?: string
+  ): Promise<Response<StockTimeSnapshotTableModel[]>> {
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+    return new Promise<Response<StockTimeSnapshotTableModel[]>>((resolve) => {
+      IStockTimeSnapshotTable.getStocksByDate(type, date as string)
+        .then(
+          (res) => {
+            resolve({
+              data: res.rows as unknown as StockTimeSnapshotTableModel[],
+            });
+          },
+          (e) => {
+            resolve({ data: [], msg: e });
+          }
+        )
+        .catch((e) => {
+          resolve({ data: [], msg: e });
+        });
+    });
+  }
+
+  export function getStockTimeDetailsByDate(
+    type: IStockTimeSnapshotTable.TableType,
+    date?: string
+  ): Promise<Response<(StockTimeSnapshotTableModel & StockInfoTableModel)[]>> {
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+    return new Promise<
+      Response<(StockTimeSnapshotTableModel & StockInfoTableModel)[]>
+    >((resolve) => {
+      IStockTimeSnapshotTable.getStockDetailsByDate(type, date as string)
+        .then(
+          (res) => {
+            resolve({
+              data: res.rows as unknown as (StockTimeSnapshotTableModel &
+                StockInfoTableModel)[],
+            });
+          },
+          (e) => {
+            resolve({ data: [], msg: e });
+          }
+        )
+        .catch((e) => {
+          resolve({ data: [], msg: e });
         });
     });
   }

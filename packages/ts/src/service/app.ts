@@ -17,6 +17,12 @@ import { StockService } from "./stock";
 import { filterLadder } from "../tasks/filterLadder";
 import { dailyCollection } from "../collection/collection.next";
 import { genReport } from "../tasks/genReport";
+import {
+  time15Collection,
+  time18Collection,
+  time25Collection,
+  time30Collection,
+} from "../collection/collection.time";
 
 dotenv.config();
 
@@ -172,6 +178,12 @@ app.listen(port, () => {
   runFilterStockJob();
   // runFilterCurrentJob();
   runGenReportJob();
+
+  //
+  runSnapshot15Job();
+  runSnapshot18Job();
+  runSnapshot25Job();
+  runSnapshot30Job();
 });
 
 let job: Job;
@@ -248,5 +260,53 @@ function runGenReportJob() {
   rule.hour = 18;
   rule.minute = 0;
   const fn = genReport.bind(null, undefined, mailer);
+  genReportJob = scheduleJob(rule, fn);
+}
+
+function runSnapshot15Job() {
+  console.log(`Start Snapshot15 ...`);
+
+  // 每天 09:15
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 9;
+  rule.minute = 15;
+  const fn = time15Collection.bind(null, mailer);
+  genReportJob = scheduleJob(rule, fn);
+}
+
+function runSnapshot18Job() {
+  console.log(`Start Snapshot18 ...`);
+
+  // 每天 09:18
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 9;
+  rule.minute = 18;
+  const fn = time18Collection.bind(null, mailer);
+  genReportJob = scheduleJob(rule, fn);
+}
+
+function runSnapshot25Job() {
+  console.log(`Start Snapshot25 ...`);
+
+  // 每天 09:25
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 9;
+  rule.minute = 25;
+  const fn = time25Collection.bind(null, mailer);
+  genReportJob = scheduleJob(rule, fn);
+}
+
+function runSnapshot30Job() {
+  console.log(`Start Snapshot30 ...`);
+
+  // 每天 09:30
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 9;
+  rule.minute = 30;
+  const fn = time30Collection.bind(null, mailer);
   genReportJob = scheduleJob(rule, fn);
 }
