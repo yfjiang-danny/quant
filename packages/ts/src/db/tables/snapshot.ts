@@ -1,4 +1,4 @@
-import sql, { ColumnDefinition, TableDefinition } from "sql";
+import sql, { ColumnDefinition } from "sql";
 import {
   baseColumns,
   BaseTableModel,
@@ -11,6 +11,7 @@ import {
 
 export interface StockSnapshotTableModel extends BaseTableModel {
   date: string;
+  time: string;
   symbol: string;
   name: string;
   close: string | null | undefined;
@@ -46,6 +47,9 @@ const StockSnapshotTableColumn: {
     dataType: dateDataType,
     notNull: true,
     primaryKey: true,
+  },
+  time: {
+    dataType: dateDataType,
   },
   symbol: {
     dataType: symbolDataType,

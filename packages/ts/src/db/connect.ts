@@ -6,6 +6,7 @@ import {
   QueryResult,
 } from "pg";
 import * as dotenv from "dotenv";
+import { logger } from "../logs";
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ async function dbQuery<T extends any[] = any[], I extends any[] = any[]>(
       try {
         let result = await client.query<T, I>(query[0].text, query[0].values);
         await client.query("BEGIN");
+
         for (let i = 1; i < query.length; i++) {
           const element = query[i];
           const res = await client.query<T, I>(element.text, element.values);
@@ -69,7 +71,7 @@ async function dbQuery<T extends any[] = any[], I extends any[] = any[]>(
       );
     }
   } catch (err) {
-    console.error("Query error:", err);
+    logger.info("Query error:" + err);
     throw err; // Re-throw to handle in the calling function
   } finally {
     client.release(); // Release the client back to the pool

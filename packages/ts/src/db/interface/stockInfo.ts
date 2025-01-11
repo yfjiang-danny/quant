@@ -77,7 +77,18 @@ export namespace IStockInfoTable {
   export function getAllStocks(): Promise<QueryResult<StockInfoTableModel[]>> {
     //
     const query = StockInfoTable.select(StockInfoTable.star())
+      .where(StockInfoTable.is_del?.isNull())
+      .toQuery();
+
+    return dbQuery<StockInfoTableModel[]>(query);
+  }
+
+  export function getStockInfoBySymbol(
+    symbol: string
+  ): Promise<QueryResult<StockInfoTableModel[]>> {
+    const query = StockInfoTable.select(StockInfoTable.star())
       .from(StockInfoTable)
+      .where(StockInfoTable.symbol?.equals(symbol))
       .toQuery();
 
     return dbQuery<StockInfoTableModel[]>(query);

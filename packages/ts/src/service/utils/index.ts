@@ -26,7 +26,7 @@ export async function fillEastStockInfo(
 
   const res: StockModel[] = [];
 
-  const len = Math.round(stocks.length / batch);
+  const len = Math.ceil(stocks.length / batch);
 
   let i = 0;
   while (i < len) {

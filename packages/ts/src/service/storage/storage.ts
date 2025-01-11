@@ -76,6 +76,29 @@ export namespace Storage {
     });
   }
 
+  export function getStockInfoBySymbol(
+    symbol: string
+  ): Promise<Response<StockModel | undefined>> {
+    return new Promise<Response<StockModel | undefined>>((resolve, reject) => {
+      IStockInfoTable.getStockInfoBySymbol(symbol)
+        .then(
+          (res) => {
+            if (res && res.rows) {
+              resolve({ data: res.rows[0] as unknown as StockModel });
+            } else {
+              resolve({ data: undefined });
+            }
+          },
+          (e) => {
+            resolve({ data: undefined, msg: e });
+          }
+        )
+        .catch((e) => {
+          resolve({ data: undefined, msg: e });
+        });
+    });
+  }
+
   export function saveAllBasicStocks(
     stocks: StockModel[],
     dateString?: string

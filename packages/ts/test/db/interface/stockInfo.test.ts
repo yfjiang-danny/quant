@@ -1,6 +1,5 @@
 import * as dotenv from "dotenv";
-import { Storage } from "../../../src/service/storage/storage";
-import { IStockInfoTable } from "../../../models/interface/stockInfo";
+import { IStockInfoTable } from "../../../src/db/interface/stockInfo";
 
 dotenv.config();
 
@@ -42,3 +41,9 @@ dotenv.config();
     console.log(res.rowCount);
   });
 })();
+
+// (async function testGetStockInfoBySymbol() {
+//   IStockInfoTable.getStockInfoBySymbol("000001").then((res) => {
+//     console.log(res);
+//   });
+// })();

@@ -1,22 +1,37 @@
 import * as dotenv from "dotenv";
 import { Storage } from "../../../src/service/storage/storage";
-import { convertToHistoryModel } from "../../../src/service/utils";
+import {
+  convertToHistoryModel,
+  fillEastStockInfo,
+} from "../../../src/service/utils";
 import { IStockSnapshotTable } from "../../../src/db/interface/snapshot";
+import { EastMoney_API } from "../../../src/third/eastmoney/api";
 
 dotenv.config();
 
 // (async function testInsert() {
-//   const allStocks = await Storage.getAllStocks("20240119").then(
-//     (res) => res.data
-//   );
-
-//   if (!allStocks || allStocks.length < 0) {
+//   const stockRes = await Storage.getStockInfoBySymbol("000001");
+//   if (!stockRes.data) {
+//     console.log(
+//       `Update daily info failed: empty basic stocks, ${stockRes.msg}`
+//     );
 //     return;
 //   }
 
-//   const insertRes = await IStockSnapshotTable.insert(allStocks.map(v => convertToHistoryModel(v)));
+//   const dailyStocks = await fillEastStockInfo([stockRes.data]);
 
-//   console.log(insertRes);
+//   if (!dailyStocks || dailyStocks.length == 0) {
+//     console.log(`Update daily info failed: empty daily stocks`);
+//     return;
+//   }
+
+//   const res = await Storage.insertStockHistories(dailyStocks);
+
+//   if (res.data) {
+//     console.log(`Update daily info success`);
+//   } else {
+//     console.log(`Update daily info failed: ${res.msg}`);
+//   }
 // })();
 
 // (async function testUpdate() {
@@ -42,8 +57,8 @@ dotenv.config();
 //   });
 // })();
 
-(async function testGetStockDailysByDate() {
-  IStockSnapshotTable.getStocksBySymbol("000001", 1).then((res) => {
-    console.log(res.rows);
-  });
-})();
+// (async function testGetStockDailysByDate() {
+//   IStockSnapshotTable.getStocksBySymbol("000001", 1).then((res) => {
+//     console.log(res.rows);
+//   });
+// })();

@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest",
     "build": "rm -fr dist && tsc src/**/*.ts --outDir dist --esModuleInterop",
+    "tsc": "tsc src/**/*.ts --outDir dist --esModuleInterop",
     "start": "node dist/service/app.js"
   },
   "keywords": [],

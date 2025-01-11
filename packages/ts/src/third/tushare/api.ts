@@ -34,9 +34,7 @@ export namespace TUSHARE_API {
     );
   }
 
-  export function getAllStock(
-    params: AllStockApiParams = { exchange: "", list_status: "L" }
-  ) {
+  export function getAllStock(params: AllStockApiParams = { exchange: "" }) {
     return request("stock_basic", {
       fields: StockFields.join(","),
       params: params as Record<string, unknown>,

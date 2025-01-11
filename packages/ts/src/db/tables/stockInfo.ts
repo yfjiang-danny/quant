@@ -45,6 +45,7 @@ export interface StockInfoTableModel extends BaseTableModel {
   is_hs?: string;
   act_name?: string;
   act_ent_type?: string;
+  is_del?: number;
 }
 
 export const StockInfoTable = sql.define<string, StockInfoTableModel>({
@@ -117,6 +118,10 @@ export const StockInfoTable = sql.define<string, StockInfoTableModel>({
     act_ent_type: {
       name: "act_ent_type",
       dataType: "varchar(100)",
+    },
+    is_del: {
+      name: "is_del",
+      dataType: "smallint",
     },
   },
 });

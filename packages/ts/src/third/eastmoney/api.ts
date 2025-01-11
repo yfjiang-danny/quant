@@ -2,7 +2,12 @@ import axios from "axios";
 import path from "path";
 import { logRootPath } from "../../common/paths";
 import { logger } from "../../logs";
-import { EastMoneyStockModel, MarketType, QuoteSnapshotModel } from "./type";
+import {
+  CapitalFlowResponseModel,
+  EastMoneyStockModel,
+  MarketType,
+  QuoteSnapshotModel,
+} from "./type";
 import { MockEastMoneyData } from "./mock";
 
 // https://emhsmarketwg.eastmoneysec.com/api/SHSZQuoteSnapshot
@@ -100,19 +105,19 @@ export namespace EastMoney_API {
   }
 
   export function getStockCapitalFlow(symbol: string, market: MarketType) {
-    const callbackKey = "jQueryH";
+    const callbackKey = "jQuery1123009847759407393886";
     const timestamp = new Date().getTime();
-    if (process.env.TEST) {
-      logger.info(`process.env.TEST is ${process.env.TEST}, use mock data.`);
-      return new Promise<QuoteSnapshotModel | null>((resolve) => {
-        resolve(MockEastMoneyData.find((v) => v.code === symbol) || null);
-      });
-    }
+    // if (process.env.TEST) {
+    //   logger.info(`process.env.TEST is ${process.env.TEST}, use mock data.`);
+    //   return new Promise<QuoteSnapshotModel | null>((resolve) => {
+    //     resolve(MockEastMoneyData.find((v) => v.code === symbol) || null);
+    //   });
+    // }
     return axios
       .get(
         `${
           process.env.EASTMONEY_API
-        }?id=${symbol}&market=${market}&DC_APP_KEY=dcquotes-service-tweb&DC_TIMESTAMP=${timestamp}&DC_SIGN=81160C38A19B3006FD96BC54300AD889&callback=${callbackKey}&_=${
+        }?fltt=2&secids=${symbol}&fields=f62%2Cf184%2Cf66%2Cf69%2Cf72%2Cf75%2Cf78%2Cf81%2Cf84%2Cf87%2Cf64%2Cf65%2Cf70%2Cf71%2Cf76%2Cf77%2Cf82%2Cf83%2Cf164%2Cf166%2Cf168%2Cf170%2Cf172%2Cf252%2Cf253%2Cf254%2Cf255%2Cf256%2Cf124%2Cf6%2Cf278%2Cf279%2Cf280%2Cf281%2Cf282&ut=b2884a393a59ad64002292a3e90d46a5&cb=${callbackKey}_${timestamp}&_=${
           timestamp + 1
         }`
       )
@@ -123,7 +128,7 @@ export namespace EastMoney_API {
               callbackKey.length + 1,
               res.data.length - 2
             );
-            const data = JSON.parse(jsonStr) as QuoteSnapshotModel;
+            const data = JSON.parse(jsonStr) as CapitalFlowResponseModel;
             return data;
           } catch (error) {
             return null;
