@@ -26,3 +26,26 @@ export function batchTask<T>(
     end = start + size;
   }
 }
+
+/**
+ *
+ * @param amount
+ * @param type 0 - buy, 1 - sell
+ */
+export function calcFee(amount: number, type: 0 | 1) {
+  const taxRate = 0.0005;
+  const commissionRate = 0.00025;
+
+  if (type === 0) {
+    return Math.max(5, Number((amount * commissionRate).toFixed(2)));
+  }
+
+  if (type === 1) {
+    return (
+      Number((amount * taxRate).toFixed(2)) +
+      Math.max(5, Number((amount * commissionRate).toFixed(2)))
+    );
+  }
+
+  return 0;
+}

@@ -9,6 +9,7 @@ import { YahooStockModel } from "../third/yahoo/type";
 import { calculateMovingAverage } from "../service/factors/sma";
 import { Storage } from "../service/storage/storage";
 import { readJsonFileInBatch } from "../utils/fs";
+import { FileStorage } from "../service/storage/fileStorage";
 
 export namespace Analysis {
   function log(msg: unknown) {
@@ -119,7 +120,7 @@ export namespace Analysis {
 
       let i = 0;
       while (i < smaStocksArr.length) {
-        await Storage.saveStocks(smaStocksArr[i] as StockModel[]);
+        await FileStorage.saveStocks(smaStocksArr[i] as StockModel[]);
         i++;
       }
     }

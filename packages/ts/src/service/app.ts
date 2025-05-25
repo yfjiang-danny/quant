@@ -19,7 +19,7 @@ import { dailyCollection } from "../collection/collection.next";
 import { genReport } from "../tasks/genReport";
 import {
   time15Collection,
-  time18Collection,
+  time20Collection,
   time25Collection,
   time30Collection,
 } from "../collection/collection.time";
@@ -181,7 +181,7 @@ app.listen(port, () => {
 
   //
   runSnapshot15Job();
-  runSnapshot18Job();
+  runSnapshot20Job();
   runSnapshot25Job();
   runSnapshot30Job();
 });
@@ -275,15 +275,15 @@ function runSnapshot15Job() {
   genReportJob = scheduleJob(rule, fn);
 }
 
-function runSnapshot18Job() {
+function runSnapshot20Job() {
   console.log(`Start Snapshot18 ...`);
 
-  // 每天 09:18
+  // 每天 09:20
   const rule = new RecurrenceRule();
   rule.dayOfWeek = [1, 2, 3, 4, 5];
   rule.hour = 9;
-  rule.minute = 18;
-  const fn = time18Collection.bind(null, mailer);
+  rule.minute = 20;
+  const fn = time20Collection.bind(null, mailer);
   genReportJob = scheduleJob(rule, fn);
 }
 

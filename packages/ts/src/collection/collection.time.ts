@@ -42,29 +42,29 @@ async function snapshot15() {
   }
 }
 
-async function snapshot18() {
+async function snapshot20() {
   const allBasicStocks = await Storage.getStockInfosFromDB();
   if (!allBasicStocks.data || allBasicStocks.data.length === 0) {
-    log(`Update 9:18 info failed: empty basic stocks, ${allBasicStocks.msg}`);
+    log(`Update 9:20 info failed: empty basic stocks, ${allBasicStocks.msg}`);
     return;
   }
 
   const dailyStocks = await fillEastStockInfo(allBasicStocks.data);
 
   if (!dailyStocks || dailyStocks.length == 0) {
-    log(`Update 9:18 info failed: empty daily stocks`);
+    log(`Update 9:20 info failed: empty daily stocks`);
     return;
   }
 
   const res = await Storage.insertStockTimeHistories(
-    18,
+    20,
     dailyStocks.filter((v) => v.symbol && v.date)
   );
 
   if (res.data) {
-    log(`Update 9:18 info success`);
+    log(`Update 9:20 info success`);
   } else {
-    log(`Update 9:18 info failed: ${res.msg}`);
+    log(`Update 9:20 info failed: ${res.msg}`);
   }
 }
 
@@ -129,13 +129,13 @@ export async function time15Collection(mailer?: Mailer163) {
   snapshot15();
 }
 
-export async function time18Collection(mailer?: Mailer163) {
+export async function time20Collection(mailer?: Mailer163) {
   if (isHoliday(new Date())) {
     log(`${new Date().toDateString()} is holiday, return`);
     return;
   }
 
-  snapshot18();
+  snapshot20();
 }
 
 export async function time25Collection(mailer?: Mailer163) {

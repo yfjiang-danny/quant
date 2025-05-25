@@ -3,13 +3,15 @@ export interface BaseTableModel {
   updateAt?: string;
 }
 
+export const IDDataType = "varchar(10)";
 export const dateDataType = "varchar(8)";
 export const dateTimeDataType = "varchar(19)";
 export const symbolDataType = "varchar(20)";
 export const nameDataType = "varchar(250)";
 export const numberFixedDataType = "varchar(10)";
 export const IntegerDataType = "integer";
-export const NumericDataType = "numeric(13,4)"; // 到亿，保留 4 位小数
+export const MaxNumericDataType = "numeric(13,4)"; // 到亿，保留 4 位小数
+export const SmallNumericDataType = "numeric(5,4)"; // 到万，保留 4 位小数 用于费率等小数
 
 export const baseColumns = {
   createAt: {

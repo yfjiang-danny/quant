@@ -3,7 +3,7 @@ import { BinaryNode, QueryLike } from "sql";
 import moment from "moment";
 import {
   StockSnapshot15Table,
-  StockSnapshot18Table,
+  StockSnapshot20Table,
   StockSnapshot25Table,
   StockSnapshot30Table,
   StockSnapshotTable,
@@ -13,13 +13,13 @@ import { dbQuery } from "../connect";
 import { StockInfoTableModel } from "../tables/stockInfo";
 
 export namespace IStockTimeSnapshotTable {
-  export type TableType = 15 | 18 | 25 | 30;
+  export type TableType = 15 | 20 | 25 | 30;
   export function getTable(t: TableType) {
     switch (t) {
       case 15:
         return StockSnapshot15Table;
-      case 18:
-        return StockSnapshot18Table;
+      case 20:
+        return StockSnapshot20Table;
       case 25:
         return StockSnapshot25Table;
       case 30:

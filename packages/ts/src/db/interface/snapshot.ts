@@ -132,12 +132,19 @@ export namespace IStockSnapshotTable {
   export function getStocksBySymbol(
     symbol: string,
     limit?: number,
-    offset?: number
+    offset?: number,
+    node?: BinaryNode
   ): Promise<QueryResult<StockSnapshotTableModel[]>> {
     //
-    let mQuery = StockSnapshotTable.select(StockSnapshotTable.star())
-      .where(StockSnapshotTable.symbol.equals(symbol))
-      .order(StockSnapshotTable.date.descending);
+    let mQuery = StockSnapshotTable.select(StockSnapshotTable.star()).where(
+      StockSnapshotTable.symbol.equals(symbol)
+    );
+
+    if (node) {
+      mQuery = mQuery.where(node);
+    }
+
+    mQuery = mQuery.order(StockSnapshotTable.date.descending);
 
     if (typeof limit === "number") {
       if (typeof offset === "number") {

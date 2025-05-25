@@ -151,9 +151,9 @@ export const StockSnapshot15Table = sql.define<string, StockSnapshotTableModel>(
   }
 );
 
-export const StockSnapshot18Table = sql.define<string, StockSnapshotTableModel>(
+export const StockSnapshot20Table = sql.define<string, StockSnapshotTableModel>(
   {
-    name: "stock_snapshots_18",
+    name: "stock_snapshots_20",
     schema: "",
     columns: StockTimeSnapshotTableColumn,
   }

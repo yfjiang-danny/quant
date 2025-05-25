@@ -44,7 +44,7 @@ export async function collectFactor(date?: string) {
     }
     return res.data.reduce((arr, v) => {
       if (v.close) {
-        arr.push({ ...v, close: Number(v.close) } as StockModel);
+        arr.push({ ...v, close: Number(v.close) } as unknown as StockModel);
       }
       return arr;
     }, [] as StockModel[]);

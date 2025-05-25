@@ -6,13 +6,14 @@ import { IStockLadderTable } from "../db/interface/ladder";
 import { logger } from "../logs";
 import { Storage } from "../service/storage/storage";
 import { StockLadderTableModel } from "../db/tables/ladder";
+import { StockSnapshotTable } from "../db/tables/snapshot";
 
 dotenv.config();
 
 const logPath = path.resolve(logRootPath, "derivative.log");
 
 async function calcLadder(symbol: string) {
-  const histories = await Storage.getStockHistoriesFromDB(symbol).then(
+  const histories = await Storage.getStockHistoriesFromDB(symbol, 50, 0).then(
     (res) => res.data
   );
 

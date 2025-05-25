@@ -25,6 +25,7 @@ import {
   MaxCapitalStockModel,
 } from "../../db/interface/model";
 import { dbQuery } from "../../db/connect";
+import { BinaryNode } from "sql";
 
 export namespace Storage {
   export function getStockInfosFromDB(): Promise<Response<StockModel[]>> {
@@ -124,10 +125,11 @@ export namespace Storage {
   export function getStockHistoriesFromDB(
     symbol: string,
     limit?: number,
-    offset?: number
+    offset?: number,
+    node?: BinaryNode
   ): Promise<Response<StockSnapshotTableModel[]>> {
     return new Promise<Response<StockSnapshotTableModel[]>>((resolve) => {
-      IStockSnapshotTable.getStocksBySymbol(symbol, limit, offset)
+      IStockSnapshotTable.getStocksBySymbol(symbol, limit, offset, node)
         .then(
           (res) => {
             resolve({ data: res.rows as unknown as StockSnapshotTableModel[] });
