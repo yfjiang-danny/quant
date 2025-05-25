@@ -9,6 +9,7 @@ export const symbolDataType = "varchar(20)";
 export const nameDataType = "varchar(250)";
 export const numberFixedDataType = "varchar(10)";
 export const IntegerDataType = "integer";
+export const NumericDataType = "numeric(13,4)"; // 到亿，保留 4 位小数
 
 export const baseColumns = {
   createAt: {

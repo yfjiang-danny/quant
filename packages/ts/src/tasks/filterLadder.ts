@@ -7,11 +7,12 @@ import { calcTopPriceLimit, fillEastStockInfo } from "../service/utils";
 import { IStockLadderTable } from "../db/interface/ladder";
 import { StockLadderTableModel } from "../db/tables/ladder";
 import { isHoliday } from "chinese-calendar-ts";
+import { FileStorage } from "../service/storage/fileStorage";
 
 const logPath = path.resolve(logRootPath, "filter_ladder.log");
 
 async function calcLadder(stock: StockModel) {
-  const histories = await Storage.getStockHistories(
+  const histories = await FileStorage.getStockHistories(
     stock.symbol as string
   ).then((res) => res.data);
 

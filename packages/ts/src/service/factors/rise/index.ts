@@ -1,4 +1,5 @@
 import { StockModel } from "../../../models/type";
+import { FileStorage } from "../../storage/fileStorage";
 import { Storage } from "../../storage/storage";
 
 /**
@@ -14,7 +15,7 @@ export function calculateMaxRiseDay(histories: StockModel[]) {
   let max = 0,
     i = 1;
   while (i < histories.length) {
-    const cur = Number(histories[i - 1].close)
+    const cur = Number(histories[i - 1].close);
     const pre = Number(histories[i].close);
     if (!isNaN(cur) && !isNaN(pre) && cur > pre) {
       max++;
@@ -28,7 +29,7 @@ export function calculateMaxRiseDay(histories: StockModel[]) {
 }
 
 async function getStockMaxRiseDay(symbol: string) {
-  return Storage.getStockHistories(symbol).then((res) => {
+  return FileStorage.getStockHistories(symbol).then((res) => {
     if (res.data) {
       return calculateMaxRiseDay(res.data);
     }

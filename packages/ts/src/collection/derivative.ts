@@ -52,7 +52,7 @@ export async function fillingLadder(date?: string) {
   }
 
   if (upperLimit && upperLimit.length > 0) {
-    await IStockLadderTable.insert(upperLimit);
+    await Storage.insertUpperLimitStocks(upperLimit);
   }
 
   logger.info(`FillingLadder success`, logPath);

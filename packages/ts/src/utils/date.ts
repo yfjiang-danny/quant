@@ -41,14 +41,23 @@ export function isTradeDate(d: Date) {
   return !isHoliday(d) && day > 0 && day < 6;
 }
 
+export function toDashDate(date: string) {
+  if (date.length === 8) {
+    return `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`;
+  }
+  return date;
+}
+
 export function getLatestTradeDates(
   num = 1,
-  from = new Date(),
+  from: string | Date = new Date(),
   format = "YYYYMMDD"
 ) {
   const res: string[] = [];
 
-  const m = moment(from);
+  const m = moment(
+    typeof from === "string" && from.length === 8 ? toDashDate(from) : from
+  );
 
   let i = 0;
   while (i < num) {

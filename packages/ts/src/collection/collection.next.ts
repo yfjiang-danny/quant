@@ -9,6 +9,7 @@ import path from "path";
 import { logRootPath } from "../common/paths";
 import { fillingLadder } from "./derivative";
 import { isHoliday } from "chinese-calendar-ts";
+import { collectFactor } from "./factor";
 
 dotenv.config();
 
@@ -32,7 +33,7 @@ async function stockInfo() {
   }
 }
 
-async function snapshot() {
+export async function snapshot() {
   const allBasicStocks = await Storage.getStockInfosFromDB();
   if (!allBasicStocks.data || allBasicStocks.data.length === 0) {
     log(`Update daily info failed: empty basic stocks, ${allBasicStocks.msg}`);
@@ -46,7 +47,9 @@ async function snapshot() {
     return;
   }
 
-  const res = await Storage.insertStockHistories(dailyStocks);
+  const res = await Storage.insertStockHistories(
+    dailyStocks.filter((v) => v.symbol && v.date)
+  );
 
   if (res.data) {
     log(`Update daily info success`);
@@ -87,4 +90,5 @@ export async function dailyCollection(mailer?: Mailer163) {
   queue.add(stockInfo);
   queue.add(snapshot);
   queue.add(fillingLadder);
+  queue.add(collectFactor);
 }
