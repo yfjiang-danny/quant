@@ -11,6 +11,7 @@ import {
   StockSnapshotTableModel,
   StockTimeSnapshotTableModel,
 } from "../../db/tables/snapshot";
+import { FileStorage } from "../storage/fileStorage";
 
 const batch = 10;
 
@@ -73,7 +74,7 @@ export function fillStockHistoryByALPH(stock: StockModel) {
       ALPH_API.getStockDaily(stock.ts_code).then(
         (histories: ALPHStockModel[] | null) => {
           if (histories) {
-            Storage.saveStocks(histories.map((v) => ({ v, ...stock })))
+            FileStorage.saveStocks(histories.map((v) => ({ v, ...stock })))
               .then((res) => {
                 if (res.msg) {
                   console.log(res.msg);

@@ -3,6 +3,7 @@ import { getMarket } from "../../utils/convert";
 import { EastMoney_API } from "../../third/eastmoney/api";
 import { Storage } from "../storage/storage";
 import { Response } from "../storage/type";
+import { FileStorage } from "../storage/fileStorage";
 
 export class StockService {
   //   logger: Logger;
@@ -16,7 +17,7 @@ export class StockService {
    * @returns
    */
   getAllStocks(date?: string) {
-    return Storage.getAllStocks(date);
+    return FileStorage.getAllStocks(date);
   }
 
   /**
@@ -25,7 +26,7 @@ export class StockService {
    * @returns
    */
   getStockHistories(symbol: string) {
-    return Storage.getStockHistories(symbol);
+    return FileStorage.getStockHistories(symbol);
   }
 
   /**
@@ -35,14 +36,14 @@ export class StockService {
    * @returns
    */
   getStockDaily(symbol: string, date?: string) {
-    return Storage.getStock(symbol, date);
+    return FileStorage.getStock(symbol, date);
   }
 
   getStockCurrent(symbol: string) {
     const market = getMarket(symbol);
 
     return Promise.allSettled([
-      Storage.getStock(symbol),
+      FileStorage.getStock(symbol),
       EastMoney_API.getStockInfo(symbol, market),
     ]).then(([stock, stockInfo]) => {
       const res: Response<StockModel | null> = {

@@ -9,10 +9,17 @@ import { calculateMaxRiseDay, fillMaxRiseDay } from "../service/factors/rise";
 import { Storage } from "../service/storage/storage";
 import { Excel } from "../utils/excel";
 import { deepCopyWithJson } from "../utils/util";
-import { fitTurnover, isCross, isDownCross } from "./util";
+import {
+  fitTurnover,
+  isBreakthrough20,
+  isCross,
+  isDownCross,
+  isDownCrossMoreThanUpCross,
+} from "./util";
 import { StockSnapshotTableModel } from "../db/tables/snapshot";
 import { fillStocksSMA } from "../service/factors/sma";
-import { getLatestTradeDates } from "../utils/date";
+import { getLatestTradeDates, toDashDate } from "../utils/date";
+import { MaxCapitalStockModel } from "../db/interface/model";
 
 export namespace Strategies {
   const logPath = path.resolve(logRootPath, "strategy.log");
@@ -21,10 +28,16 @@ export namespace Strategies {
    * @returns
    */
   export async function getMinCapitalStocks(minCapital = 100, date?: string) {
-    const allStocks: StockSnapshotTableModel[] =
-      await Storage.getStockDetailsByDate(date).then((res) => {
-        return res.data;
-      });
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+
+    const allStocks: MaxCapitalStockModel[] =
+      await Storage.queryStocksByDateAndMaxCapital(date, minCapital).then(
+        (res) => {
+          return res.data;
+        }
+      );
 
     if (!allStocks || allStocks.length <= 0) {
       logger.info(`Stocks is empty`, logPath);
@@ -40,9 +53,7 @@ export namespace Strategies {
             nv[key] = Number(nv[key]);
           }
         });
-        nv.capital =
-          ((Number(v.volume) / (Number(v.turnover) / 100)) * Number(v.close)) /
-          Math.pow(10, 6);
+        nv.capital = v.flow_capital_number;
         return nv as StockModel;
       })
       .filter((v) => {
@@ -53,10 +64,8 @@ export namespace Strategies {
           (symbol.startsWith("3") ||
             symbol.startsWith("60") ||
             symbol.startsWith("0"));
-        const capital = v.capital;
-        return isFitSymbol && capital && capital < minCapital;
-      })
-      .sort((a, b) => (a.capital as number) - (b.capital as number));
+        return isFitSymbol;
+      });
 
     return minCapitalStocks;
   }
@@ -236,44 +245,56 @@ export namespace Strategies {
     cb?: (filePath?: string) => void,
     date?: string
   ) {
-    const minCapitalStocks = await getMinCapitalStocks(500, date);
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+    const breakthrough20Stocks =
+      await Storage.queryBreakthrough20StocksByDateAndMaxCapital(
+        date,
+        200
+      ).then((res) => {
+        if (res) {
+          return res.data
+            .map((v) => {
+              return {
+                ...v,
+                close: v.close_number,
+                sma20: v.sma20_number,
+                turnover: v.turnover_number,
+              } as unknown as StockModel;
+            })
+            .filter((a) => {
+              const symbol = a.symbol;
 
-    if (!minCapitalStocks) {
-      logger.info(`minCapitalStocks is empty`, logPath);
+              const isFitSymbol =
+                symbol &&
+                (symbol.startsWith("3") ||
+                  symbol.startsWith("60") ||
+                  symbol.startsWith("0"));
+              return isFitSymbol;
+            });
+        }
+        return [];
+      });
+
+    if (!breakthrough20Stocks || breakthrough20Stocks.length == 0) {
+      logger.info(`breakthrough20Stocks is empty`, logPath);
       return;
     }
 
-    const dates = getLatestTradeDates(5);
+    const dates = getLatestTradeDates(10, date);
     const upperLimitStocks = await Storage.queryUpperLimitStockSymbolByDates(
       dates
     ).then((res) => res.data);
 
-    const smaStocks = await fillStocksSMA(
-      minCapitalStocks.filter(
-        (v) =>
-          (!v.name || (v.name && !v.name.toUpperCase().includes("ST"))) &&
-          v.symbol &&
-          upperLimitStocks.includes(v.symbol)
-      )
+    const smaStocks = breakthrough20Stocks.filter(
+      (v) =>
+        (!v.name || (v.name && !v.name.toUpperCase().includes("ST"))) &&
+        v.symbol &&
+        upperLimitStocks.includes(v.symbol)
     );
 
-    return smaStocks.filter((v) => {
-      if (!v.open || !v.close) return false;
-
-      if (!isDownCross(v) || !fitTurnover(v, 3, 60)) return false;
-
-      return (
-        (v.sma5 &&
-          ((v.open > v.sma5 && v.close < v.sma5) ||
-            (v.close > v.sma5 && v.open < v.sma5))) ||
-        (v.sma10 &&
-          ((v.open > v.sma10 && v.close < v.sma10) ||
-            (v.close > v.sma10 && v.open < v.sma10))) ||
-        (v.sma20 &&
-          ((v.open > v.sma20 && v.close < v.sma20) ||
-            (v.close > v.sma20 && v.open < v.sma20)))
-      );
-    });
+    return smaStocks.filter((v) => isDownCrossMoreThanUpCross(v));
   }
 
   /**

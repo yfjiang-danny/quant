@@ -1,13 +1,11 @@
 import { Storage } from "../service/storage/storage";
 import * as dotenv from "dotenv";
 import { Queue } from "../utils/queue";
-import { TUSHARE_API } from "../third/tushare/api";
 import { fillEastStockInfo } from "../service/utils";
 import { Mailer163 } from "../mail";
 import { logger } from "../logs";
 import path from "path";
 import { logRootPath } from "../common/paths";
-import { fillingLadder } from "./derivative";
 import { isHoliday } from "chinese-calendar-ts";
 
 dotenv.config();
@@ -32,7 +30,10 @@ async function snapshot15() {
     return;
   }
 
-  const res = await Storage.insertStockTimeHistories(15, dailyStocks);
+  const res = await Storage.insertStockTimeHistories(
+    15,
+    dailyStocks.filter((v) => v.symbol && v.date)
+  );
 
   if (res.data) {
     log(`Update 9:15 info success`);
@@ -55,7 +56,10 @@ async function snapshot18() {
     return;
   }
 
-  const res = await Storage.insertStockTimeHistories(18, dailyStocks);
+  const res = await Storage.insertStockTimeHistories(
+    18,
+    dailyStocks.filter((v) => v.symbol && v.date)
+  );
 
   if (res.data) {
     log(`Update 9:18 info success`);
@@ -78,7 +82,10 @@ async function snapshot25() {
     return;
   }
 
-  const res = await Storage.insertStockTimeHistories(25, dailyStocks);
+  const res = await Storage.insertStockTimeHistories(
+    25,
+    dailyStocks.filter((v) => v.symbol && v.date)
+  );
 
   if (res.data) {
     log(`Update 9:25 info success`);
@@ -101,7 +108,10 @@ async function snapshot30() {
     return;
   }
 
-  const res = await Storage.insertStockTimeHistories(30, dailyStocks);
+  const res = await Storage.insertStockTimeHistories(
+    30,
+    dailyStocks.filter((v) => v.symbol && v.date)
+  );
 
   if (res.data) {
     log(`Update 9:30 info success`);

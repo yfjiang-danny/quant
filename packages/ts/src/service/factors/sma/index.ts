@@ -9,7 +9,7 @@ import pLimit from "p-limit";
 const logPath = path.resolve(logRootPath, "sma.log");
 
 interface CoreModel extends Record<string, unknown> {
-  symbol: string;
+  symbol?: string;
   date: string;
   close: number;
 }
@@ -99,7 +99,7 @@ export async function fillStockSMA<T extends CoreModel>(stock: T) {
 
   const symbol = stock.symbol;
 
-  let histories = await Storage.getStockHistoriesFromDB(symbol, 120).then(
+  let histories = await Storage.getStockHistoriesFromDB(symbol, 130).then(
     (res) => {
       if (res.msg) {
         console.log(res.msg);

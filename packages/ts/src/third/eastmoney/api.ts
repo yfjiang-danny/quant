@@ -4,6 +4,7 @@ import { logRootPath } from "../../common/paths";
 import { logger } from "../../logs";
 import {
   CapitalFlowResponseModel,
+  EastMoneyStockKLineResponseModel,
   EastMoneyStockModel,
   MarketType,
   QuoteSnapshotModel,
@@ -129,6 +130,45 @@ export namespace EastMoney_API {
               res.data.length - 2
             );
             const data = JSON.parse(jsonStr) as CapitalFlowResponseModel;
+            return data;
+          } catch (error) {
+            return null;
+          }
+        }
+        return null;
+      })
+      .catch((e) => {
+        console.log(e);
+
+        return null;
+      });
+  }
+
+  export function getStockKline(symbol: string) {
+    const timestamp = new Date().getTime();
+    const key = ("3.5.1" + Math.random()).replace(/\D/g, "");
+    const callbackKey = `jQuery${key}_${timestamp}`;
+
+    const secid = (symbol.startsWith("6") ? `1.` : "0.") + symbol;
+
+    const url = `${
+      process.env.EASTMONEY_KLINE_API
+    }?cb=${callbackKey}&secid=${secid}&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&end=20500101&lmt=120&_=${
+      timestamp + 1
+    }`;
+
+    return axios
+      .get(url)
+      .then((res) => {
+        if (res.status == 200) {
+          try {
+            const jsonStr = (res.data as string).slice(
+              callbackKey.length + 1,
+              res.data.length - 2
+            );
+            const data = JSON.parse(
+              jsonStr
+            ) as EastMoneyStockKLineResponseModel;
             return data;
           } catch (error) {
             return null;

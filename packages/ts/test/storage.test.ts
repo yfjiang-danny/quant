@@ -22,9 +22,15 @@ dotenv.config();
 
 // })();
 
-(async function test() {
-  const dates = getLatestTradeDates(5);
-  const limitedStocks = await Storage.queryUpperLimitStockSymbolByDates(dates);
+// (async function test() {
+//   const dates = getLatestTradeDates(5);
+//   const limitedStocks = await Storage.queryUpperLimitStockSymbolByDates(dates);
 
-  console.log(limitedStocks);
+//   console.log(limitedStocks);
+// })();
+
+(async function test() {
+  const limitedStocks = await Storage.getStockInfosFromDB();
+
+  console.log(limitedStocks.data.length);
 })();

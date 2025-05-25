@@ -7,6 +7,7 @@ import { Storage } from "../service/storage/storage";
 import { TUSHARE_API } from "../third/tushare/api";
 import { fillEastStockInfo, fillStockHistoryByALPH } from "../service/utils";
 import { isHoliday } from "chinese-calendar-ts";
+import { FileStorage } from "../service/storage/fileStorage";
 
 dotenv.config();
 
@@ -16,7 +17,7 @@ async function fillHistoryByALPH() {
   logger.info(`FillHistoryByALPH start...`);
   if (!alphTaskStocks || alphTaskStocks.length <= 0) {
     alphTaskStocks = (
-      await Storage.getAllStocks().then((res) => res.data)
+      await FileStorage.getAllStocks().then((res) => res.data)
     ).filter((v) => {
       !!v.ts_code;
     });
@@ -56,14 +57,14 @@ export async function collectionTask(mailer?: Mailer163) {
 
   if (!allBasicStocks || allBasicStocks.length <= 0) {
     console.log(`TUSHARE_API is null, call Storage.getAllBasicStocks`);
-    allBasicStocks = await Storage.getAllBasicStocks().then((res) => {
+    allBasicStocks = await FileStorage.getAllBasicStocks().then((res) => {
       if (res.msg) {
         console.log(res.msg);
       }
       return res.data;
     });
   } else {
-    await Storage.saveAllBasicStocks(allBasicStocks);
+    await FileStorage.saveAllBasicStocks(allBasicStocks);
     await Storage.insertStockInfos(allBasicStocks);
   }
 
@@ -88,7 +89,7 @@ export async function collectionTask(mailer?: Mailer163) {
     console.log(`fillStocksSMA is empty`);
   }
 
-  await Storage.saveStocks(smaResult || fillResult, true).then((res) => {
+  await FileStorage.saveStocks(smaResult || fillResult, true).then((res) => {
     if (res.msg) {
       console.log(res.msg);
     }

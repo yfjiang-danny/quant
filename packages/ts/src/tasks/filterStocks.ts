@@ -15,12 +15,20 @@ export async function filterStocks(
   cb?: (msg?: string) => void,
   mailer?: Mailer163
 ) {
-  if (isHoliday(new Date())) {
-    logger.info(`${new Date().toDateString()} is holiday, return`);
-    return;
-  }
+  // if (isHoliday(new Date())) {
+  //   logger.info(`${new Date().toDateString()} is holiday, return`);
+  //   return;
+  // }
   sendMail = false;
-  const stocks = await Strategies.filterStocks();
+  const stocks = await Strategies.filterStocks(undefined, "20250520").then(
+    (res) => {
+      if (res) {
+        return res.slice(0, 5);
+      }
+    }
+  );
+
+  console.log(stocks);
 
   if (stocks && stocks.length > 0) {
     drawCodeToImg(stocks)

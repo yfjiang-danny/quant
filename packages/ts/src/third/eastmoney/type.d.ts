@@ -51,6 +51,65 @@ interface QuoteSnapshotModel {
   tradeperiod: number; //6;
 }
 
+/**
+ * change 涨跌 | turnover 换手率 | volume 总手 |
+ *
+ */
+export interface EastMoneyStockModel {
+  code?: string;
+  name?: string;
+  close?: number;
+  open?: number;
+  high?: number;
+  low?: number;
+  date?: string;
+  time?: string;
+  volume?: number;
+  change?: string;
+  capital?: number;
+  turnover?: number;
+  avg?: number;
+  topPrice?: number;
+  bottomPrice?: number;
+  external?: string;
+  internal?: string;
+  sale1?: string;
+  sale2?: string;
+  buy1?: string;
+  buy2?: string;
+  buy1_count?: number;
+  buy2_count?: number;
+  sale1_count?: number;
+  sale2_count?: number;
+}
+
+/**
+ * K 线响应
+ * f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61
+ * date,open,close,high,low,总手,成交额,振幅,涨跌幅,涨跌,换手率
+ * 2025-05-23,19.70,21.90,24.38,19.70,213653,473163731.20,24.57,14.96,2.85,32.11
+ */
+interface EastMoneyStockKLineResponseModel {
+  rc: number; //0,
+  rt: number; //17,
+  svr: number; //181669690,
+  lt: number; //1,
+  full: number; //0,
+  dlmkts: string; //"",
+  data: {
+    code: string; //"002735",
+    market: number; //0,
+    name: string; // "王子新材",
+    decimal: number; //2,
+    dktotal: number; //2319,
+    preKPrice: number; //2.42,
+    klines: string[];
+  };
+}
+
+/**
+ * 资金流向
+ */
 interface CapitalFlowResponseModel {
   rc: number; //0,
   rt: number; //11,
@@ -100,32 +159,4 @@ interface CapitalFlowResponseModel {
       }
     ];
   };
-}
-
-export interface EastMoneyStockModel {
-  code?: string;
-  name?: string;
-  close?: number;
-  open?: number;
-  high?: number;
-  low?: number;
-  date?: string;
-  time?: string;
-  volume?: number;
-  change?: string;
-  capital?: number;
-  turnover?: number;
-  avg?: number;
-  topPrice?: number;
-  bottomPrice?: number;
-  external?: string;
-  internal?: string;
-  sale1?: string;
-  sale2?: string;
-  buy1?: string;
-  buy2?: string;
-  buy1_count?: number;
-  buy2_count?: number;
-  sale1_count?: number;
-  sale2_count?: number;
 }

@@ -11,7 +11,7 @@ import {
 
 export interface StockSnapshotTableModel extends BaseTableModel {
   date: string;
-  time: string;
+  time: string | null | undefined;
   symbol: string;
   name: string;
   close: string | null | undefined;
