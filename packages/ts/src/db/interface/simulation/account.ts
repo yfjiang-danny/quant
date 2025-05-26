@@ -9,9 +9,11 @@ const { v4: uuidv4 } = require("uuid");
 
 export namespace IAccountTable {
   export function createAccount(name: string, amount: number) {
-    const id = uuidv4();
+    const id = uuidv4().slice(0, 8);
 
     const querys = AccountTable.insert({
+      createAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+      updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
       account_id: id,
       name: name,
       amount: amount,

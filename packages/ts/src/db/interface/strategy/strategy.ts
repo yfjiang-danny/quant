@@ -10,7 +10,12 @@ export namespace IStrategyTable {
   export function insert(strategy: Omit<StrategyTableModel, "id">) {
     const id = v4().slice(0, 8);
     return dbQuery<StrategyTableModel[]>(
-      StrategyTable.insert({ ...strategy, id: id }).toQuery()
+      StrategyTable.insert({
+        createAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+        updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+        ...strategy,
+        id: id,
+      }).toQuery()
     );
   }
 
