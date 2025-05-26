@@ -5,6 +5,7 @@ import path from "path";
 import { logRootPath } from "../common/paths";
 import { logger } from "../logs";
 import { Mailer163 } from "../mail";
+import { Storage } from "../service/storage/storage";
 import { Strategies } from "../strategies";
 import { drawCodeToImg } from "./utils";
 
@@ -15,22 +16,24 @@ export async function filterStocks(
   cb?: (msg?: string) => void,
   mailer?: Mailer163
 ) {
-  // if (isHoliday(new Date())) {
-  //   logger.info(`${new Date().toDateString()} is holiday, return`);
-  //   return;
-  // }
+  if (isHoliday(new Date())) {
+    logger.info(`${new Date().toDateString()} is holiday, return`);
+    return;
+  }
   sendMail = false;
-  const stocks = await Strategies.filterStocks(undefined, "20250520").then(
-    (res) => {
-      if (res) {
-        return res.slice(0, 5);
-      }
+  const stocks = await Strategies.filterStocks(undefined).then((res) => {
+    if (res) {
+      return res.slice(0, 5);
     }
-  );
-
-  console.log(stocks);
+  });
 
   if (stocks && stocks.length > 0) {
+    Storage.insertStrategy({
+      name: "突破20日线",
+      date: moment().format("YYYYMMDD"),
+      content: stocks.join(","),
+    });
+
     drawCodeToImg(stocks)
       .then((files) => {
         if (files) {

@@ -294,7 +294,9 @@ export namespace Strategies {
         upperLimitStocks.includes(v.symbol)
     );
 
-    return smaStocks.filter((v) => isDownCrossMoreThanUpCross(v));
+    const resStocks = smaStocks.filter((v) => isDownCrossMoreThanUpCross(v));
+
+    return resStocks;
   }
 
   /**

@@ -20,6 +20,8 @@ export namespace IAccountTable {
       init_amount: amount,
       interest: 0,
       interest_rate: 0,
+      date: moment().format("YYYYMMDD"),
+      time: moment().format("HH:mm:ss"),
     }).toQuery();
 
     return dbQuery<AccountTableModel[]>(querys);

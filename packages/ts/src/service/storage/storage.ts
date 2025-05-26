@@ -26,6 +26,9 @@ import {
 } from "../../db/interface/model";
 import { dbQuery } from "../../db/connect";
 import { BinaryNode } from "sql";
+import { StrategyTableModel } from "../../db/tables/strategy/strategy";
+import { tableQuery } from "./util";
+import { IStrategyTable } from "../../db/interface/strategy/strategy";
 
 export namespace Storage {
   export function getStockInfosFromDB(): Promise<Response<StockModel[]>> {
@@ -430,5 +433,9 @@ export namespace Storage {
         );
       }
     );
+  }
+
+  export function insertStrategy(strategy: Omit<StrategyTableModel, "id">) {
+    return tableQuery(IStrategyTable.insert(strategy));
   }
 }

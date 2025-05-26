@@ -12,12 +12,18 @@ dotenv.config();
 
 const logPath = path.resolve(logRootPath, "derivative.log");
 
-async function calcLadder(symbol: string) {
-  const histories = await Storage.getStockHistoriesFromDB(symbol, 50, 0).then(
+async function calcLadder(symbol: string, date?: string) {
+  const histories = await Storage.getStockHistoriesFromDB(symbol, 100, 0).then(
     (res) => res.data
   );
 
   let i = 0;
+
+  if (date) {
+    const findIndex = histories.findIndex((v) => v.date == date);
+    findIndex != -1 && (i = findIndex);
+  }
+
   while (i < histories.length - 1) {
     if (histories[i].close !== histories[i].top_price) {
       return i;
@@ -48,7 +54,7 @@ export async function fillingLadder(date?: string) {
       date: v.date,
       name: v.name,
       symbol: v.symbol,
-      ladder: await calcLadder(v.symbol),
+      ladder: await calcLadder(v.symbol, date),
     });
   }
 

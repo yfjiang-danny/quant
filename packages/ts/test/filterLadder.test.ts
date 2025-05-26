@@ -5,7 +5,7 @@ import { getLatestTradeDates } from "../src/utils/date";
 dotenv.config();
 
 (async function test() {
-  const latestDates = getLatestTradeDates(10).reverse();
+  const latestDates = getLatestTradeDates(10).slice(2).reverse();
 
   let i = 0;
   while (i < latestDates.length) {

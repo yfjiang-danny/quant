@@ -1,6 +1,7 @@
 import {
   baseColumns,
   BaseTableModel,
+  dateDataType,
   IDDataType,
   MaxNumericDataType,
   nameDataType,
@@ -17,6 +18,8 @@ export interface AccountTableModel extends BaseTableModel {
   interest: number;
   interest_rate: number;
   init_amount: number;
+  date: string;
+  time: string;
 }
 
 export const AccountTable = sql.define<string, AccountTableModel>({
@@ -29,6 +32,14 @@ export const AccountTable = sql.define<string, AccountTableModel>({
       dataType: IDDataType,
       notNull: true,
       primaryKey: true,
+    },
+    date: {
+      name: "date",
+      dataType: dateDataType,
+    },
+    time: {
+      name: "time",
+      dataType: dateDataType,
     },
     name: {
       name: "name",

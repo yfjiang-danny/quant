@@ -160,7 +160,23 @@ and b1.close is not null
 and a1.sma20 is not null
 and a1.flow_capital is not null
 ) t1
-where t1.close_number < t1.sma20_number
+where t1.close_number <= t1.sma20_number
+)
+and t.symbol in
+(
+  select t2.symbol
+from
+(
+select a2.symbol,a2.date,to_number(a2.sma20,translate(a2.sma20,'0123456789.','9999999999D')) a_sma20_number,to_number(b2.sma20,translate(b2.sma20,'0123456789.','9999999999D')) b_sma20_number
+from "stock_factor" a2
+left join "stock_factor" b2 on a2.symbol=b2.symbol
+where a2.date='${date}'
+and a2.sma20 is not null
+and a2.flow_capital is not null
+and b2.date='${preDate}'
+and b2.sma20 is not null
+) t2
+where t2.a_sma20_number > t2.b_sma20_number
 )
 order by t.turnover_number desc
 `;

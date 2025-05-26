@@ -33,7 +33,7 @@ export const HoldingTable = sql.define<string, HoldingTableModel>({
     },
     deal_ids: {
       name: "deal_ids",
-      dataType: "var(255)",
+      dataType: "varchar(255)",
     },
     buy_price: {
       name: "buy_price",
@@ -104,7 +104,7 @@ export const HoldingHistoryTable = sql.define<string, HoldingHistoryTableModel>(
       },
       deal_ids: {
         name: "deal_ids",
-        dataType: "var(255)",
+        dataType: "varchar(255)",
       },
       buy_date: {
         name: "buy_date",
