@@ -12,11 +12,9 @@ import pLimit from "p-limit";
 
 export function getUnFillSymbols() {
   const str = `select symbol
-FROM "stock_snapshots"
-where date='20250523' 
-and symbol not in(SELECT symbol
-FROM "stock_snapshots"
-where date='20250522')`;
+  FROM "stock_snapshots"
+  where date='20250523'
+  and "updateAt"::date != CURRENT_DATE`;
 
   return dbQuery<{ symbol: string }[]>({
     text: str,
@@ -36,8 +34,6 @@ export async function fillSnapshot() {
     return [];
   });
 
-  console.log(symbols);
-
   if (!Array.isArray(symbols)) return;
 
   const limit = pLimit(10);
@@ -46,15 +42,15 @@ export async function fillSnapshot() {
     v && limit(() => fillSnapshotBySymbol(v));
   });
 
-  //   let i = 0;
-  //   while (i < symbols.length) {
-  //     const symbol = symbols[i];
-  //     i++;
-  //     if (!symbol) {
-  //       continue;
-  //     }
-  //     await fillSnapshotBySymbol(symbol);
+  // let i = 0;
+  // while (i < symbols.length) {
+  //   const symbol = symbols[i];
+  //   i++;
+  //   if (!symbol) {
+  //     continue;
   //   }
+  //   await fillSnapshotBySymbol(symbol);
+  // }
 }
 
 export async function fillSnapshotBySymbol(symbol: string) {
@@ -71,9 +67,11 @@ export async function fillSnapshotBySymbol(symbol: string) {
 
   if (!stocks || stocks.length == 0) return;
 
+  console.log(symbol, stocks.length);
+
   await insert(stocks);
 }
 
 function insert(stocks: StockSnapshotTableModel[]) {
-  return IStockSnapshotTable.insert(stocks);
+  return IStockSnapshotTable.insert(stocks, true);
 }

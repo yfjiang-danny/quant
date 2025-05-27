@@ -6,5 +6,5 @@ dotenv.config();
 
 (async function test() {
   const mailer = new Mailer163();
-  await filterStocks(undefined, mailer);
+  await filterStocks(undefined, mailer, "20250527");
 })();

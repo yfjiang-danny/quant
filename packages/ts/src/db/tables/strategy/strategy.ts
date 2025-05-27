@@ -28,7 +28,6 @@ export const StrategyTable = sql.define<string, StrategyTableModel>({
       name: "name",
       dataType: nameDataType,
       notNull: true,
-      unique: true,
     },
     date: {
       name: "date",

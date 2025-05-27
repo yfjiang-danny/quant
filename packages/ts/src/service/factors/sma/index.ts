@@ -24,7 +24,7 @@ export function calculateIntervalAverage<T extends CoreModel>(
   return calculateAverage(histories.slice(0, interval));
 }
 
-function calculateAverage<T extends CoreModel>(histories: T[]) {
+export function calculateAverage<T extends CoreModel>(histories: T[]) {
   let i = 0,
     count = 0,
     sum = 0;

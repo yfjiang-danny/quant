@@ -14,6 +14,7 @@ export namespace IStockSnapshotTable {
     shouldUpdate = false
   ) {
     //
+    const columnNames = Object.keys(stocks[0]);
     const size = 500,
       len = stocks.length;
     const querys: QueryLike[] = [];
@@ -39,12 +40,15 @@ export namespace IStockSnapshotTable {
             update: shouldUpdate
               ? StockSnapshotTable.columns
                   .filter(
-                    (v) =>
+                    (column) =>
                       ![
                         StockSnapshotTable.symbol?.name as string,
                         StockSnapshotTable.date?.name as string,
                         StockSnapshotTable.createAt?.name as string,
-                      ].includes(v.name as unknown as string)
+                      ].includes(column.name as unknown as string) &&
+                      [...columnNames, "updateAt"].includes(
+                        column.name as unknown as string
+                      )
                   )
                   .map((v) => {
                     return v.name;

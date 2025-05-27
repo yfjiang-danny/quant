@@ -5,6 +5,8 @@ export function tableQuery<T>(promise: Promise<{ rows: unknown }>) {
     promise
       .then(
         (res) => {
+          console.log("tableQuery res", res);
+
           resolve({ data: res.rows as unknown as T[] });
         },
         (e) => {

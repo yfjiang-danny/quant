@@ -6,7 +6,6 @@ import {
   AccountTableModel,
 } from "../../tables/simulation/account";
 import { DealTable, DealTableModel } from "../../tables/simulation/deal";
-const { v4: uuidv4 } = require("uuid");
 
 export namespace IDealTable {
   export function insert(deals: DealTableModel[]) {

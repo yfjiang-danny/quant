@@ -4,11 +4,11 @@ import {
   StrategyTable,
   StrategyTableModel,
 } from "../../tables/strategy/strategy";
-import { v4 } from "uuid";
+// import { v4 } from "uuid";
 
 export namespace IStrategyTable {
   export function insert(strategy: Omit<StrategyTableModel, "id">) {
-    const id = v4().slice(0, 8);
+    const id = Date.now().toString().slice(0, 10);
     return dbQuery<StrategyTableModel[]>(
       StrategyTable.insert({
         createAt: moment().format("YYYY-MM-DD hh:mm:ss"),

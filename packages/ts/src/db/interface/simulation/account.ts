@@ -5,11 +5,11 @@ import {
   AccountTable,
   AccountTableModel,
 } from "../../tables/simulation/account";
-const { v4: uuidv4 } = require("uuid");
+// import { v4 } from "uuid";
 
 export namespace IAccountTable {
   export function createAccount(name: string, amount: number) {
-    const id = uuidv4().slice(0, 8);
+    const id = Date.now().toString().slice(0, 10);
 
     const querys = AccountTable.insert({
       createAt: moment().format("YYYY-MM-DD hh:mm:ss"),

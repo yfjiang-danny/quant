@@ -32,10 +32,10 @@ dotenv.config();
 //   }
 // })();
 
-// (async function test() {
-//   dailyCollection();
-// })();
-
-(async function testSnapshot() {
-  snapshot();
+(async function test() {
+  dailyCollection();
 })();
+
+// (async function testSnapshot() {
+//   snapshot();
+// })();

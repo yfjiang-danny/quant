@@ -9,6 +9,7 @@ export function KLineToStocks(
     kLine?.data.klines.forEach((v) => {
       const arr = v.split(",");
       if (arr && arr.length === 11) {
+        // @ts-ignore
         res.push({
           symbol: kLine.data.code,
           name: kLine.data.name,
@@ -20,20 +21,6 @@ export function KLineToStocks(
           volume: arr[5],
           change: arr[9],
           turnover: arr[10],
-          avg: null,
-          bottom_price: null,
-          buy1: null,
-          buy1_count: null,
-          buy2: null,
-          buy2_count: null,
-          external: null,
-          internal: null,
-          sale1: null,
-          sale1_count: null,
-          sale2: null,
-          sale2_count: null,
-          time: null,
-          top_price: null,
         });
       }
     });
