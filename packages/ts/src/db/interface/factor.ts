@@ -162,6 +162,11 @@ and a1.flow_capital is not null
 ) t1
 where t1.close_number <= t1.sma20_number
 )
+order by t.turnover_number desc
+`;
+
+    /**
+
 and t.symbol in
 (
   select t2.symbol
@@ -178,8 +183,8 @@ and b2.sma20 is not null
 ) t2
 where t2.a_sma20_number > t2.b_sma20_number
 )
-order by t.turnover_number desc
-`;
+  
+ */
 
     return dbQuery<Breakthrough20StockModel[]>({
       text: str,

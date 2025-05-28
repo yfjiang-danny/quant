@@ -29,8 +29,14 @@ import { BinaryNode } from "sql";
 import { StrategyTableModel } from "../../db/tables/strategy/strategy";
 import { tableQuery } from "./util";
 import { IStrategyTable } from "../../db/interface/strategy/strategy";
+import { EastMoney_API } from "../../third/eastmoney/api";
+import { MarketType } from "../../third/eastmoney/type";
 
 export namespace Storage {
+  export function queryRealtimeInfo(symbol: string, market: MarketType) {
+    return EastMoney_API.queryRealtime(symbol, market);
+  }
+
   export function getStockInfosFromDB(): Promise<Response<StockModel[]>> {
     return new Promise<Response<StockModel[]>>((resolve, reject) => {
       IStockInfoTable.getAllStocks()

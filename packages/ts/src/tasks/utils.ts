@@ -52,7 +52,7 @@ export async function fillEastStockInfo(
       arr.forEach((v) => {
         if (v.symbol) {
           promises.push(
-            EastMoney_API.getStockInfo(v.symbol, getMarket(v.symbol))
+            EastMoney_API.queryRealtime(v.symbol, getMarket(v.symbol))
           );
         } else {
           promises.push(
@@ -117,7 +117,11 @@ export async function fillAllStockSMA(stocks: StockModel[]) {
 }
 
 export function drawCodeToImg(stocks: StockModel[], fileDir?: string) {
-  const defaultFileDir = path.resolve(imgRootPath, moment().format(`YYYYMMDD`));
+  const d = stocks[0].date;
+  const defaultFileDir = path.resolve(
+    imgRootPath,
+    d || moment().format(`YYYYMMDD`)
+  );
 
   const dir = fileDir || defaultFileDir;
 

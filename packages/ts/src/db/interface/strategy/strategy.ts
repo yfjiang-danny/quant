@@ -10,12 +10,31 @@ export namespace IStrategyTable {
   export function insert(strategy: Omit<StrategyTableModel, "id">) {
     const id = Date.now().toString().slice(0, 10);
     return dbQuery<StrategyTableModel[]>(
-      StrategyTable.insert({
-        createAt: moment().format("YYYY-MM-DD hh:mm:ss"),
-        updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
-        ...strategy,
-        id: id,
-      }).toQuery()
+      (
+        StrategyTable.insert({
+          createAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+          updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+          ...strategy,
+          id: id,
+        }) as any
+      )
+        .onConflict({
+          columns: [StrategyTable.name.name, StrategyTable.date.name],
+          update: StrategyTable.columns
+            .filter(
+              (v) =>
+                ![
+                  StrategyTable.id?.name as string,
+                  StrategyTable.name?.name as string,
+                  StrategyTable.date?.name as string,
+                  StrategyTable.createAt?.name as string,
+                ].includes(v.name as unknown as string)
+            )
+            .map((v) => {
+              return v.name;
+            }),
+        })
+        .toQuery()
     );
   }
 

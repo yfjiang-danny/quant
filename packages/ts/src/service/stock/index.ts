@@ -44,7 +44,7 @@ export class StockService {
 
     return Promise.allSettled([
       FileStorage.getStock(symbol),
-      EastMoney_API.getStockInfo(symbol, market),
+      EastMoney_API.queryRealtime(symbol, market),
     ]).then(([stock, stockInfo]) => {
       const res: Response<StockModel | null> = {
         data: null,

@@ -47,10 +47,14 @@ async function dbQuery<T extends any[] = any[], I extends any[] = any[]>(
   try {
     if (Array.isArray(query) && query.length > 0) {
       try {
-        let result = await client.query<T, I>(query[0].text, query[0].values);
+        let result: { rowCount: number | null; rows: T[] } = {
+          rowCount: 0,
+          rows: [],
+        };
+
         await client.query("BEGIN");
 
-        for (let i = 1; i < query.length; i++) {
+        for (let i = 0; i < query.length; i++) {
           const element = query[i];
           const res = await client.query<T, I>(element.text, element.values);
           if (result.rowCount && res.rowCount) {
@@ -59,7 +63,7 @@ async function dbQuery<T extends any[] = any[], I extends any[] = any[]>(
           result.rows.push(...res.rows);
         }
         await client.query("COMMIT");
-        return result;
+        return result as QueryResult<T>;
       } catch (error) {
         await client.query("ROLLBACK");
         throw error;

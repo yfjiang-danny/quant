@@ -12,8 +12,8 @@ export namespace IAccountTable {
     const id = Date.now().toString().slice(0, 10);
 
     const querys = AccountTable.insert({
-      createAt: moment().format("YYYY-MM-DD hh:mm:ss"),
-      updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+      createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+      updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
       account_id: id,
       name: name,
       amount: amount,
@@ -33,7 +33,7 @@ export namespace IAccountTable {
     return dbQuery<AccountTableModel[]>(
       AccountTable.update({
         ...account,
-        updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+        updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
       })
         .where(AccountTable.name.equals(account.name))
         .toQuery()

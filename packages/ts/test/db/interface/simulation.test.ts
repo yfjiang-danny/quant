@@ -4,7 +4,7 @@ import { SimulationStorage } from "../../../src/service/storage/simulation/stora
 dotenv.config();
 
 (async function main() {
-  SimulationStorage.createAccount("20日线", 100000).then((res) => {
+  SimulationStorage.createAccount("20日线", 200000).then((res) => {
     console.log(res);
   });
 })();

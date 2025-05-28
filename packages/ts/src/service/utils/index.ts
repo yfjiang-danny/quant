@@ -39,7 +39,7 @@ export async function fillEastStockInfo(
       arr.forEach((v) => {
         if (v.symbol) {
           promises.push(
-            EastMoney_API.getStockInfo(v.symbol, getMarket(v.symbol))
+            EastMoney_API.queryRealtime(v.symbol, getMarket(v.symbol))
           );
         } else {
           promises.push(

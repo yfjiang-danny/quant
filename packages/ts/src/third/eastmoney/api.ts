@@ -54,7 +54,7 @@ export namespace EastMoney_API {
       });
   }
 
-  export function getStockInfo(symbol: string, market: MarketType) {
+  export function queryRealtime(symbol: string, market: MarketType) {
     return getQuoteSnapshot(symbol, market)
       .then((res) => {
         if (res) {

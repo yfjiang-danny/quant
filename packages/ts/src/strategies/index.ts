@@ -8,7 +8,7 @@ import { StockModel } from "../models/type";
 import { calculateMaxRiseDay, fillMaxRiseDay } from "../service/factors/rise";
 import { Storage } from "../service/storage/storage";
 import { Excel } from "../utils/excel";
-import { deepCopyWithJson } from "../utils/util";
+import { calcFee, deepCopyWithJson } from "../utils/util";
 import {
   fitTurnover,
   isBreakthrough20,
@@ -20,6 +20,17 @@ import { StockSnapshotTableModel } from "../db/tables/snapshot";
 import { fillStocksSMA } from "../service/factors/sma";
 import { getLatestTradeDates, toDashDate } from "../utils/date";
 import { MaxCapitalStockModel } from "../db/interface/model";
+import { SimulationStorage } from "../service/storage/simulation/storage";
+import { PlanTable, PlanTableModel } from "../db/tables/simulation/plan";
+import { getMarket } from "../utils/convert";
+import {
+  EntrustmentTable,
+  EntrustmentTableModel,
+} from "../db/tables/simulation/entrustment";
+import { QueryLike } from "sql";
+import { IAccountTable } from "../db/interface/simulation/account";
+import { AccountTable } from "../db/tables/simulation/account";
+import { dbQuery } from "../db/connect";
 
 export namespace Strategies {
   const logPath = path.resolve(logRootPath, "strategy.log");
@@ -306,5 +317,119 @@ export namespace Strategies {
    */
   export function getUpperLimitStocks(stocks: StockModel[]): StockModel[] {
     return stocks.filter((v) => v.close === v.topPrice);
+  }
+
+  export async function buyTask(date?: string) {
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+
+    if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
+      logger.info(`20日线 do not exist!`);
+      return;
+    }
+
+    const account = accountRes.data[0];
+
+    const buyPlans = await SimulationStorage.queryBuyPlansByAccountIDAndDate(
+      account.account_id,
+      date
+    ).then((res) => res.data);
+
+    if (!Array.isArray(buyPlans) || buyPlans.length == 0) {
+      logger.info(`There are no buy plans!`);
+      return;
+    }
+
+    const promises: Promise<GenEntrustmentResponse>[] = [];
+    buyPlans.forEach((p) => promises.push(genBuyEntrustmentByPlan(p)));
+
+    const invalidPlans: PlanTableModel[] = [];
+    const entrustments: EntrustmentTableModel[] = [];
+    await Promise.allSettled(promises).then((res) => {
+      res.forEach((v) => {
+        if (v.status === "fulfilled") {
+          v.value.plan && invalidPlans.push(v.value.plan);
+          v.value.entrustment && entrustments.push(v.value.entrustment);
+        }
+      });
+    });
+
+    const querys: QueryLike[] = [];
+
+    entrustments.forEach((v) => {
+      account.available -= v.amount;
+      querys.push(EntrustmentTable.insert(v).toQuery());
+    });
+
+    querys.unshift(AccountTable.update(account).toQuery());
+
+    buyPlans.forEach((v) => {
+      querys.push(PlanTable.update({ ...v, exec_flag: 1 }).toQuery());
+    });
+
+    await dbQuery(querys)
+      .then(() => {
+        logger.info(`Exec buyTask success`);
+      })
+      .catch((e) => {
+        logger.info(`Exec buyTask failed: ${e}`);
+      });
+  }
+
+  interface GenEntrustmentResponse {
+    plan?: PlanTableModel;
+    entrustment?: EntrustmentTableModel;
+  }
+  function genBuyEntrustmentByPlan(plan: PlanTableModel) {
+    return new Promise<GenEntrustmentResponse>((resolve, reject) => {
+      Storage.queryRealtimeInfo(plan.symbol, getMarket(plan.symbol))
+        .then((res) => {
+          if (!res || !res.close) {
+            resolve({ plan });
+          } else {
+            const buyPrice = Number((res.close * 1.05).toFixed(2));
+
+            let count = Math.floor(plan.plan_amount / buyPrice / 100) * 100;
+
+            let amount = count * buyPrice;
+
+            let fee = calcFee(amount, 0);
+
+            while (fee + amount > plan.plan_amount) {
+              count -= 100;
+              if (count <= 0) {
+                break;
+              }
+              amount = count * buyPrice;
+              fee = calcFee(amount, 0);
+            }
+
+            if (count <= 0) {
+              resolve({ plan });
+              return;
+            }
+
+            const dateTimeString = Date.now().toString();
+            const entrustment: EntrustmentTableModel = {
+              account_id: plan.account_id,
+              symbol: plan.symbol,
+              amount: amount,
+              count,
+              date: plan.date,
+              deal_type: 0,
+              id: dateTimeString.slice(dateTimeString.length - 10),
+              price: buyPrice,
+              time: moment().format("HH:mm:ss"),
+            };
+
+            resolve({ entrustment });
+          }
+        })
+        .catch((e) => {
+          resolve({ plan });
+        });
+    });
   }
 }
