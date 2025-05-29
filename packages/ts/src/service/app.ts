@@ -23,6 +23,7 @@ import {
   time25Collection,
   time30Collection,
 } from "../collection/collection.time";
+import { buyEntrustmentTask, buyPlanTask } from "../tasks/simulation";
 
 dotenv.config();
 
@@ -184,6 +185,10 @@ app.listen(port, () => {
   runSnapshot20Job();
   runSnapshot25Job();
   runSnapshot30Job();
+
+  //
+  runBuyPlanJob();
+  runBuyEntrustmentJob();
 });
 
 let job: Job;
@@ -231,9 +236,9 @@ function runFilterStockJob() {
   // 每天 17:30
   const rule = new RecurrenceRule();
   rule.dayOfWeek = [1, 2, 3, 4, 5];
-  rule.hour = 17;
-  rule.minute = 30;
-  const fn = filterStocks.bind(null, undefined, mailer);
+  rule.hour = 18;
+  rule.minute = 0;
+  const fn = filterStocks.bind(null, undefined, mailer, undefined);
   filterStocksJob = scheduleJob(rule, fn);
 }
 
@@ -272,7 +277,7 @@ function runSnapshot15Job() {
   rule.hour = 9;
   rule.minute = 15;
   const fn = time15Collection.bind(null, mailer);
-  genReportJob = scheduleJob(rule, fn);
+  scheduleJob(rule, fn);
 }
 
 function runSnapshot20Job() {
@@ -284,7 +289,7 @@ function runSnapshot20Job() {
   rule.hour = 9;
   rule.minute = 20;
   const fn = time20Collection.bind(null, mailer);
-  genReportJob = scheduleJob(rule, fn);
+  scheduleJob(rule, fn);
 }
 
 function runSnapshot25Job() {
@@ -296,7 +301,7 @@ function runSnapshot25Job() {
   rule.hour = 9;
   rule.minute = 25;
   const fn = time25Collection.bind(null, mailer);
-  genReportJob = scheduleJob(rule, fn);
+  scheduleJob(rule, fn);
 }
 
 function runSnapshot30Job() {
@@ -308,5 +313,29 @@ function runSnapshot30Job() {
   rule.hour = 9;
   rule.minute = 30;
   const fn = time30Collection.bind(null, mailer);
-  genReportJob = scheduleJob(rule, fn);
+  scheduleJob(rule, fn);
+}
+
+function runBuyPlanJob() {
+  console.log(`Start BuyPlan ...`);
+
+  // 每天 09:20
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 9;
+  rule.minute = 20;
+  const fn = buyPlanTask.bind(null);
+  scheduleJob(rule, fn);
+}
+
+function runBuyEntrustmentJob() {
+  console.log(`Start BuyEntrustment ...`);
+
+  // 每天 09:25
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 9;
+  rule.minute = 25;
+  const fn = buyEntrustmentTask.bind(null);
+  scheduleJob(rule, fn);
 }

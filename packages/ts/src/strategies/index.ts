@@ -18,22 +18,42 @@ import {
 } from "./util";
 import { StockSnapshotTableModel } from "../db/tables/snapshot";
 import { fillStocksSMA } from "../service/factors/sma";
-import { getLatestTradeDates, toDashDate } from "../utils/date";
+import {
+  getCurrentDateAndTime,
+  getLatestTradeDates,
+  toDashDate,
+} from "../utils/date";
 import { MaxCapitalStockModel } from "../db/interface/model";
 import { SimulationStorage } from "../service/storage/simulation/storage";
 import { PlanTable, PlanTableModel } from "../db/tables/simulation/plan";
 import { getMarket } from "../utils/convert";
 import {
+  EntrustmentStatus,
   EntrustmentTable,
   EntrustmentTableModel,
 } from "../db/tables/simulation/entrustment";
 import { QueryLike } from "sql";
 import { IAccountTable } from "../db/interface/simulation/account";
-import { AccountTable } from "../db/tables/simulation/account";
+import {
+  AccountTable,
+  AccountTableModel,
+} from "../db/tables/simulation/account";
 import { dbQuery } from "../db/connect";
+import { DealTable, DealTableModel } from "../db/tables/simulation/deal";
+import {
+  HoldingTable,
+  HoldingTableModel,
+} from "../db/tables/simulation/holding";
+import { genID } from "../utils/id";
+import { precision } from "../utils/number";
 
 export namespace Strategies {
   const logPath = path.resolve(logRootPath, "strategy.log");
+
+  function log(msg: unknown) {
+    logger.info(msg, logPath);
+  }
+
   /**
    * 获取小市值的票, 按照从小到大排序
    * @returns
@@ -265,25 +285,14 @@ export namespace Strategies {
         200
       ).then((res) => {
         if (res) {
-          return res.data
-            .map((v) => {
-              return {
-                ...v,
-                close: v.close_number,
-                sma20: v.sma20_number,
-                turnover: v.turnover_number,
-              } as unknown as StockModel;
-            })
-            .filter((a) => {
-              const symbol = a.symbol;
-
-              const isFitSymbol =
-                symbol &&
-                (symbol.startsWith("3") ||
-                  symbol.startsWith("60") ||
-                  symbol.startsWith("0"));
-              return isFitSymbol;
-            });
+          return res.data.map((v) => {
+            return {
+              ...v,
+              close: v.close_number,
+              sma20: v.sma20_number,
+              turnover: v.turnover_number,
+            } as unknown as StockModel;
+          });
         }
         return [];
       });
@@ -326,7 +335,7 @@ export namespace Strategies {
     const accountRes = await SimulationStorage.queryAccountByName("20日线");
 
     if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
-      logger.info(`20日线 do not exist!`);
+      log(`Account(20日线) do not exist!`);
       return;
     }
 
@@ -338,11 +347,11 @@ export namespace Strategies {
     ).then((res) => res.data);
 
     if (!Array.isArray(buyPlans) || buyPlans.length == 0) {
-      logger.info(`There are no buy plans!`);
+      log(`There are no buy plans!`);
       return;
     }
 
-    const promises: Promise<GenEntrustmentResponse>[] = [];
+    const promises: Promise<GenBuyEntrustmentResponse>[] = [];
     buyPlans.forEach((p) => promises.push(genBuyEntrustmentByPlan(p)));
 
     const invalidPlans: PlanTableModel[] = [];
@@ -371,64 +380,245 @@ export namespace Strategies {
 
     await dbQuery(querys)
       .then(() => {
-        logger.info(`Exec buyTask success`);
+        log(`Exec buyTask success`);
       })
       .catch((e) => {
-        logger.info(`Exec buyTask failed: ${e}`);
+        log(`Exec buyTask failed: ${e}`);
       });
   }
 
-  interface GenEntrustmentResponse {
+  interface GenBuyEntrustmentResponse {
     plan?: PlanTableModel;
     entrustment?: EntrustmentTableModel;
   }
   function genBuyEntrustmentByPlan(plan: PlanTableModel) {
-    return new Promise<GenEntrustmentResponse>((resolve, reject) => {
+    return new Promise<GenBuyEntrustmentResponse>((resolve, reject) => {
       Storage.queryRealtimeInfo(plan.symbol, getMarket(plan.symbol))
         .then((res) => {
           if (!res || !res.close) {
             resolve({ plan });
-          } else {
-            const buyPrice = Number((res.close * 1.05).toFixed(2));
-
-            let count = Math.floor(plan.plan_amount / buyPrice / 100) * 100;
-
-            let amount = count * buyPrice;
-
-            let fee = calcFee(amount, 0);
-
-            while (fee + amount > plan.plan_amount) {
-              count -= 100;
-              if (count <= 0) {
-                break;
-              }
-              amount = count * buyPrice;
-              fee = calcFee(amount, 0);
-            }
-
-            if (count <= 0) {
-              resolve({ plan });
-              return;
-            }
-
-            const dateTimeString = Date.now().toString();
-            const entrustment: EntrustmentTableModel = {
-              account_id: plan.account_id,
-              symbol: plan.symbol,
-              amount: amount,
-              count,
-              date: plan.date,
-              deal_type: 0,
-              id: dateTimeString.slice(dateTimeString.length - 10),
-              price: buyPrice,
-              time: moment().format("HH:mm:ss"),
-            };
-
-            resolve({ entrustment });
+            return;
           }
+          const buyPrice = Number((res.close * 1.05).toFixed(2));
+
+          let count = Math.floor(plan.plan_amount / buyPrice / 100) * 100;
+
+          let amount = count * buyPrice;
+
+          let fee = calcFee(amount, 0);
+
+          while (fee + amount > plan.plan_amount) {
+            count -= 100;
+            if (count <= 0) {
+              break;
+            }
+            amount = count * buyPrice;
+            fee = calcFee(amount, 0);
+          }
+
+          if (count <= 0) {
+            resolve({ plan });
+            return;
+          }
+
+          const dateTimeString = Date.now().toString();
+          const entrustment: EntrustmentTableModel = {
+            account_id: plan.account_id,
+            symbol: plan.symbol,
+            amount: amount,
+            count,
+            date: plan.date,
+            deal_type: 0,
+            id: dateTimeString.slice(dateTimeString.length - 10),
+            price: buyPrice,
+            time: moment().format("HH:mm:ss"),
+            status: 0,
+          };
+
+          resolve({ entrustment });
         })
         .catch((e) => {
           resolve({ plan });
+        });
+    });
+  }
+
+  export async function buyEntrustmentTask(date?: string) {
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+
+    if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
+      log(`Account(20日线) do not exist!`);
+      return;
+    }
+
+    const account = accountRes.data[0];
+
+    const buyEntrustments =
+      await SimulationStorage.queryBuyEntrustmentsByAccountIDAndDate(
+        account.account_id,
+        date
+      ).then((res) => res.data);
+
+    if (!Array.isArray(buyEntrustments) || buyEntrustments.length == 0) {
+      log(`There are no buy entrustments!`);
+      return;
+    }
+
+    const promises: Promise<CheckBuyEntrustmentIsDoneResponse>[] = [];
+    buyEntrustments.forEach((p) => promises.push(checkBuyEntrustmentIsDone(p)));
+
+    const undoneEntrustment: EntrustmentTableModel[] = [];
+    const doneEntrustments: (EntrustmentTableModel & { deal_price: number })[] =
+      [];
+    await Promise.allSettled(promises).then((res) => {
+      res.forEach((v, i) => {
+        if (v.status === "fulfilled") {
+          if (v.value.status === 1) {
+            doneEntrustments.push({
+              ...buyEntrustments[i],
+              deal_price: v.value.price!,
+            });
+          } else {
+            undoneEntrustment.push({
+              ...buyEntrustments[i],
+              status: v.value.status,
+            });
+          }
+        }
+      });
+    });
+
+    const deals: DealTableModel[] = [];
+    const holdings: HoldingTableModel[] = [];
+    const newAccount = { ...account };
+
+    doneEntrustments.forEach((v) => {
+      const dealAmount = precision(v.count * v.deal_price);
+      const fee = calcFee(dealAmount, 0);
+      const dealId = genID();
+      deals.push({
+        symbol: v.symbol,
+        account_id: newAccount.account_id,
+        amount: dealAmount,
+        count: v.count,
+        deal_date: v.date,
+        deal_id: dealId,
+        deal_type: 0,
+        fee,
+        price: v.deal_price,
+      });
+
+      const interestRate = precision(fee / dealAmount);
+
+      holdings.push({
+        symbol: v.symbol,
+        account_id: newAccount.account_id,
+        amount: dealAmount,
+        count: v.count,
+        buy_price: v.deal_price,
+        cur_price: v.deal_price,
+        deal_ids: dealId,
+        interest: -fee,
+        interest_rate: -interestRate,
+      });
+
+      newAccount.available -= dealAmount + fee;
+      newAccount.holding += dealAmount;
+    });
+
+    newAccount.available = precision(newAccount.available);
+    newAccount.holding = precision(newAccount.holding);
+    newAccount.amount = precision(newAccount.holding + newAccount.available);
+    newAccount.interest = precision(newAccount.amount - newAccount.init_amount);
+    newAccount.interest_rate = precision(
+      newAccount.interest / newAccount.init_amount
+    );
+
+    const querys: QueryLike[] = [];
+
+    undoneEntrustment.forEach((v) => {
+      querys.push(
+        EntrustmentTable.update({
+          status: v.status,
+          updateAt: getCurrentDateAndTime(),
+        })
+          .where(EntrustmentTable.id.equals(v.id))
+          .toQuery()
+      );
+    });
+    doneEntrustments.forEach((v) => {
+      querys.push(
+        EntrustmentTable.update({
+          status: v.status,
+          updateAt: getCurrentDateAndTime(),
+        })
+          .where(EntrustmentTable.id.equals(v.id))
+          .toQuery()
+      );
+    });
+
+    deals.forEach((v) => {
+      querys.push(
+        DealTable.insert({
+          ...v,
+          createAt: getCurrentDateAndTime(),
+          updateAt: getCurrentDateAndTime(),
+        }).toQuery()
+      );
+    });
+
+    holdings.forEach((v) => {
+      querys.push(
+        HoldingTable.insert({
+          ...v,
+          createAt: getCurrentDateAndTime(),
+          updateAt: getCurrentDateAndTime(),
+        }).toQuery()
+      );
+    });
+
+    querys.unshift(AccountTable.update(account).toQuery());
+
+    await dbQuery(querys)
+      .then(() => {
+        log(`Exec buyEntrustmentsTask success`);
+      })
+      .catch((e) => {
+        log(`Exec buyEntrustmentsTask failed: ${e}`);
+      });
+  }
+
+  interface CheckBuyEntrustmentIsDoneResponse {
+    status: EntrustmentStatus;
+    price?: number;
+  }
+
+  function checkBuyEntrustmentIsDone(data: EntrustmentTableModel) {
+    return new Promise<CheckBuyEntrustmentIsDoneResponse>((resolve, reject) => {
+      Storage.queryRealtimeInfo(data.symbol, getMarket(data.symbol))
+        .then((res) => {
+          if (!res || !res.open) {
+            // Unknow status
+            resolve({ status: 3 });
+            return;
+          }
+
+          if (res.open > data.price) {
+            // Can not make a deal
+            resolve({ status: 2 });
+            return;
+          }
+
+          resolve({
+            status: 1,
+            price: res.open,
+          });
+        })
+        .catch((e) => {
+          resolve({ status: 3 });
         });
     });
   }

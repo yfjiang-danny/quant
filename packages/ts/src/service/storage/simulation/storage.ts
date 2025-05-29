@@ -1,7 +1,12 @@
 import { IAccountTable } from "../../../db/interface/simulation/account";
+import { IEntrustmentTable } from "../../../db/interface/simulation/entrustment";
 import { IHoldingTable } from "../../../db/interface/simulation/holding";
 import { IPlanTable } from "../../../db/interface/simulation/plan";
 import { AccountTableModel } from "../../../db/tables/simulation/account";
+import {
+  EntrustmentStatus,
+  EntrustmentTableModel,
+} from "../../../db/tables/simulation/entrustment";
 import { HoldingTableModel } from "../../../db/tables/simulation/holding";
 import {
   PlanExecFlag,
@@ -52,5 +57,36 @@ export namespace SimulationStorage {
 
   export function queryHoldingsByAccoundID(id: string) {
     return tableQuery(IHoldingTable.queryHoldingsByAccountID(id));
+  }
+
+  export function insertEntrustments(data: EntrustmentTableModel[]) {
+    return tableQuery<EntrustmentTableModel>(IEntrustmentTable.insert(data));
+  }
+
+  export function queryBuyEntrustmentsByAccountIDAndDate(
+    account: string,
+    date: string
+  ) {
+    return tableQuery<EntrustmentTableModel>(
+      IEntrustmentTable.queryBuyEntrustmentsByAccountIDAndDate(account, date)
+    );
+  }
+
+  export function querySellEntrustmentsByAccountIDAndDate(
+    account: string,
+    date: string
+  ) {
+    return tableQuery<EntrustmentTableModel>(
+      IEntrustmentTable.querySellEntrustmentsByAccountIDAndDate(account, date)
+    );
+  }
+
+  export function updateEntrustmentStatusByID(
+    id: string,
+    status: EntrustmentStatus
+  ) {
+    return tableQuery<EntrustmentTableModel>(
+      IEntrustmentTable.updateStatusByID(id, status)
+    );
   }
 }

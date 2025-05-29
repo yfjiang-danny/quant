@@ -70,3 +70,7 @@ export function getLatestTradeDates(
 
   return res;
 }
+
+export function getCurrentDateAndTime() {
+  return moment().format("YYYY-MM-DD HH:mm:ss");
+}

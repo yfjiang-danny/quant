@@ -148,6 +148,7 @@ and a.flow_capital is not null
 ) t
 where t.flow_capital_number < ${maxCapital}
 and t.close_number > t.sma20_number
+and (t.symbol like '3%' or t.symbol like '60%' or t.symbol like '0%')
 and t.symbol in(
 select t1.symbol
 from

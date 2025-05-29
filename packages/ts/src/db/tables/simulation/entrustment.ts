@@ -9,6 +9,10 @@ import {
 } from "../base";
 import sql from "sql";
 
+/**
+ * 0 - 已报，1 - 已成， 2 - 未成， 3 - 未知
+ */
+export type EntrustmentStatus = 0 | 1 | 2 | 3;
 export interface EntrustmentTableModel extends BaseTableModel {
   account_id: string;
   id: string;
@@ -19,6 +23,7 @@ export interface EntrustmentTableModel extends BaseTableModel {
   count: number;
   price: number;
   amount: number;
+  status: EntrustmentStatus;
 }
 
 /**
@@ -51,6 +56,11 @@ export const EntrustmentTable = sql.define<string, EntrustmentTableModel>({
     deal_type: {
       name: "deal_type",
       dataType: "smallint",
+    },
+    status: {
+      name: "status",
+      dataType: "smallint",
+      defaultValue: 0,
     },
     amount: {
       name: "amount",

@@ -10,6 +10,8 @@ import { Strategies } from "../strategies";
 import { toDashDate } from "../utils/date";
 import { drawCodeToImg } from "./utils";
 
+// 603163
+
 const logPath = path.resolve(logRootPath, "filterStocks.log");
 
 let sendMail = false;
@@ -33,7 +35,7 @@ export async function filterStocks(
     Storage.insertStrategy({
       name: "突破20日线",
       date: date || moment().format("YYYYMMDD"),
-      content: stocks.join(","),
+      content: stocks.map((v) => v.symbol).join(","),
     });
 
     drawCodeToImg(stocks)
@@ -78,5 +80,7 @@ export async function filterStocks(
       .finally(() => {
         cb?.();
       });
+  } else {
+    logger.info("filterStocks is empty", logPath);
   }
 }
