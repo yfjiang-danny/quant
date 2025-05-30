@@ -12,8 +12,8 @@ export namespace IStrategyTable {
     return dbQuery<StrategyTableModel[]>(
       (
         StrategyTable.insert({
-          createAt: moment().format("YYYY-MM-DD hh:mm:ss"),
-          updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+          createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+          updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
           ...strategy,
           id: id,
         }) as any
@@ -42,7 +42,7 @@ export namespace IStrategyTable {
     return dbQuery<StrategyTableModel[]>(
       StrategyTable.update({
         ...strategy,
-        updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+        updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
       })
         .where(StrategyTable.name.equals(strategy.name))
         .toQuery()
@@ -53,6 +53,15 @@ export namespace IStrategyTable {
     return dbQuery<StrategyTableModel[]>(
       StrategyTable.select(StrategyTable.star())
         .where(StrategyTable.name.equals(name))
+        .toQuery()
+    );
+  }
+
+  export function queryByNameAndDate(name: string, date: string) {
+    return dbQuery<StrategyTableModel[]>(
+      StrategyTable.select(StrategyTable.star())
+        .where(StrategyTable.name.equals(name))
+        .where(StrategyTable.date.equals(date))
         .toQuery()
     );
   }

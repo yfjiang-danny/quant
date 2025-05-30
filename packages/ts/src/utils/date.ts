@@ -71,6 +71,28 @@ export function getLatestTradeDates(
   return res;
 }
 
+/**
+ *
+ * @param from not include from
+ * @param format
+ */
+export function getNextTradeDate(
+  from: string | Date = new Date(),
+  format = "YYYYMMDD"
+) {
+  const m = moment(
+    typeof from === "string" && from.length === 8 ? toDashDate(from) : from
+  );
+
+  m.add(1);
+
+  while (!isTradeDate(m.toDate())) {
+    m.add(1);
+  }
+
+  return m.format(format);
+}
+
 export function getCurrentDateAndTime() {
   return moment().format("YYYY-MM-DD HH:mm:ss");
 }

@@ -6,6 +6,7 @@ import {
   HoldingTable,
   HoldingTableModel,
 } from "../../tables/simulation/holding";
+import { TableTotalCountModel } from "../type";
 
 export namespace IHoldingTable {
   export function insert(holdings: HoldingTableModel[], shouldUpdate = false) {
@@ -57,7 +58,7 @@ export namespace IHoldingTable {
     return dbQuery<HoldingTableModel[]>(
       HoldingTable.update({
         ...holding,
-        updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+        updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
       })
         .where(HoldingTable.account_id.equals(holding.account_id))
         .where(HoldingTable.symbol.equals(holding.symbol))
@@ -116,6 +117,13 @@ export namespace IHoldingTable {
     });
   }
 
+  export function queryHoldingCountByAccountID(accountID: string) {
+    const str = `SELECT count(*)
+    FROM "holding"
+    where account_id = '${accountID}'`;
+    return dbQuery<TableTotalCountModel[]>({ text: str });
+  }
+
   export function queryHoldingsByAccountID(accountID: string) {
     return dbQuery<HoldingTableModel[]>(
       HoldingTable.select(HoldingTable.star())
@@ -134,5 +142,20 @@ export namespace IHoldingTable {
         .where(HoldingTable.symbol.equals(symbol))
         .toQuery()
     );
+  }
+
+  export function queryAccountHoldingsBySymbols(
+    accountID: string,
+    symbols: string[]
+  ) {
+    let querys = HoldingTable.select(HoldingTable.star()).where(
+      HoldingTable.account_id.equals(accountID)
+    );
+
+    if (symbols.length > 0) {
+      querys = querys.where(HoldingTable.symbol.in(symbols));
+    }
+
+    return dbQuery<HoldingTableModel[]>(querys.toQuery());
   }
 }

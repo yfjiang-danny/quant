@@ -27,8 +27,8 @@ export namespace IStockSnapshotTable {
           StockSnapshotTable.insert(
             stocks.slice(start, end).map((v) => ({
               ...v,
-              createAt: moment().format("YYYY-MM-DD hh:mm:ss"),
-              updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+              createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+              updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
             }))
           ) as any
         )
@@ -74,7 +74,7 @@ export namespace IStockSnapshotTable {
       querys.push(
         StockSnapshotTable.update({
           ...stock,
-          updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+          updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
         })
           .where(
             StockSnapshotTable.symbol

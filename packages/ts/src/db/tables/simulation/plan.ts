@@ -1,10 +1,10 @@
 import {
   baseColumns,
   BaseTableModel,
-  dateDataType,
+  DateDataType,
   IDDataType,
   MaxNumericDataType,
-  symbolDataType,
+  SymbolDataType,
 } from "../base";
 import sql from "sql";
 
@@ -16,8 +16,10 @@ export interface PlanTableModel extends BaseTableModel {
   date: string;
   symbol: string;
   deal_type: number;
-  plan_amount: number;
+  plan_amount?: number;
+  plan_count?: number;
   exec_flag: PlanExecFlag;
+  mark?: string;
 }
 
 export const PlanTable = sql.define<string, PlanTableModel>({
@@ -38,7 +40,7 @@ export const PlanTable = sql.define<string, PlanTableModel>({
     },
     date: {
       name: "date",
-      dataType: dateDataType,
+      dataType: DateDataType,
       notNull: true,
     },
     deal_type: {
@@ -52,14 +54,21 @@ export const PlanTable = sql.define<string, PlanTableModel>({
       notNull: true,
       defaultValue: 0,
     },
+    mark: {
+      name: "mark",
+      dataType: "text",
+    },
     plan_amount: {
       name: "plan_amount",
       dataType: MaxNumericDataType,
-      notNull: true,
+    },
+    plan_count: {
+      name: "plan_count",
+      dataType: "integer",
     },
     symbol: {
       name: "symbol",
-      dataType: symbolDataType,
+      dataType: SymbolDataType,
       notNull: true,
     },
   },

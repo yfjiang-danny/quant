@@ -2,11 +2,11 @@ import sql, { ColumnDefinition } from "sql";
 import {
   baseColumns,
   BaseTableModel,
-  dateDataType,
+  DateDataType,
   IntegerDataType,
-  nameDataType,
-  numberFixedDataType,
-  symbolDataType,
+  NameDataType,
+  NumberFixedDataType,
+  SymbolDataType,
 } from "./base";
 
 export interface StockSnapshotTableModel extends BaseTableModel {
@@ -44,68 +44,68 @@ const StockSnapshotTableColumn: {
 } = {
   ...baseColumns,
   date: {
-    dataType: dateDataType,
+    dataType: DateDataType,
     notNull: true,
     primaryKey: true,
   },
   time: {
-    dataType: dateDataType,
+    dataType: DateDataType,
   },
   symbol: {
-    dataType: symbolDataType,
+    dataType: SymbolDataType,
     notNull: true,
     primaryKey: true,
   },
   name: {
-    dataType: nameDataType,
+    dataType: NameDataType,
   },
   open: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   close: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   avg: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   high: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   low: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   top_price: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   bottom_price: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   change: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   turnover: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   volume: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   internal: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   external: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   buy1: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   buy2: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   sale1: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   sale2: {
-    dataType: numberFixedDataType,
+    dataType: NumberFixedDataType,
   },
   buy1_count: {
     dataType: IntegerDataType,
@@ -139,7 +139,7 @@ const StockTimeSnapshotTableColumn: {
 } = {
   ...StockSnapshotTableColumn,
   time: {
-    dataType: dateDataType,
+    dataType: DateDataType,
   },
 };
 

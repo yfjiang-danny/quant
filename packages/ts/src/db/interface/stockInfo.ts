@@ -19,8 +19,8 @@ export namespace IStockInfoTable {
           StockInfoTable.insert(
             stocks.slice(start, end).map((v) => ({
               ...v,
-              createAt: moment().format("YYYY-MM-DD hh:mm:ss"),
-              updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+              createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+              updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
             }))
           ) as any
         )
@@ -57,7 +57,7 @@ export namespace IStockInfoTable {
       querys.push(
         StockInfoTable.update({
           ...stock,
-          updateAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+          updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
         })
           .where(StockInfoTable.symbol?.equals(stock.symbol))
           .toQuery()

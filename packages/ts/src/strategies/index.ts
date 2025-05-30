@@ -21,6 +21,7 @@ import { fillStocksSMA } from "../service/factors/sma";
 import {
   getCurrentDateAndTime,
   getLatestTradeDates,
+  getNextTradeDate,
   toDashDate,
 } from "../utils/date";
 import { MaxCapitalStockModel } from "../db/interface/model";
@@ -41,11 +42,14 @@ import {
 import { dbQuery } from "../db/connect";
 import { DealTable, DealTableModel } from "../db/tables/simulation/deal";
 import {
+  HoldingHistoryTable,
+  HoldingHistoryTableModel,
   HoldingTable,
   HoldingTableModel,
 } from "../db/tables/simulation/holding";
 import { genID } from "../utils/id";
 import { precision } from "../utils/number";
+import { EastMoneyStockModel } from "../third/eastmoney/type";
 
 export namespace Strategies {
   const logPath = path.resolve(logRootPath, "strategy.log");
@@ -329,6 +333,7 @@ export namespace Strategies {
   }
 
   export async function buyTask(date?: string) {
+    log("Exec buyTask");
     if (!date) {
       date = moment().format("YYYYMMDD");
     }
@@ -351,15 +356,14 @@ export namespace Strategies {
       return;
     }
 
-    const promises: Promise<GenBuyEntrustmentResponse>[] = [];
+    const promises: Promise<GenEntrustmentResponse>[] = [];
     buyPlans.forEach((p) => promises.push(genBuyEntrustmentByPlan(p)));
 
-    const invalidPlans: PlanTableModel[] = [];
     const entrustments: EntrustmentTableModel[] = [];
     await Promise.allSettled(promises).then((res) => {
-      res.forEach((v) => {
+      res.forEach((v, i) => {
         if (v.status === "fulfilled") {
-          v.value.plan && invalidPlans.push(v.value.plan);
+          v.value.errorMsg && (buyPlans[i].mark = v.value.errorMsg);
           v.value.entrustment && entrustments.push(v.value.entrustment);
         }
       });
@@ -387,16 +391,24 @@ export namespace Strategies {
       });
   }
 
-  interface GenBuyEntrustmentResponse {
-    plan?: PlanTableModel;
+  interface GenEntrustmentResponse {
+    errorMsg?: string;
     entrustment?: EntrustmentTableModel;
   }
   function genBuyEntrustmentByPlan(plan: PlanTableModel) {
-    return new Promise<GenBuyEntrustmentResponse>((resolve, reject) => {
+    return new Promise<GenEntrustmentResponse>((resolve, reject) => {
       Storage.queryRealtimeInfo(plan.symbol, getMarket(plan.symbol))
         .then((res) => {
-          if (!res || !res.close) {
-            resolve({ plan });
+          if (!res) {
+            resolve({ errorMsg: "queryRealtimeInfo error" });
+            return;
+          }
+          if (!res.close) {
+            resolve({ errorMsg: "queryRealtimeInfo close is null" });
+            return;
+          }
+          if (!plan.plan_amount) {
+            resolve({ errorMsg: "plan plan_amount is null" });
             return;
           }
           const buyPrice = Number((res.close * 1.05).toFixed(2));
@@ -417,11 +429,10 @@ export namespace Strategies {
           }
 
           if (count <= 0) {
-            resolve({ plan });
+            resolve({ errorMsg: "Calculate count is 0" });
             return;
           }
 
-          const dateTimeString = Date.now().toString();
           const entrustment: EntrustmentTableModel = {
             account_id: plan.account_id,
             symbol: plan.symbol,
@@ -429,7 +440,7 @@ export namespace Strategies {
             count,
             date: plan.date,
             deal_type: 0,
-            id: dateTimeString.slice(dateTimeString.length - 10),
+            id: genID(),
             price: buyPrice,
             time: moment().format("HH:mm:ss"),
             status: 0,
@@ -438,12 +449,13 @@ export namespace Strategies {
           resolve({ entrustment });
         })
         .catch((e) => {
-          resolve({ plan });
+          resolve({ errorMsg: "queryRealtimeInfo error" });
         });
     });
   }
 
   export async function buyEntrustmentTask(date?: string) {
+    log("Exec buyEntrustmentTask");
     if (!date) {
       date = moment().format("YYYYMMDD");
     }
@@ -467,10 +479,10 @@ export namespace Strategies {
       return;
     }
 
-    const promises: Promise<CheckBuyEntrustmentIsDoneResponse>[] = [];
+    const promises: Promise<CheckEntrustmentIsDoneResponse>[] = [];
     buyEntrustments.forEach((p) => promises.push(checkBuyEntrustmentIsDone(p)));
 
-    const undoneEntrustment: EntrustmentTableModel[] = [];
+    const undoneEntrustments: EntrustmentTableModel[] = [];
     const doneEntrustments: (EntrustmentTableModel & { deal_price: number })[] =
       [];
     await Promise.allSettled(promises).then((res) => {
@@ -482,7 +494,7 @@ export namespace Strategies {
               deal_price: v.value.price!,
             });
           } else {
-            undoneEntrustment.push({
+            undoneEntrustments.push({
               ...buyEntrustments[i],
               status: v.value.status,
             });
@@ -523,6 +535,8 @@ export namespace Strategies {
         deal_ids: dealId,
         interest: -fee,
         interest_rate: -interestRate,
+        buy_date: v.date,
+        fee: fee,
       });
 
       newAccount.available -= dealAmount + fee;
@@ -539,7 +553,7 @@ export namespace Strategies {
 
     const querys: QueryLike[] = [];
 
-    undoneEntrustment.forEach((v) => {
+    undoneEntrustments.forEach((v) => {
       querys.push(
         EntrustmentTable.update({
           status: v.status,
@@ -591,13 +605,13 @@ export namespace Strategies {
       });
   }
 
-  interface CheckBuyEntrustmentIsDoneResponse {
+  interface CheckEntrustmentIsDoneResponse {
     status: EntrustmentStatus;
     price?: number;
   }
 
   function checkBuyEntrustmentIsDone(data: EntrustmentTableModel) {
-    return new Promise<CheckBuyEntrustmentIsDoneResponse>((resolve, reject) => {
+    return new Promise<CheckEntrustmentIsDoneResponse>((resolve, reject) => {
       Storage.queryRealtimeInfo(data.symbol, getMarket(data.symbol))
         .then((res) => {
           if (!res || !res.open) {
@@ -621,5 +635,493 @@ export namespace Strategies {
           resolve({ status: 3 });
         });
     });
+  }
+
+  export async function sellPlanTask(date?: string) {
+    log("Exec buyTask");
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+
+    if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
+      log(`Account(20日线) do not exist!`);
+      return;
+    }
+
+    const account = accountRes.data[0];
+
+    const sellPlans = await SimulationStorage.querySellPlansByAccountIDAndDate(
+      account.account_id,
+      date
+    ).then((res) => res.data);
+
+    if (!Array.isArray(sellPlans) || sellPlans.length == 0) {
+      log(`There are no sell plans!`);
+      return;
+    }
+
+    const promises: Promise<GenEntrustmentResponse>[] = [];
+    sellPlans.forEach((p) => promises.push(genSellEntrustment(p)));
+
+    const entrustments: EntrustmentTableModel[] = [];
+    await Promise.allSettled(promises).then((res) => {
+      res.forEach((v, i) => {
+        if (v.status === "fulfilled") {
+          v.value.errorMsg && (sellPlans[i].mark = v.value.errorMsg);
+          v.value.entrustment && entrustments.push(v.value.entrustment);
+        }
+      });
+    });
+
+    const querys: QueryLike[] = [];
+
+    entrustments.forEach((v) => {
+      querys.push(EntrustmentTable.insert(v).toQuery());
+    });
+
+    sellPlans.forEach((v) => {
+      querys.push(PlanTable.update({ ...v, exec_flag: 1 }).toQuery());
+    });
+
+    await dbQuery(querys)
+      .then(() => {
+        log(`Exec buyTask success`);
+      })
+      .catch((e) => {
+        log(`Exec buyTask failed: ${e}`);
+      });
+  }
+
+  function genSellEntrustment(plan: PlanTableModel) {
+    return new Promise<GenEntrustmentResponse>((resolve, reject) => {
+      Storage.queryRealtimeInfo(plan.symbol, getMarket(plan.symbol))
+        .then((res) => {
+          if (!res) {
+            resolve({ errorMsg: "queryRealtimeInfo error" });
+            return;
+          }
+          if (!res.close) {
+            resolve({ errorMsg: "queryRealtimeInfo close is null" });
+            return;
+          }
+
+          if (!res.bottomPrice) {
+            resolve({ errorMsg: "queryRealtimeInfo bottomPrice is null" });
+            return;
+          }
+
+          if (res.bottomPrice == res.close) {
+            resolve({
+              errorMsg: "queryRealtimeInfo bottomPrice == close",
+            });
+            return;
+          }
+
+          if (!plan.plan_count) {
+            resolve({
+              errorMsg: "Plan plan_count is null",
+            });
+            return;
+          }
+
+          const entrustment: EntrustmentTableModel = {
+            account_id: plan.account_id,
+            symbol: plan.symbol,
+            amount: 0,
+            count: plan.plan_count,
+            date: plan.date,
+            deal_type: 1,
+            id: genID(),
+            price: res.bottomPrice,
+            time: moment().format("HH:mm:ss"),
+            status: 0,
+          };
+
+          resolve({ entrustment });
+        })
+        .catch((e) => {
+          resolve({ errorMsg: "queryRealtimeInfo error" });
+        });
+    });
+  }
+
+  export async function sellEntrustmentTask(date?: string) {
+    log("Exec sellEntrustmentTask");
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+
+    if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
+      log(`Account(20日线) do not exist!`);
+      return;
+    }
+
+    const account = accountRes.data[0];
+
+    const sellEntrustments =
+      await SimulationStorage.querySellEntrustmentsByAccountIDAndDate(
+        account.account_id,
+        date
+      ).then((res) => res.data);
+
+    if (!Array.isArray(sellEntrustments) || sellEntrustments.length == 0) {
+      log(`There are no sell entrustments!`);
+      return;
+    }
+
+    const promises: Promise<CheckEntrustmentIsDoneResponse>[] = [];
+    sellEntrustments.forEach((p) =>
+      promises.push(checkSellEntrustmentIsDone(p))
+    );
+
+    const undoneEntrustments: EntrustmentTableModel[] = [];
+    const doneEntrustments: (EntrustmentTableModel & { deal_price: number })[] =
+      [];
+    await Promise.allSettled(promises).then((res) => {
+      res.forEach((v, i) => {
+        if (v.status === "fulfilled") {
+          if (v.value.status === 1) {
+            doneEntrustments.push({
+              ...sellEntrustments[i],
+              deal_price: v.value.price!,
+            });
+          } else {
+            undoneEntrustments.push({
+              ...sellEntrustments[i],
+              status: v.value.status,
+            });
+          }
+        }
+      });
+    });
+
+    const querys: QueryLike[] = [];
+
+    const newAccount = { ...account };
+
+    const deals: DealTableModel[] = [];
+    const holdingHistories: HoldingHistoryTableModel[] = [];
+    let holdings: HoldingTableModel[] = [];
+
+    if (doneEntrustments.length > 0) {
+      holdings = await SimulationStorage.queryAccountHoldingsBySymbols(
+        newAccount.account_id,
+        doneEntrustments.map((v) => v.symbol)
+      ).then((res) => res.data);
+
+      doneEntrustments.forEach((v) => {
+        const dealAmount = precision(v.count * v.deal_price);
+        const fee = calcFee(dealAmount, 1);
+        const dealId = genID();
+        deals.push({
+          symbol: v.symbol,
+          account_id: newAccount.account_id,
+          amount: dealAmount,
+          count: v.count,
+          deal_date: v.date,
+          deal_id: dealId,
+          deal_type: 1,
+          fee,
+          price: v.deal_price,
+        });
+
+        const findHolding = holdings.find((h) => h.symbol === v.symbol);
+
+        if (findHolding) {
+          const interest = precision(
+            (v.deal_price - findHolding.buy_price) * v.count -
+              findHolding.fee -
+              fee
+          );
+          const interestRate = precision(
+            interest / (findHolding.buy_price * findHolding.count)
+          );
+          holdingHistories.push({
+            id: genID(),
+            account_id: newAccount.account_id,
+            buy_date: findHolding.buy_date,
+            buy_price: findHolding.buy_price,
+            count: findHolding.count,
+            sell_price: v.deal_price,
+            sell_date: v.date,
+            symbol: v.symbol,
+            interest: interest,
+            interest_rate: interestRate,
+            deal_ids: findHolding.deal_ids + `,${dealId}`,
+            createAt: getCurrentDateAndTime(),
+            updateAt: getCurrentDateAndTime(),
+          });
+          newAccount.available += dealAmount - fee;
+          newAccount.holding -= dealAmount;
+        }
+      });
+    }
+
+    newAccount.available = precision(newAccount.available);
+    newAccount.holding = precision(newAccount.holding);
+    newAccount.amount = precision(newAccount.holding + newAccount.available);
+    newAccount.interest = precision(newAccount.amount - newAccount.init_amount);
+    newAccount.interest_rate = precision(
+      newAccount.interest / newAccount.init_amount
+    );
+
+    undoneEntrustments.forEach((v) => {
+      querys.push(
+        EntrustmentTable.update({
+          status: v.status,
+          updateAt: getCurrentDateAndTime(),
+        })
+          .where(EntrustmentTable.id.equals(v.id))
+          .toQuery()
+      );
+    });
+    doneEntrustments.forEach((v) => {
+      querys.push(
+        EntrustmentTable.update({
+          status: v.status,
+          updateAt: getCurrentDateAndTime(),
+        })
+          .where(EntrustmentTable.id.equals(v.id))
+          .toQuery()
+      );
+    });
+
+    // insert deals
+    deals.forEach((v) => {
+      querys.push(
+        DealTable.insert({
+          ...v,
+          createAt: getCurrentDateAndTime(),
+          updateAt: getCurrentDateAndTime(),
+        }).toQuery()
+      );
+    });
+
+    // insert holding history
+    holdingHistories.forEach((v) => {
+      querys.push(
+        HoldingHistoryTable.insert({
+          ...v,
+          createAt: getCurrentDateAndTime(),
+          updateAt: getCurrentDateAndTime(),
+        }).toQuery()
+      );
+    });
+
+    // delete holding
+    holdings.forEach((v) => {
+      querys.push(
+        HoldingTable.delete()
+          .where(HoldingTable.account_id.equals(v.account_id))
+          .where(HoldingTable.symbol.equals(v.symbol))
+          .toQuery()
+      );
+    });
+
+    // update account
+    querys.unshift(AccountTable.update(account).toQuery());
+
+    await dbQuery(querys)
+      .then(() => {
+        log(`Exec sellEntrustmentsTask success`);
+      })
+      .catch((e) => {
+        log(`Exec sellEntrustmentsTask failed: ${e}`);
+      });
+  }
+
+  function checkSellEntrustmentIsDone(data: EntrustmentTableModel) {
+    return new Promise<CheckEntrustmentIsDoneResponse>((resolve, reject) => {
+      Storage.queryRealtimeInfo(data.symbol, getMarket(data.symbol))
+        .then((res) => {
+          if (!res || !res.close) {
+            // Unknow status
+            resolve({ status: 3 });
+            return;
+          }
+
+          if (res.close < data.price) {
+            // Can not make a deal
+            resolve({ status: 2 });
+            return;
+          }
+
+          resolve({
+            status: 1,
+            price: res.close,
+          });
+        })
+        .catch((e) => {
+          resolve({ status: 3 });
+        });
+    });
+  }
+
+  export async function clearingTask(date?: string) {
+    log("Exec clearingTask");
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+
+    if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
+      log(`Account(20日线) do not exist!`);
+      return;
+    }
+
+    const account = accountRes.data[0];
+
+    const holdings = await SimulationStorage.queryHoldingsByAccoundID(
+      account.account_id
+    ).then((res) => res.data);
+
+    const querys: QueryLike[] = [];
+
+    if (holdings && holdings.length) {
+      const promises: Promise<EastMoneyStockModel | null>[] = [];
+
+      holdings.forEach((v) => {
+        promises.push(Storage.queryRealtimeInfo(v.symbol, getMarket(v.symbol)));
+      });
+
+      const resArr = await Promise.allSettled(promises);
+
+      let holdingAmount = 0;
+
+      resArr.forEach((v, i) => {
+        const h = holdings[i];
+        if (v.status === "fulfilled") {
+          if (v.value && v.value.close) {
+            h.cur_price = precision(v.value.close);
+            h.amount = precision(v.value.close * h.count);
+            const interest = precision(
+              (v.value.close - h.buy_price) * h.count - h.fee
+            );
+            const interestRate = precision(interest / (h.buy_price * h.count));
+            h.interest = interest;
+            h.interest_rate = interestRate;
+            h.updateAt = getCurrentDateAndTime();
+
+            querys.push(HoldingTable.update(h).toQuery());
+          }
+        }
+        holdingAmount += h.amount;
+      });
+
+      account.holding = precision(holdingAmount);
+      account.amount = precision(account.holding + account.available);
+      account.interest = precision(account.amount - account.init_amount);
+      account.interest_rate = precision(account.interest / account.init_amount);
+      account.date = moment().format("YYYYMMDD");
+      account.time = moment().format("HH:mm:ss");
+      account.updateAt = getCurrentDateAndTime();
+
+      querys.push(AccountTable.update(account).toQuery());
+    }
+
+    if (querys.length > 0) {
+      dbQuery(querys)
+        .then(() => {
+          log(`Exec clearingTask success`);
+        })
+        .catch((e) => {
+          log(`Exec clearingTask failed: ${e}`);
+        });
+    }
+  }
+
+  export async function genPlanTask(date?: string) {
+    log("Exec clearingTask");
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+
+    if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
+      log(`Account(20日线) do not exist!`);
+      return;
+    }
+
+    const account = accountRes.data[0];
+
+    const strategyRes = await SimulationStorage.queryStrategyByNameAndDate(
+      "突破20日线",
+      date
+    ).then((res) => res.data);
+
+    if (!strategyRes || strategyRes.length == 0) {
+      log(`Strategy(20日线) do not exist!`);
+      return;
+    }
+
+    const strategy = strategyRes[0];
+
+    if (!strategy.content) {
+      log(`Strategy(20日线) content is null!`);
+      return;
+    }
+
+    let symbols = strategy.content.split(",");
+    if (symbols.length == 0) {
+      log(`Strategy(20日线) symbols is null!`);
+      return;
+    }
+
+    const holdings = await SimulationStorage.queryHoldingsByAccoundID(
+      account.account_id
+    ).then((res) => res.data);
+
+    if (holdings) {
+      symbols = symbols.slice(0, 5 - holdings.length);
+    }
+
+    const querys: QueryLike[] = [];
+
+    if (symbols.length >= 0) {
+      log(`Strategy(20日线) symbols - holding is 0!`);
+
+      const avgAmount = precision(account.available / symbols.length);
+      symbols.forEach((v) => {
+        querys.push(
+          PlanTable.insert({
+            account_id: account.account_id,
+            date: getNextTradeDate(date),
+            deal_type: 0,
+            exec_flag: 0,
+            plan_id: genID(),
+            symbol: v,
+            createAt: getCurrentDateAndTime(),
+            updateAt: getCurrentDateAndTime(),
+            plan_amount: avgAmount,
+          }).toQuery()
+        );
+      });
+    }
+
+    holdings.forEach((v) => {
+      querys.push(
+        PlanTable.insert({
+          account_id: account.account_id,
+          date: getNextTradeDate(date),
+          deal_type: 1,
+          exec_flag: 0,
+          plan_id: genID(),
+          symbol: v.symbol,
+          createAt: getCurrentDateAndTime(),
+          updateAt: getCurrentDateAndTime(),
+          plan_count: v.count,
+        }).toQuery()
+      );
+    });
+
+    dbQuery(querys)
+      .then(() => {
+        log(`Exec genPlanTask success`);
+      })
+      .catch((e) => {
+        log(`Exec genPlanTask failed: ${e}`);
+      });
   }
 }

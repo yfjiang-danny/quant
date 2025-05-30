@@ -40,12 +40,12 @@ async function main() {
 
   // const factorTable = AccountTable.create().ifNotExists().toQuery();
   // await dbQuery(AccountTable.create().ifNotExists().toQuery());
-  // await dbQuery(DealTable.create().ifNotExists().toQuery());
-  // await dbQuery(EntrustmentTable.create().ifNotExists().toQuery());
-  // await dbQuery(HoldingTable.create().ifNotExists().toQuery());
-  // await dbQuery(HoldingHistoryTable.create().ifNotExists().toQuery());
-  // await dbQuery(PlanTable.create().ifNotExists().toQuery());
-  await dbQuery(StrategyTable.create().ifNotExists().toQuery());
+  await dbQuery(DealTable.create().ifNotExists().toQuery());
+  await dbQuery(EntrustmentTable.create().ifNotExists().toQuery());
+  await dbQuery(HoldingTable.create().ifNotExists().toQuery());
+  await dbQuery(HoldingHistoryTable.create().ifNotExists().toQuery());
+  await dbQuery(PlanTable.create().ifNotExists().toQuery());
+  // await dbQuery(StrategyTable.create().ifNotExists().toQuery());
 }
 
 main();

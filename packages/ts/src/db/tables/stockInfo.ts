@@ -1,9 +1,9 @@
 import {
   baseColumns,
   BaseTableModel,
-  dateDataType,
-  nameDataType,
-  symbolDataType,
+  DateDataType,
+  NameDataType,
+  SymbolDataType,
 } from "./base";
 import sql from "sql";
 
@@ -55,7 +55,7 @@ export const StockInfoTable = sql.define<string, StockInfoTableModel>({
     ...baseColumns,
     name: {
       name: "name",
-      dataType: nameDataType,
+      dataType: NameDataType,
     },
     fullname: {
       name: "fullname",
@@ -71,7 +71,7 @@ export const StockInfoTable = sql.define<string, StockInfoTableModel>({
     },
     symbol: {
       name: "symbol",
-      dataType: symbolDataType,
+      dataType: SymbolDataType,
       notNull: true,
       unique: true,
     },
@@ -85,11 +85,11 @@ export const StockInfoTable = sql.define<string, StockInfoTableModel>({
     },
     list_date: {
       name: "list_date",
-      dataType: dateDataType,
+      dataType: DateDataType,
     },
     delist_date: {
       name: "delist_date",
-      dataType: dateDataType,
+      dataType: DateDataType,
     },
     industry: {
       name: "industry",

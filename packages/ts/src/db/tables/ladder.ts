@@ -2,9 +2,9 @@ import sql from "sql";
 import {
   baseColumns,
   BaseTableModel,
-  dateDataType,
-  nameDataType,
-  symbolDataType,
+  DateDataType,
+  NameDataType,
+  SymbolDataType,
 } from "./base";
 
 export interface StockLadderTableModel extends BaseTableModel {
@@ -21,19 +21,19 @@ export const StockLadderTable = sql.define<string, StockLadderTableModel>({
     ...baseColumns,
     date: {
       name: "date",
-      dataType: dateDataType,
+      dataType: DateDataType,
       notNull: true,
       primaryKey: true,
     },
     symbol: {
       name: "symbol",
-      dataType: symbolDataType,
+      dataType: SymbolDataType,
       notNull: true,
       primaryKey: true,
     },
     name: {
       name: "name",
-      dataType: nameDataType,
+      dataType: NameDataType,
     },
     ladder: {
       name: "ladder",

@@ -23,7 +23,14 @@ import {
   time25Collection,
   time30Collection,
 } from "../collection/collection.time";
-import { buyEntrustmentTask, buyPlanTask } from "../tasks/simulation";
+import {
+  buyEntrustmentTask,
+  buyPlanTask,
+  clearingTask,
+  genPlanTask,
+  sellEntrustmentTask,
+  sellPlanTask,
+} from "../tasks/simulation";
 
 dotenv.config();
 
@@ -189,6 +196,10 @@ app.listen(port, () => {
   //
   runBuyPlanJob();
   runBuyEntrustmentJob();
+  runSellPlanJob();
+  runSellEntrustmentJob();
+  runClearingJob();
+  runGenPlanJob();
 });
 
 let job: Job;
@@ -337,5 +348,53 @@ function runBuyEntrustmentJob() {
   rule.hour = 9;
   rule.minute = 25;
   const fn = buyEntrustmentTask.bind(null);
+  scheduleJob(rule, fn);
+}
+
+function runSellPlanJob() {
+  console.log(`Start SellPlan ...`);
+
+  // 每天 14:57
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 14;
+  rule.minute = 57;
+  const fn = sellPlanTask.bind(null);
+  scheduleJob(rule, fn);
+}
+
+function runSellEntrustmentJob() {
+  console.log(`Start SellEntrustment ...`);
+
+  // 每天 15:00
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 15;
+  rule.minute = 0;
+  const fn = sellEntrustmentTask.bind(null);
+  scheduleJob(rule, fn);
+}
+
+function runClearingJob() {
+  console.log(`Start clearing ...`);
+
+  // 每天 16:00
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 16;
+  rule.minute = 0;
+  const fn = clearingTask.bind(null);
+  scheduleJob(rule, fn);
+}
+
+function runGenPlanJob() {
+  console.log(`Start runGenPlanJob ...`);
+
+  // 每天 19:00
+  const rule = new RecurrenceRule();
+  rule.dayOfWeek = [1, 2, 3, 4, 5];
+  rule.hour = 19;
+  rule.minute = 0;
+  const fn = genPlanTask.bind(null);
   scheduleJob(rule, fn);
 }

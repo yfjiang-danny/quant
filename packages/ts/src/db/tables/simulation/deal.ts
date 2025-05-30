@@ -1,11 +1,11 @@
 import {
   baseColumns,
   BaseTableModel,
-  dateDataType,
+  DateDataType,
   IDDataType,
   MaxNumericDataType,
   SmallNumericDataType,
-  symbolDataType,
+  SymbolDataType,
 } from "../base";
 import sql from "sql";
 
@@ -43,7 +43,7 @@ export const DealTable = sql.define<string, DealTableModel>({
     },
     deal_date: {
       name: "deal_date",
-      dataType: dateDataType,
+      dataType: DateDataType,
     },
     deal_type: {
       name: "deal_type",
@@ -55,11 +55,11 @@ export const DealTable = sql.define<string, DealTableModel>({
     },
     symbol: {
       name: "symbol",
-      dataType: symbolDataType,
+      dataType: SymbolDataType,
     },
     count: {
       name: "count",
-      dataType: MaxNumericDataType,
+      dataType: "integer",
     },
     price: {
       name: "price",

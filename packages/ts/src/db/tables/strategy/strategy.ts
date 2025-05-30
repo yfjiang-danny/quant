@@ -1,9 +1,9 @@
 import {
   baseColumns,
   BaseTableModel,
-  dateDataType,
+  DateDataType,
   IDDataType,
-  nameDataType,
+  NameDataType,
 } from "../base";
 import sql from "sql";
 
@@ -26,12 +26,12 @@ export const StrategyTable = sql.define<string, StrategyTableModel>({
     },
     name: {
       name: "name",
-      dataType: nameDataType,
+      dataType: NameDataType,
       notNull: true,
     },
     date: {
       name: "date",
-      dataType: dateDataType,
+      dataType: DateDataType,
       notNull: true,
     },
     content: {

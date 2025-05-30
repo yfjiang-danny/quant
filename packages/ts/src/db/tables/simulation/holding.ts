@@ -1,11 +1,11 @@
 import {
   baseColumns,
   BaseTableModel,
-  dateDataType,
+  DateDataType,
   IDDataType,
   MaxNumericDataType,
   SmallNumericDataType,
-  symbolDataType,
+  SymbolDataType,
 } from "../base";
 import sql from "sql";
 
@@ -15,10 +15,12 @@ export interface HoldingTableModel extends BaseTableModel {
   symbol: string;
   count: number;
   buy_price: number;
+  buy_date: string;
   cur_price: number;
   interest: number;
   interest_rate: number;
   amount: number;
+  fee: number;
 }
 
 export const HoldingTable = sql.define<string, HoldingTableModel>({
@@ -39,6 +41,10 @@ export const HoldingTable = sql.define<string, HoldingTableModel>({
       name: "buy_price",
       dataType: SmallNumericDataType,
     },
+    buy_date: {
+      name: "buy_date",
+      dataType: DateDataType,
+    },
     cur_price: {
       name: "cur_price",
       dataType: SmallNumericDataType,
@@ -49,11 +55,11 @@ export const HoldingTable = sql.define<string, HoldingTableModel>({
     },
     symbol: {
       name: "symbol",
-      dataType: symbolDataType,
+      dataType: SymbolDataType,
     },
     count: {
       name: "count",
-      dataType: MaxNumericDataType,
+      dataType: "integer",
     },
     interest: {
       name: "interest",
@@ -61,6 +67,10 @@ export const HoldingTable = sql.define<string, HoldingTableModel>({
     },
     interest_rate: {
       name: "interest_rate",
+      dataType: SmallNumericDataType,
+    },
+    fee: {
+      name: "fee",
       dataType: SmallNumericDataType,
     },
   },
@@ -108,15 +118,15 @@ export const HoldingHistoryTable = sql.define<string, HoldingHistoryTableModel>(
       },
       buy_date: {
         name: "buy_date",
-        dataType: dateDataType,
+        dataType: DateDataType,
       },
       sell_date: {
         name: "sell_date",
-        dataType: dateDataType,
+        dataType: DateDataType,
       },
       symbol: {
         name: "symbol",
-        dataType: symbolDataType,
+        dataType: SymbolDataType,
       },
       count: {
         name: "count",

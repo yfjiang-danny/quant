@@ -33,3 +33,51 @@ export async function buyEntrustmentTask() {
     log(`Buy entrustments task exception: ${error}`);
   }
 }
+
+export async function sellPlanTask() {
+  try {
+    if (isHoliday(new Date())) {
+      log(`${new Date().toDateString()} is holiday, return`);
+      return;
+    }
+    Strategies.sellPlanTask();
+  } catch (error) {
+    log(`sellPlanTask exception: ${error}`);
+  }
+}
+
+export async function sellEntrustmentTask() {
+  try {
+    if (isHoliday(new Date())) {
+      log(`${new Date().toDateString()} is holiday, return`);
+      return;
+    }
+    Strategies.sellEntrustmentTask();
+  } catch (error) {
+    log(`sellEntrustmentTask exception: ${error}`);
+  }
+}
+
+export async function clearingTask() {
+  try {
+    if (isHoliday(new Date())) {
+      log(`${new Date().toDateString()} is holiday, return`);
+      return;
+    }
+    Strategies.clearingTask();
+  } catch (error) {
+    log(`clearingTask exception: ${error}`);
+  }
+}
+
+export async function genPlanTask() {
+  try {
+    if (isHoliday(new Date())) {
+      log(`${new Date().toDateString()} is holiday, return`);
+      return;
+    }
+    Strategies.genPlanTask();
+  } catch (error) {
+    log(`genPlanTask exception: ${error}`);
+  }
+}

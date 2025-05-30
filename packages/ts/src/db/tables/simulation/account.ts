@@ -1,10 +1,10 @@
 import {
   baseColumns,
   BaseTableModel,
-  dateDataType,
+  DateDataType,
   IDDataType,
   MaxNumericDataType,
-  nameDataType,
+  NameDataType,
   SmallNumericDataType,
 } from "../base";
 import sql from "sql";
@@ -35,15 +35,15 @@ export const AccountTable = sql.define<string, AccountTableModel>({
     },
     date: {
       name: "date",
-      dataType: dateDataType,
+      dataType: DateDataType,
     },
     time: {
       name: "time",
-      dataType: dateDataType,
+      dataType: DateDataType,
     },
     name: {
       name: "name",
-      dataType: nameDataType,
+      dataType: NameDataType,
       notNull: true,
       unique: true,
     },

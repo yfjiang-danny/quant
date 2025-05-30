@@ -1,11 +1,11 @@
 import {
   baseColumns,
   BaseTableModel,
-  dateDataType,
+  DateDataType,
   IDDataType,
   MaxNumericDataType,
   SmallNumericDataType,
-  symbolDataType,
+  SymbolDataType,
 } from "../base";
 import sql from "sql";
 
@@ -47,11 +47,11 @@ export const EntrustmentTable = sql.define<string, EntrustmentTableModel>({
     },
     date: {
       name: "date",
-      dataType: dateDataType,
+      dataType: DateDataType,
     },
     time: {
       name: "time",
-      dataType: dateDataType,
+      dataType: DateDataType,
     },
     deal_type: {
       name: "deal_type",
@@ -68,11 +68,11 @@ export const EntrustmentTable = sql.define<string, EntrustmentTableModel>({
     },
     symbol: {
       name: "symbol",
-      dataType: symbolDataType,
+      dataType: SymbolDataType,
     },
     count: {
       name: "count",
-      dataType: MaxNumericDataType,
+      dataType: "integer",
     },
     price: {
       name: "price",
