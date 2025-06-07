@@ -37,6 +37,7 @@ export namespace IStockSnapshotTable {
               StockSnapshotTable.symbol.name,
               StockSnapshotTable.date.name,
             ],
+            onlyUpdateNotNull: true,
             update: shouldUpdate
               ? StockSnapshotTable.columns
                   .filter(
@@ -117,7 +118,7 @@ export namespace IStockSnapshotTable {
 
   export function getStocksByDate(
     date: string,
-    node?: BinaryNode
+    node?: BinaryNode | BinaryNode[]
   ): Promise<QueryResult<StockSnapshotTableModel[]>> {
     //
     let mQuery = StockSnapshotTable.select(StockSnapshotTable.star()).where(
@@ -125,7 +126,13 @@ export namespace IStockSnapshotTable {
     );
 
     if (node) {
-      mQuery = mQuery.where(node);
+      if (Array.isArray(node)) {
+        node.forEach((v) => {
+          mQuery = mQuery.where(v);
+        });
+      } else {
+        mQuery = mQuery.where(node);
+      }
     }
 
     const query = mQuery.order(StockSnapshotTable.symbol).toQuery();
@@ -133,11 +140,27 @@ export namespace IStockSnapshotTable {
     return dbQuery<StockSnapshotTableModel[]>(query);
   }
 
+  export function queryStocksUpLimitedByDate(date: string) {
+    return getStocksByDate(date, [
+      StockSnapshotTable.close.isNotNull(),
+      StockSnapshotTable.top_price.isNotNull(),
+      StockSnapshotTable.close.equals(StockSnapshotTable.top_price),
+    ]);
+  }
+
+  export function queryStocksBottomLimitedByDate(date: string) {
+    return getStocksByDate(date, [
+      StockSnapshotTable.close.isNotNull(),
+      StockSnapshotTable.bottom_price.isNotNull(),
+      StockSnapshotTable.close.equals(StockSnapshotTable.bottom_price),
+    ]);
+  }
+
   export function getStocksBySymbol(
     symbol: string,
     limit?: number,
     offset?: number,
-    node?: BinaryNode
+    node?: BinaryNode | BinaryNode[]
   ): Promise<QueryResult<StockSnapshotTableModel[]>> {
     //
     let mQuery = StockSnapshotTable.select(StockSnapshotTable.star()).where(
@@ -145,7 +168,13 @@ export namespace IStockSnapshotTable {
     );
 
     if (node) {
-      mQuery = mQuery.where(node);
+      if (Array.isArray(node)) {
+        node.forEach((v) => {
+          mQuery = mQuery.where(v);
+        });
+      } else {
+        mQuery = mQuery.where(node);
+      }
     }
 
     mQuery = mQuery.order(StockSnapshotTable.date.descending);
@@ -156,6 +185,18 @@ export namespace IStockSnapshotTable {
       }
       mQuery = mQuery.limit(limit);
     }
+
+    return dbQuery<StockSnapshotTableModel[]>(mQuery.toQuery());
+  }
+
+  export function getStockBySymbolAndDate(
+    symbol: string,
+    date: string
+  ): Promise<QueryResult<StockSnapshotTableModel[]>> {
+    //
+    let mQuery = StockSnapshotTable.select(StockSnapshotTable.star())
+      .where(StockSnapshotTable.symbol.equals(symbol))
+      .where(StockSnapshotTable.date.equals(date));
 
     return dbQuery<StockSnapshotTableModel[]>(mQuery.toQuery());
   }

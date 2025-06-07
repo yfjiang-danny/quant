@@ -9,9 +9,8 @@ dotenv.config();
 
   IStrategyTable.insert({
     name: "突破20日线",
-    date: "20250526",
-    content: "002297,600658,603569",
+    date: "20250523",
   }).then((res) => {
-    console.log(res.rows);
+    console.log(res.rowCount);
   });
 })();

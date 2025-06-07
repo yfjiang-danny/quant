@@ -5,9 +5,10 @@ WORKDIR /opt/quant
 COPY package.json /opt/quant/package.json
 COPY .npmrc /opt/quant/.npmrc
 COPY package-lock.json /opt/quant/package-lock.json
+COPY vendor /opt/quant/vendor
 # COPY node_modules/ /opt/quant/node_modules/
 
 RUN npm install
 
-COPY sql.types.d.ts /opt/quant/node_modules/sql/lib/types.d.ts
+
 

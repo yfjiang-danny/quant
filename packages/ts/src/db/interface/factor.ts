@@ -29,6 +29,7 @@ export namespace IStockFactorTable {
         )
           .onConflict({
             columns: [StockFactorTable.symbol.name, StockFactorTable.date.name],
+            onlyUpdateNotNull: true,
             update: StockFactorTable.columns
               .filter(
                 (v) =>

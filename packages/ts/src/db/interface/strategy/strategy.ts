@@ -20,6 +20,7 @@ export namespace IStrategyTable {
       )
         .onConflict({
           columns: [StrategyTable.name.name, StrategyTable.date.name],
+          onlyUpdateNotNull: true,
           update: StrategyTable.columns
             .filter(
               (v) =>

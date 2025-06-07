@@ -1,3 +1,5 @@
+import { precision } from "./number";
+
 export function deepCopyWithJson(data: unknown) {
   try {
     return JSON.parse(JSON.stringify(data));
@@ -37,13 +39,13 @@ export function calcFee(amount: number, type: 0 | 1) {
   const commissionRate = 0.00025;
 
   if (type === 0) {
-    return Math.max(5, Number((amount * commissionRate).toFixed(2)));
+    return Math.max(5, precision(amount * commissionRate));
   }
 
   if (type === 1) {
-    return (
-      Number((amount * taxRate).toFixed(2)) +
-      Math.max(5, Number((amount * commissionRate).toFixed(2)))
+    return precision(
+      precision(amount * taxRate) +
+        Math.max(5, precision(amount * commissionRate))
     );
   }
 

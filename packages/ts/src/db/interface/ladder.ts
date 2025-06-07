@@ -27,6 +27,7 @@ export namespace IStockLadderTable {
         )
           .onConflict({
             columns: [StockLadderTable.symbol.name, StockLadderTable.date.name],
+            onlyUpdateNotNull: true,
             update: StockLadderTable.columns
               .filter(
                 (v) =>

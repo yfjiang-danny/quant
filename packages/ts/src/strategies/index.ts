@@ -8,7 +8,7 @@ import { StockModel } from "../models/type";
 import { calculateMaxRiseDay, fillMaxRiseDay } from "../service/factors/rise";
 import { Storage } from "../service/storage/storage";
 import { Excel } from "../utils/excel";
-import { calcFee, deepCopyWithJson } from "../utils/util";
+import { batchTask, calcFee, deepCopyWithJson } from "../utils/util";
 import {
   fitTurnover,
   isBreakthrough20,
@@ -19,9 +19,11 @@ import {
 import { StockSnapshotTableModel } from "../db/tables/snapshot";
 import { fillStocksSMA } from "../service/factors/sma";
 import {
+  getCurrentDate,
   getCurrentDateAndTime,
   getLatestTradeDates,
   getNextTradeDate,
+  getRangeTradeDates,
   toDashDate,
 } from "../utils/date";
 import { MaxCapitalStockModel } from "../db/interface/model";
@@ -50,6 +52,14 @@ import {
 import { genID } from "../utils/id";
 import { precision } from "../utils/number";
 import { EastMoneyStockModel } from "../third/eastmoney/type";
+import { isHoliday } from "chinese-calendar-ts";
+import pLimit from "p-limit";
+import {
+  BackTestingDealModel,
+  BackTestingHoldingHistoryModel,
+  BackTestingHoldingModel,
+} from "./type";
+import { promiseSettled } from "../utils/promise";
 
 export namespace Strategies {
   const logPath = path.resolve(logRootPath, "strategy.log");
@@ -332,12 +342,12 @@ export namespace Strategies {
     return stocks.filter((v) => v.close === v.topPrice);
   }
 
-  export async function buyTask(date?: string) {
+  export async function buyTask(date?: string, accountName = "20日线") {
     log("Exec buyTask");
     if (!date) {
       date = moment().format("YYYYMMDD");
     }
-    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+    const accountRes = await SimulationStorage.queryAccountByName(accountName);
 
     if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
       log(`Account(20日线) do not exist!`);
@@ -411,7 +421,9 @@ export namespace Strategies {
             resolve({ errorMsg: "plan plan_amount is null" });
             return;
           }
-          const buyPrice = Number((res.close * 1.05).toFixed(2));
+          const buyPrice = Number(
+            Math.min((res.close * 1.01, res.topPrice || 10000)).toFixed(2)
+          );
 
           let count = Math.floor(plan.plan_amount / buyPrice / 100) * 100;
 
@@ -454,12 +466,15 @@ export namespace Strategies {
     });
   }
 
-  export async function buyEntrustmentTask(date?: string) {
+  export async function buyEntrustmentTask(
+    date?: string,
+    accountName = "20日线"
+  ) {
     log("Exec buyEntrustmentTask");
     if (!date) {
       date = moment().format("YYYYMMDD");
     }
-    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+    const accountRes = await SimulationStorage.queryAccountByName(accountName);
 
     if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
       log(`Account(20日线) do not exist!`);
@@ -510,6 +525,7 @@ export namespace Strategies {
     doneEntrustments.forEach((v) => {
       const dealAmount = precision(v.count * v.deal_price);
       const fee = calcFee(dealAmount, 0);
+      const cost = fee + dealAmount;
       const dealId = genID();
       deals.push({
         symbol: v.symbol,
@@ -523,7 +539,7 @@ export namespace Strategies {
         price: v.deal_price,
       });
 
-      const interestRate = precision(fee / dealAmount);
+      const interestRate = precision((fee * 100) / cost);
 
       holdings.push({
         symbol: v.symbol,
@@ -548,7 +564,7 @@ export namespace Strategies {
     newAccount.amount = precision(newAccount.holding + newAccount.available);
     newAccount.interest = precision(newAccount.amount - newAccount.init_amount);
     newAccount.interest_rate = precision(
-      newAccount.interest / newAccount.init_amount
+      (newAccount.interest * 100) / newAccount.init_amount
     );
 
     const querys: QueryLike[] = [];
@@ -620,6 +636,12 @@ export namespace Strategies {
             return;
           }
 
+          if (res.topPrice == res.close) {
+            // Can not make a deal
+            resolve({ status: 2 });
+            return;
+          }
+
           if (res.open > data.price) {
             // Can not make a deal
             resolve({ status: 2 });
@@ -637,12 +659,12 @@ export namespace Strategies {
     });
   }
 
-  export async function sellPlanTask(date?: string) {
+  export async function sellPlanTask(date?: string, accountName = "20日线") {
     log("Exec buyTask");
     if (!date) {
       date = moment().format("YYYYMMDD");
     }
-    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+    const accountRes = await SimulationStorage.queryAccountByName(accountName);
 
     if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
       log(`Account(20日线) do not exist!`);
@@ -746,12 +768,15 @@ export namespace Strategies {
     });
   }
 
-  export async function sellEntrustmentTask(date?: string) {
+  export async function sellEntrustmentTask(
+    date?: string,
+    accountName = "20日线"
+  ) {
     log("Exec sellEntrustmentTask");
     if (!date) {
       date = moment().format("YYYYMMDD");
     }
-    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+    const accountRes = await SimulationStorage.queryAccountByName(accountName);
 
     if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
       log(`Account(20日线) do not exist!`);
@@ -836,7 +861,8 @@ export namespace Strategies {
               fee
           );
           const interestRate = precision(
-            interest / (findHolding.buy_price * findHolding.count)
+            (interest * 100) /
+              (findHolding.buy_price * findHolding.count + findHolding.fee)
           );
           holdingHistories.push({
             id: genID(),
@@ -864,7 +890,7 @@ export namespace Strategies {
     newAccount.amount = precision(newAccount.holding + newAccount.available);
     newAccount.interest = precision(newAccount.amount - newAccount.init_amount);
     newAccount.interest_rate = precision(
-      newAccount.interest / newAccount.init_amount
+      (newAccount.interest * 100) / newAccount.init_amount
     );
 
     undoneEntrustments.forEach((v) => {
@@ -942,6 +968,12 @@ export namespace Strategies {
             return;
           }
 
+          if (res.close == res.bottomPrice) {
+            // Can not make a deal
+            resolve({ status: 2 });
+            return;
+          }
+
           if (res.close < data.price) {
             // Can not make a deal
             resolve({ status: 2 });
@@ -959,12 +991,12 @@ export namespace Strategies {
     });
   }
 
-  export async function clearingTask(date?: string) {
+  export async function clearingTask(date?: string, accountName = "20日线") {
     log("Exec clearingTask");
     if (!date) {
       date = moment().format("YYYYMMDD");
     }
-    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+    const accountRes = await SimulationStorage.queryAccountByName(accountName);
 
     if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
       log(`Account(20日线) do not exist!`);
@@ -999,7 +1031,9 @@ export namespace Strategies {
             const interest = precision(
               (v.value.close - h.buy_price) * h.count - h.fee
             );
-            const interestRate = precision(interest / (h.buy_price * h.count));
+            const interestRate = precision(
+              (interest * 100) / (h.buy_price * h.count + h.fee)
+            );
             h.interest = interest;
             h.interest_rate = interestRate;
             h.updateAt = getCurrentDateAndTime();
@@ -1013,7 +1047,9 @@ export namespace Strategies {
       account.holding = precision(holdingAmount);
       account.amount = precision(account.holding + account.available);
       account.interest = precision(account.amount - account.init_amount);
-      account.interest_rate = precision(account.interest / account.init_amount);
+      account.interest_rate = precision(
+        (account.interest * 100) / account.init_amount
+      );
       account.date = moment().format("YYYYMMDD");
       account.time = moment().format("HH:mm:ss");
       account.updateAt = getCurrentDateAndTime();
@@ -1032,12 +1068,12 @@ export namespace Strategies {
     }
   }
 
-  export async function genPlanTask(date?: string) {
+  export async function genPlanTask(date?: string, accountName = "20日线") {
     log("Exec clearingTask");
     if (!date) {
       date = moment().format("YYYYMMDD");
     }
-    const accountRes = await SimulationStorage.queryAccountByName("20日线");
+    const accountRes = await SimulationStorage.queryAccountByName(accountName);
 
     if (!accountRes || !accountRes.data || accountRes.data.length == 0) {
       log(`Account(20日线) do not exist!`);
@@ -1073,8 +1109,10 @@ export namespace Strategies {
       account.account_id
     ).then((res) => res.data);
 
+    const len = 5 - (holdings?.length || 0);
+
     if (holdings) {
-      symbols = symbols.slice(0, 5 - holdings.length);
+      symbols = symbols.slice(0, len);
     }
 
     const querys: QueryLike[] = [];
@@ -1082,7 +1120,7 @@ export namespace Strategies {
     if (symbols.length >= 0) {
       log(`Strategy(20日线) symbols - holding is 0!`);
 
-      const avgAmount = precision(account.available / symbols.length);
+      const avgAmount = precision(account.available / len);
       symbols.forEach((v) => {
         querys.push(
           PlanTable.insert({
@@ -1123,5 +1161,290 @@ export namespace Strategies {
       .catch((e) => {
         log(`Exec genPlanTask failed: ${e}`);
       });
+  }
+
+  export async function backTesting20(start = "20240109", end?: string) {
+    if (!end) {
+      end = moment().format("YYYYMMDD");
+    }
+
+    const dates = getRangeTradeDates(start, end);
+
+    const stocksMap: Record<string, StockModel[]> = await getFilterStockMap(
+      dates
+    );
+
+    const initial = 200000;
+    const account: Pick<
+      AccountTableModel,
+      | "amount"
+      | "holding"
+      | "available"
+      | "date"
+      | "init_amount"
+      | "interest"
+      | "interest_rate"
+    > = {
+      init_amount: initial,
+      amount: initial,
+      holding: 0,
+      available: initial,
+      date: getCurrentDate(),
+      interest: 0,
+      interest_rate: 0,
+    };
+
+    const holdingMap: Record<string, BackTestingHoldingModel[]> = {};
+
+    const holdingHistories: BackTestingHoldingHistoryModel[] = [];
+    const deals: BackTestingDealModel[] = [];
+
+    let i = 1;
+    while (i < dates.length) {
+      const curDateStr = dates[i];
+      const preDateStr = dates[i - 1];
+
+      i++;
+
+      const newHoldings: BackTestingHoldingModel[] = [];
+
+      let holdingLen = 0;
+
+      const preHolding = holdingMap[preDateStr];
+      if (preHolding) {
+        holdingLen = preHolding.length;
+      }
+
+      let planStocks = stocksMap[preDateStr];
+
+      if (planStocks && planStocks.length > 0) {
+        const availableLen = 5 - holdingLen;
+        planStocks = planStocks.slice(0, availableLen);
+
+        if (planStocks.length > 0) {
+          const planAmount = account.available / availableLen;
+
+          await promiseSettled(planStocks, (ps) =>
+            backTestingBuyStock(ps.symbol!, ps.date!, planAmount)
+          ).then((res) => {
+            res.forEach((v, i) => {
+              if (v.status == "fulfilled") {
+                if (v.value) {
+                  const cost = precision(v.value.amount + v.value.fee);
+                  const interest = precision(-v.value.fee);
+                  const interestRate = precision((interest * 100) / cost);
+
+                  newHoldings.push({
+                    amount: v.value.amount,
+                    buy_date: v.value.deal_date,
+                    buy_price: v.value.price,
+                    count: v.value.count,
+                    cur_price: v.value.price,
+                    fee: v.value.fee,
+                    interest: interest,
+                    interest_rate: interestRate,
+                    symbol: v.value.symbol,
+                    deal_ids: v.value.deal_id,
+                  });
+
+                  account.available = precision(account.available - cost);
+                  account.holding = precision(account.holding + v.value.amount);
+                  account.amount = account.holding + account.available;
+
+                  deals.push(v.value);
+                }
+              }
+            });
+          });
+        }
+
+        if (preHolding && preHolding.length > 0) {
+          await promiseSettled(preHolding, (v) =>
+            backTestingSellStock(v, curDateStr)
+          ).then((res) => {
+            res.forEach((v, i) => {
+              if (v.status == "fulfilled") {
+                if (v.value) {
+                  const deal = v.value;
+                  const holding = preHolding[i];
+
+                  const sellAmount = deal.amount - deal.fee;
+
+                  const interest = precision(
+                    holding.interest +
+                      (deal.price - holding.buy_price) * deal.count -
+                      deal.fee
+                  );
+                  const interestRate = precision(
+                    (interest * 100) / (holding.amount - holding.interest)
+                  );
+
+                  const holdingHistory: BackTestingHoldingHistoryModel = {
+                    symbol: holding.symbol,
+                    buy_date: holding.buy_date,
+                    buy_price: holding.buy_price,
+                    count: holding.count,
+                    sell_date: deal.deal_date,
+                    sell_price: deal.price,
+                    deal_ids: holding.deal_ids + "," + deal.deal_id,
+                    interest: interest,
+                    interest_rate: interestRate,
+                  };
+
+                  holdingHistories.push(holdingHistory);
+
+                  account.available = precision(account.available + sellAmount);
+                  account.holding = precision(account.holding - sellAmount);
+                  account.amount = precision(
+                    account.available + account.holding
+                  );
+
+                  deals.push(deal);
+                } else {
+                  newHoldings.push(preHolding[i]);
+                }
+              } else {
+                newHoldings.push(preHolding[i]);
+              }
+            });
+          });
+        }
+
+        account.interest = precision(account.amount - account.init_amount);
+        account.interest_rate = precision(
+          (account.interest * 100) / account.init_amount
+        );
+      }
+    }
+
+    console.log(account);
+  }
+
+  async function getFilterStockMap(dates: string[]) {
+    const stocksMap: Record<string, StockModel[]> = {};
+
+    const limit = pLimit(10);
+
+    const promises: Promise<boolean>[] = [];
+
+    dates.forEach((v) => {
+      promises.push(
+        limit(() => {
+          return new Promise<boolean>((resolve, reject) => {
+            filterStocks(undefined, v)
+              .then((res) => {
+                if (res) {
+                  stocksMap[v] = res;
+                }
+              })
+              .finally(() => {
+                resolve(true);
+              });
+          });
+        })
+      );
+    });
+
+    await Promise.allSettled(promises);
+
+    return stocksMap;
+  }
+
+  function backTestingBuyStock(
+    symbol: string,
+    date: string,
+    planAmount: number
+  ) {
+    return new Promise<BackTestingDealModel | undefined>((resolve, reject) => {
+      Storage.getStockSnapshotBySymbolAndDate(symbol, date)
+        .then((res) => {
+          if (Array.isArray(res?.data) && res.data.length > 0) {
+            const stock = res.data[0];
+
+            if (!stock.open || stock.open == stock.top_price) {
+              resolve(undefined);
+              return;
+            }
+
+            const buyPrice = Number(stock.open);
+
+            let count = Math.floor(planAmount / buyPrice / 100) * 100;
+
+            let amount = precision(count * buyPrice);
+
+            let fee = calcFee(amount, 0);
+
+            while (fee + amount > planAmount) {
+              count -= 100;
+              if (count <= 0) {
+                break;
+              }
+              amount = precision(count * buyPrice);
+              fee = calcFee(amount, 0);
+            }
+
+            if (count > 0) {
+              resolve({
+                amount: amount,
+                count: count,
+                deal_date: stock.date,
+                deal_id: genID(),
+                deal_type: 0,
+                fee: fee,
+                price: buyPrice,
+                symbol: symbol,
+              });
+            } else {
+              resolve(undefined);
+            }
+          } else {
+            resolve(undefined);
+          }
+        })
+        .catch(() => {
+          resolve(undefined);
+        });
+    });
+  }
+
+  function backTestingSellStock(
+    holding: BackTestingHoldingModel,
+    sellDate: string
+  ) {
+    return new Promise<BackTestingDealModel | undefined>((resolve, reject) => {
+      Storage.getStockSnapshotBySymbolAndDate(holding.symbol, sellDate)
+        .then((res) => {
+          if (Array.isArray(res?.data) && res.data.length > 0) {
+            const stock = res.data[0];
+
+            if (!stock.close || stock.close == stock.bottom_price) {
+              resolve(undefined);
+              return;
+            }
+
+            const sellPrice = Number(stock.close);
+
+            let amount = precision(holding.count * sellPrice);
+
+            let fee = calcFee(amount, 1);
+
+            resolve({
+              amount: amount,
+              count: holding.count,
+              deal_date: stock.date,
+              deal_id: genID(),
+              deal_type: 1,
+              fee: fee,
+              price: sellPrice,
+              symbol: stock.symbol,
+            });
+          } else {
+            resolve(undefined);
+          }
+        })
+        .catch(() => {
+          resolve(undefined);
+        });
+    });
   }
 }

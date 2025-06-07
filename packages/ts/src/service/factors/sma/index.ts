@@ -5,6 +5,7 @@ import { StockWithSMA } from "../../../models/sma/type";
 import { StockModel } from "../../../models/type";
 import { Storage } from "../../storage/storage";
 import pLimit from "p-limit";
+import { StockSnapshotTable } from "../../../db/tables/snapshot";
 
 const logPath = path.resolve(logRootPath, "sma.log");
 
@@ -99,14 +100,15 @@ export async function fillStockSMA<T extends CoreModel>(stock: T) {
 
   const symbol = stock.symbol;
 
-  let histories = await Storage.getStockHistoriesFromDB(symbol, 130).then(
-    (res) => {
-      if (res.msg) {
-        console.log(res.msg);
-      }
-      return res.data as unknown as CoreModel[];
+  let histories = await Storage.getStockHistoriesFromDB(symbol, 130, 0, [
+    StockSnapshotTable.date.lte(stock.date),
+    StockSnapshotTable.open.isNotNull(),
+  ]).then((res) => {
+    if (res.msg) {
+      console.log(res.msg);
     }
-  );
+    return res.data as unknown as CoreModel[];
+  });
 
   if (!histories) {
     return stock;
@@ -177,13 +179,28 @@ export async function fillStockSMA<T extends CoreModel>(stock: T) {
   return stock;
 }
 
+export function fillOneStockSMA(oneStockHistories: StockModel[]) {
+  const newStocks: StockModel[] = [];
+  oneStockHistories.forEach((v, i) => {
+    const smaStock = { ...v };
+    [5, 10, 20, 30, 60, 120].forEach((interval) => {
+      smaStock[`sma${interval}`] = calculateIntervalAverage(
+        oneStockHistories.slice(i, interval + 1) as unknown as CoreModel[],
+        interval
+      );
+    });
+    newStocks.push(smaStock);
+  });
+  return newStocks;
+}
+
 /**
  *
  * @param stocks
  * @returns
  */
 export function fillStocksSMA(stocks: StockModel[]) {
-  logger.info("fillAllStockSMA start...", logPath);
+  // logger.info("fillAllStockSMA start...", logPath);
 
   const limit = pLimit(20);
 
@@ -203,7 +220,7 @@ export function fillStocksSMA(stocks: StockModel[]) {
         res.push({ ...stocks[i] } as StockModel);
       }
     });
-    logger.info("fillAllStockSMA finished...", logPath);
+    // logger.info("fillAllStockSMA finished...", logPath);
     return res;
   });
 }

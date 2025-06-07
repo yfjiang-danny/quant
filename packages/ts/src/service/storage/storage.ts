@@ -135,22 +135,11 @@ export namespace Storage {
     symbol: string,
     limit?: number,
     offset?: number,
-    node?: BinaryNode
+    node?: BinaryNode | BinaryNode[]
   ): Promise<Response<StockSnapshotTableModel[]>> {
-    return new Promise<Response<StockSnapshotTableModel[]>>((resolve) => {
+    return tableQuery(
       IStockSnapshotTable.getStocksBySymbol(symbol, limit, offset, node)
-        .then(
-          (res) => {
-            resolve({ data: res.rows as unknown as StockSnapshotTableModel[] });
-          },
-          (e) => {
-            resolve({ data: [], msg: e });
-          }
-        )
-        .catch((e) => {
-          resolve({ data: [], msg: e });
-        });
-    });
+    );
   }
 
   export function getStockSnapshotByDate(
@@ -159,20 +148,25 @@ export namespace Storage {
     if (!date) {
       date = moment().format("YYYYMMDD");
     }
-    return new Promise<Response<StockSnapshotTableModel[]>>((resolve) => {
-      IStockSnapshotTable.getStocksByDate(date as string)
-        .then(
-          (res) => {
-            resolve({ data: res.rows as unknown as StockSnapshotTableModel[] });
-          },
-          (e) => {
-            resolve({ data: [], msg: e });
-          }
-        )
-        .catch((e) => {
-          resolve({ data: [], msg: e });
-        });
-    });
+    return tableQuery(IStockSnapshotTable.getStocksByDate(date as string));
+  }
+
+  export function getUpLimitedStocksByDate(date?: string) {
+    if (!date) {
+      date = moment().format("YYYYMMDD");
+    }
+    return tableQuery(
+      IStockSnapshotTable.queryStocksUpLimitedByDate(date as string)
+    );
+  }
+
+  export function getStockSnapshotBySymbolAndDate(
+    symbol: string,
+    date: string
+  ) {
+    return tableQuery<StockSnapshotTableModel>(
+      IStockSnapshotTable.getStockBySymbolAndDate(symbol, date)
+    );
   }
 
   export function getStockDetailsByDate(

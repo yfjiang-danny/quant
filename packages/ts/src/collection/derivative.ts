@@ -7,38 +7,37 @@ import { logger } from "../logs";
 import { Storage } from "../service/storage/storage";
 import { StockLadderTableModel } from "../db/tables/ladder";
 import { StockSnapshotTable } from "../db/tables/snapshot";
+import { promiseSettled } from "../utils/promise";
 
 dotenv.config();
 
 const logPath = path.resolve(logRootPath, "derivative.log");
 
 async function calcLadder(symbol: string, date?: string) {
-  const histories = await Storage.getStockHistoriesFromDB(symbol, 100, 0).then(
-    (res) => res.data
-  );
+  const histories = await Storage.getStockHistoriesFromDB(
+    symbol,
+    20,
+    0,
+    date ? StockSnapshotTable.date.lte(date) : undefined
+  ).then((res) => res.data);
 
   let i = 0;
 
-  if (date) {
-    const findIndex = histories.findIndex((v) => v.date == date);
-    findIndex != -1 && (i = findIndex);
-  }
-
   while (i < histories.length - 1) {
     if (histories[i].close !== histories[i].top_price) {
-      return i;
+      break;
     }
     i++;
   }
 
-  return i;
+  return i + 1;
 }
 
 export async function fillingLadder(date?: string) {
   date = date ?? moment().format("YYYYMMDD");
 
-  const limitedStocks = await Storage.getStockSnapshotByDate(date).then((res) =>
-    res.data.filter((v) => v.close == v.top_price)
+  const limitedStocks = await Storage.getStockSnapshotByDate(date).then(
+    (res) => res.data
   );
   if (!limitedStocks || limitedStocks.length <= 0) {
     logger.info(`FillingLadder failed: stocks is empty`, logPath);
@@ -49,14 +48,29 @@ export async function fillingLadder(date?: string) {
   // const preLadder = await IStockLadderTable.getStockLadderByDate
 
   const upperLimit: StockLadderTableModel[] = [];
-  for (const v of limitedStocks) {
-    upperLimit.push({
-      date: v.date,
-      name: v.name,
-      symbol: v.symbol,
-      ladder: await calcLadder(v.symbol, date),
-    });
-  }
+
+  await promiseSettled(limitedStocks, (v) => calcLadder(v.symbol, date)).then(
+    (res) => {
+      res.forEach((v, i) => {
+        const s = limitedStocks[i];
+        if (v.status === "fulfilled") {
+          upperLimit.push({
+            date: s.date,
+            name: s.name,
+            symbol: s.symbol,
+            ladder: v.value,
+          });
+        } else {
+          upperLimit.push({
+            date: s.date,
+            name: s.name,
+            symbol: s.symbol,
+            ladder: 1,
+          });
+        }
+      });
+    }
+  );
 
   if (upperLimit && upperLimit.length > 0) {
     await Storage.insertUpperLimitStocks(upperLimit);

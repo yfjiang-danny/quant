@@ -30,6 +30,7 @@ export namespace IHoldingTable {
         )
           .onConflict({
             columns: [HoldingTable.symbol.name, HoldingTable.account_id.name],
+            onlyUpdateNotNull: true,
             update: shouldUpdate
               ? HoldingTable.columns
                   .filter(

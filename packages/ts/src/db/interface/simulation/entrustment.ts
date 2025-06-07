@@ -32,6 +32,7 @@ export namespace IEntrustmentTable {
               EntrustmentTable.symbol.name,
               EntrustmentTable.account_id.name,
             ],
+            onlyUpdateNotNull: true,
             update: shouldUpdate
               ? EntrustmentTable.columns
                   .filter(

@@ -29,6 +29,7 @@ export namespace IPlanTable {
         )
           .onConflict({
             columns: [PlanTable.symbol.name, PlanTable.date.name],
+            onlyUpdateNotNull: true,
             update: shouldUpdate
               ? PlanTable.columns
                   .filter(

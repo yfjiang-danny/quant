@@ -84,10 +84,10 @@ export function getNextTradeDate(
     typeof from === "string" && from.length === 8 ? toDashDate(from) : from
   );
 
-  m.add(1);
+  m.add(1, "d");
 
   while (!isTradeDate(m.toDate())) {
-    m.add(1);
+    m.add(1, "d");
   }
 
   return m.format(format);
@@ -95,4 +95,40 @@ export function getNextTradeDate(
 
 export function getCurrentDateAndTime() {
   return moment().format("YYYY-MM-DD HH:mm:ss");
+}
+
+export function getCurrentDate(format = "YYYYMMDD") {
+  return moment().format(format);
+}
+
+/**
+ * Get all trade dates between start and end, include start and end.
+ * @param start YYYYMMDD or YYYY-MM-DD
+ * @param end format date string, default YYYYMMDD
+ * @param format date format symbol, default YYYYMMDD
+ * @returns
+ */
+export function getRangeTradeDates(
+  start: string,
+  end: string,
+  format = "YYYYMMDD"
+) {
+  const res: string[] = [];
+
+  const m = moment(
+    typeof start === "string" && start.length === 8 ? toDashDate(start) : start
+  );
+
+  while (m.format(format) != end) {
+    if (isTradeDate(m.toDate())) {
+      res.push(m.format(format));
+    }
+    m.add(1, "d");
+  }
+
+  if (isTradeDate(m.toDate())) {
+    res.push(m.format(format));
+  }
+
+  return res;
 }

@@ -55,6 +55,7 @@ export namespace IStockTimeSnapshotTable {
         )
           .onConflict({
             columns: [table.symbol.name, table.date.name],
+            onlyUpdateNotNull: true,
             update: shouldUpdate
               ? table.columns
                   .filter(

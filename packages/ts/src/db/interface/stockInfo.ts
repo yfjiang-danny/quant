@@ -26,6 +26,7 @@ export namespace IStockInfoTable {
         )
           .onConflict({
             columns: [StockInfoTable.symbol?.name],
+            onlyUpdateNotNull: true,
             update: StockInfoTable.columns
               .filter(
                 (v) =>
