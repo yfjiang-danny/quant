@@ -22,8 +22,8 @@ export namespace IStockFactorTable {
           StockFactorTable.insert(
             stocks.slice(start, end).map((v) => ({
               ...v,
-              createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
-              updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+              create_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+              update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
             }))
           ) as any
         )
@@ -36,7 +36,7 @@ export namespace IStockFactorTable {
                   ![
                     StockFactorTable.symbol?.name as string,
                     StockFactorTable.date?.name as string,
-                    StockFactorTable.createAt?.name as string,
+                    StockFactorTable.create_at?.name as string,
                   ].includes(v.name as unknown as string)
               )
               .map((v) => {
@@ -62,7 +62,7 @@ export namespace IStockFactorTable {
       querys.push(
         StockFactorTable.update({
           ...stock,
-          updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+          update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
         })
           .where(StockFactorTable.symbol?.equals(stock.symbol))
           .toQuery()
@@ -144,6 +144,7 @@ from "stock_factor" a
 left join "stock_snapshots" b on a.date=b.date and a.symbol=b.symbol
 where a.date='${date}'
 and b.close is not null
+and b.open is not null
 and a.sma20 is not null
 and a.flow_capital is not null
 ) t
@@ -159,6 +160,7 @@ from "stock_factor" a1
 left join "stock_snapshots" b1 on a1.date=b1.date and a1.symbol=b1.symbol
 where a1.date='${preDate}'
 and b1.close is not null
+and b1.open is not null
 and a1.sma20 is not null
 and a1.flow_capital is not null
 ) t1

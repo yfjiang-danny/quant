@@ -6,11 +6,11 @@ import {
 
 export type BackTestingHoldingModel = Omit<
   HoldingTableModel,
-  "createAt" | "updateAt" | "account_id" | "deal_id"
+  "createAt" | "update_at" | "account_id" | "deal_id"
 >;
 
 export type BackTestingDealModel = Omit<DealTableModel, "account_id">;
 
 export type BackTestingHoldingHistoryModel = Partial<
-  Omit<HoldingHistoryTableModel, "id" | "updateAt" | "createAt" | "account_id">
+  Omit<HoldingHistoryTableModel, "id" | "update_at" | "createAt" | "account_id">
 >;

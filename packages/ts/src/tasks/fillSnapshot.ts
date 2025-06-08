@@ -13,8 +13,10 @@ import pLimit from "p-limit";
 export function getUnFillSymbols() {
   const str = `select symbol
   FROM "stock_snapshots"
-  where date='20250523'
-  and "updateAt"::date != CURRENT_DATE`;
+  where date='20250606'
+  and "update_at"::date != CURRENT_DATE
+  order by symbol desc
+  limit 200`;
 
   return dbQuery<{ symbol: string }[]>({
     text: str,
@@ -36,38 +38,33 @@ export async function fillSnapshot() {
 
   if (!Array.isArray(symbols)) return;
 
+  if (symbols.length == 0) {
+    console.log(`fillSnapshot finished`);
+
+    return;
+  }
+
   const limit = pLimit(10);
 
   symbols.map((v) => {
     v && limit(() => fillSnapshotBySymbol(v));
   });
-
-  // let i = 0;
-  // while (i < symbols.length) {
-  //   const symbol = symbols[i];
-  //   i++;
-  //   if (!symbol) {
-  //     continue;
-  //   }
-  //   await fillSnapshotBySymbol(symbol);
-  // }
 }
 
 export async function fillSnapshotBySymbol(symbol: string) {
-  const stocks = await EastMoney_API.getStockKline(symbol).then((res) => {
-    if (res) {
-      // console.log(res.data.klines.reverse().slice(0, 5));
+  const stocks = await EastMoney_API.getStockKline(symbol, "20240101").then(
+    (res) => {
+      if (res) {
+        const klines = KLineToStocks(res);
+        console.log(symbol, klines.length);
 
-      return KLineToStocks(res);
-
-      // console.log(KLineToStocks(res));
+        return klines;
+      }
+      return [];
     }
-    return [];
-  });
+  );
 
   if (!stocks || stocks.length == 0) return;
-
-  console.log(symbol, stocks.length);
 
   await insert(stocks);
 }

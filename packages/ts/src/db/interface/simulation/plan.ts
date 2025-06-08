@@ -22,8 +22,8 @@ export namespace IPlanTable {
           PlanTable.insert(
             plans.slice(start, end).map((v) => ({
               ...v,
-              createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
-              updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+              create_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+              update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
             }))
           ) as any
         )
@@ -37,7 +37,7 @@ export namespace IPlanTable {
                       ![
                         PlanTable.symbol?.name as string,
                         PlanTable.date?.name as string,
-                        PlanTable.createAt?.name as string,
+                        PlanTable.create_at?.name as string,
                       ].includes(v.name as unknown as string)
                   )
                   .map((v) => {
@@ -58,7 +58,7 @@ export namespace IPlanTable {
     return dbQuery<PlanTableModel[]>(
       PlanTable.update({
         ...plan,
-        updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+        update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       })
         .where(PlanTable.account_id.equals(plan.account_id))
         .where(PlanTable.plan_id.equals(plan.plan_id))
@@ -70,7 +70,7 @@ export namespace IPlanTable {
     return dbQuery<PlanTableModel[]>(
       PlanTable.update({
         exec_flag: flag,
-        updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+        update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       })
         .where(PlanTable.plan_id.equals(id))
         .toQuery()

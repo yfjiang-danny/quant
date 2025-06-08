@@ -48,8 +48,8 @@ export namespace IStockTimeSnapshotTable {
           table.insert(
             stocks.slice(start, end).map((v) => ({
               ...v,
-              createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
-              updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+              create_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+              update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
             }))
           ) as any
         )
@@ -63,7 +63,7 @@ export namespace IStockTimeSnapshotTable {
                       ![
                         table.symbol?.name as string,
                         table.date?.name as string,
-                        table.createAt?.name as string,
+                        table.create_at?.name as string,
                       ].includes(v.name as unknown as string)
                   )
                   .map((v) => {
@@ -95,7 +95,7 @@ export namespace IStockTimeSnapshotTable {
         table
           .update({
             ...stock,
-            updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+            update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
           })
           .where(
             table.symbol

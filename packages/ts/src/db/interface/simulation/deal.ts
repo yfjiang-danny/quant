@@ -22,8 +22,8 @@ export namespace IDealTable {
           DealTable.insert(
             deals.slice(start, end).map((v) => ({
               ...v,
-              createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
-              updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+              create_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+              update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
             }))
           ) as any
         ).toQuery()

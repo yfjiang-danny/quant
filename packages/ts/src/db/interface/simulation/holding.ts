@@ -23,8 +23,8 @@ export namespace IHoldingTable {
           HoldingTable.insert(
             holdings.slice(start, end).map((v) => ({
               ...v,
-              createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
-              updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+              create_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+              update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
             }))
           ) as any
         )
@@ -38,7 +38,7 @@ export namespace IHoldingTable {
                       ![
                         HoldingTable.symbol?.name as string,
                         HoldingTable.account_id?.name as string,
-                        HoldingTable.createAt?.name as string,
+                        HoldingTable.create_at?.name as string,
                       ].includes(v.name as unknown as string)
                   )
                   .map((v) => {
@@ -59,7 +59,7 @@ export namespace IHoldingTable {
     return dbQuery<HoldingTableModel[]>(
       HoldingTable.update({
         ...holding,
-        updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+        update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       })
         .where(HoldingTable.account_id.equals(holding.account_id))
         .where(HoldingTable.symbol.equals(holding.symbol))
@@ -81,7 +81,7 @@ export namespace IHoldingTable {
         ...holdings.slice(start, end).map((v) => {
           return HoldingTable.update({
             ...v,
-            updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+            update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
           }).toQuery();
         })
       );

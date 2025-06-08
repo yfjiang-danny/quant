@@ -5,7 +5,7 @@ import { getLatestTradeDates } from "../src/utils/date";
 dotenv.config();
 
 (async function test() {
-  const latestDates = getLatestTradeDates(10).slice(2).reverse();
+  const latestDates = getLatestTradeDates(342).reverse();
 
   let i = 0;
   while (i < latestDates.length) {
@@ -13,7 +13,7 @@ dotenv.config();
     i++;
 
     await fillingLadder(d).then((res) => {
-      console.log(res);
+      // console.log(res);
     });
   }
 })();

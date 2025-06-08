@@ -114,6 +114,7 @@ export namespace EastMoney_API {
     //     resolve(MockEastMoneyData.find((v) => v.code === symbol) || null);
     //   });
     // }
+
     return axios
       .get(
         `${
@@ -144,18 +145,38 @@ export namespace EastMoney_API {
       });
   }
 
-  export function getStockKline(symbol: string) {
+  export function getStockKline(
+    symbol: string,
+    begin?: string,
+    end = "20500101"
+  ) {
     const timestamp = new Date().getTime();
     const key = ("3.5.1" + Math.random()).replace(/\D/g, "");
     const callbackKey = `jQuery${key}_${timestamp}`;
 
-    const secid = (symbol.startsWith("6") ? `1.` : "0.") + symbol;
+    const secid = `${
+      symbol.startsWith("6") || symbol.startsWith("5") ? `1.` : "0."
+    }${symbol}`;
 
-    const url = `${
-      process.env.EASTMONEY_KLINE_API
-    }?cb=${callbackKey}&secid=${secid}&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&end=20500101&lmt=120&_=${
-      timestamp + 1
-    }`;
+    const querys: string[] = [
+      `cb=${callbackKey}`,
+      `secid=${secid}`,
+      `ut=fa5fd1943c7b386f172d6893dbfba10b`,
+      `fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6`,
+      `fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61`,
+      `klt=101`, // 101 - 日  102 - 周  103 - 月
+      `fqt=1`, // 前复权
+      `end=${end}`,
+      `_=${timestamp + 1}`,
+    ];
+
+    if (begin) {
+      querys.push(`beg=${begin}`);
+    } else {
+      querys.push(`lmt=120`);
+    }
+
+    const url = `${process.env.EASTMONEY_KLINE_API}?${querys.join("&")}`;
 
     return axios
       .get(url)

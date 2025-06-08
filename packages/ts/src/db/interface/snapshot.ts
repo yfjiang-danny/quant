@@ -6,7 +6,7 @@ import {
   StockSnapshotTableModel,
 } from "../tables/snapshot";
 import { dbQuery } from "../connect";
-import { StockInfoTable, StockInfoTableModel } from "../tables/stockInfo";
+import { StockInfoTableModel } from "../tables/stockInfo";
 
 export namespace IStockSnapshotTable {
   export function insert(
@@ -27,8 +27,8 @@ export namespace IStockSnapshotTable {
           StockSnapshotTable.insert(
             stocks.slice(start, end).map((v) => ({
               ...v,
-              createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
-              updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+              create_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+              update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
             }))
           ) as any
         )
@@ -45,9 +45,9 @@ export namespace IStockSnapshotTable {
                       ![
                         StockSnapshotTable.symbol?.name as string,
                         StockSnapshotTable.date?.name as string,
-                        StockSnapshotTable.createAt?.name as string,
+                        StockSnapshotTable.create_at?.name as string,
                       ].includes(column.name as unknown as string) &&
-                      [...columnNames, "updateAt"].includes(
+                      [...columnNames, "update_at"].includes(
                         column.name as unknown as string
                       )
                   )
@@ -75,7 +75,7 @@ export namespace IStockSnapshotTable {
       querys.push(
         StockSnapshotTable.update({
           ...stock,
-          updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+          update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
         })
           .where(
             StockSnapshotTable.symbol
@@ -142,6 +142,7 @@ export namespace IStockSnapshotTable {
 
   export function queryStocksUpLimitedByDate(date: string) {
     return getStocksByDate(date, [
+      StockSnapshotTable.open.isNotNull(),
       StockSnapshotTable.close.isNotNull(),
       StockSnapshotTable.top_price.isNotNull(),
       StockSnapshotTable.close.equals(StockSnapshotTable.top_price),

@@ -573,7 +573,7 @@ export namespace Strategies {
       querys.push(
         EntrustmentTable.update({
           status: v.status,
-          updateAt: getCurrentDateAndTime(),
+          update_at: getCurrentDateAndTime(),
         })
           .where(EntrustmentTable.id.equals(v.id))
           .toQuery()
@@ -583,7 +583,7 @@ export namespace Strategies {
       querys.push(
         EntrustmentTable.update({
           status: v.status,
-          updateAt: getCurrentDateAndTime(),
+          update_at: getCurrentDateAndTime(),
         })
           .where(EntrustmentTable.id.equals(v.id))
           .toQuery()
@@ -594,8 +594,8 @@ export namespace Strategies {
       querys.push(
         DealTable.insert({
           ...v,
-          createAt: getCurrentDateAndTime(),
-          updateAt: getCurrentDateAndTime(),
+          create_at: getCurrentDateAndTime(),
+          update_at: getCurrentDateAndTime(),
         }).toQuery()
       );
     });
@@ -604,8 +604,8 @@ export namespace Strategies {
       querys.push(
         HoldingTable.insert({
           ...v,
-          createAt: getCurrentDateAndTime(),
-          updateAt: getCurrentDateAndTime(),
+          create_at: getCurrentDateAndTime(),
+          update_at: getCurrentDateAndTime(),
         }).toQuery()
       );
     });
@@ -723,8 +723,8 @@ export namespace Strategies {
             resolve({ errorMsg: "queryRealtimeInfo error" });
             return;
           }
-          if (!res.close) {
-            resolve({ errorMsg: "queryRealtimeInfo close is null" });
+          if (!res.close || !res.open) {
+            resolve({ errorMsg: "queryRealtimeInfo close or open is null" });
             return;
           }
 
@@ -876,8 +876,8 @@ export namespace Strategies {
             interest: interest,
             interest_rate: interestRate,
             deal_ids: findHolding.deal_ids + `,${dealId}`,
-            createAt: getCurrentDateAndTime(),
-            updateAt: getCurrentDateAndTime(),
+            create_at: getCurrentDateAndTime(),
+            update_at: getCurrentDateAndTime(),
           });
           newAccount.available += dealAmount - fee;
           newAccount.holding -= dealAmount;
@@ -897,7 +897,7 @@ export namespace Strategies {
       querys.push(
         EntrustmentTable.update({
           status: v.status,
-          updateAt: getCurrentDateAndTime(),
+          update_at: getCurrentDateAndTime(),
         })
           .where(EntrustmentTable.id.equals(v.id))
           .toQuery()
@@ -907,7 +907,7 @@ export namespace Strategies {
       querys.push(
         EntrustmentTable.update({
           status: v.status,
-          updateAt: getCurrentDateAndTime(),
+          update_at: getCurrentDateAndTime(),
         })
           .where(EntrustmentTable.id.equals(v.id))
           .toQuery()
@@ -919,8 +919,8 @@ export namespace Strategies {
       querys.push(
         DealTable.insert({
           ...v,
-          createAt: getCurrentDateAndTime(),
-          updateAt: getCurrentDateAndTime(),
+          create_at: getCurrentDateAndTime(),
+          update_at: getCurrentDateAndTime(),
         }).toQuery()
       );
     });
@@ -930,8 +930,8 @@ export namespace Strategies {
       querys.push(
         HoldingHistoryTable.insert({
           ...v,
-          createAt: getCurrentDateAndTime(),
-          updateAt: getCurrentDateAndTime(),
+          create_at: getCurrentDateAndTime(),
+          update_at: getCurrentDateAndTime(),
         }).toQuery()
       );
     });
@@ -1036,7 +1036,7 @@ export namespace Strategies {
             );
             h.interest = interest;
             h.interest_rate = interestRate;
-            h.updateAt = getCurrentDateAndTime();
+            h.update_at = getCurrentDateAndTime();
 
             querys.push(HoldingTable.update(h).toQuery());
           }
@@ -1052,7 +1052,7 @@ export namespace Strategies {
       );
       account.date = moment().format("YYYYMMDD");
       account.time = moment().format("HH:mm:ss");
-      account.updateAt = getCurrentDateAndTime();
+      account.update_at = getCurrentDateAndTime();
 
       querys.push(AccountTable.update(account).toQuery());
     }
@@ -1130,8 +1130,8 @@ export namespace Strategies {
             exec_flag: 0,
             plan_id: genID(),
             symbol: v,
-            createAt: getCurrentDateAndTime(),
-            updateAt: getCurrentDateAndTime(),
+            create_at: getCurrentDateAndTime(),
+            update_at: getCurrentDateAndTime(),
             plan_amount: avgAmount,
           }).toQuery()
         );
@@ -1147,8 +1147,8 @@ export namespace Strategies {
           exec_flag: 0,
           plan_id: genID(),
           symbol: v.symbol,
-          createAt: getCurrentDateAndTime(),
-          updateAt: getCurrentDateAndTime(),
+          create_at: getCurrentDateAndTime(),
+          update_at: getCurrentDateAndTime(),
           plan_count: v.count,
         }).toQuery()
       );
@@ -1315,9 +1315,12 @@ export namespace Strategies {
           (account.interest * 100) / account.init_amount
         );
       }
+
+      holdingMap[curDateStr] = newHoldings;
     }
 
     console.log(account);
+    console.log(holdingHistories);
   }
 
   async function getFilterStockMap(dates: string[]) {
@@ -1417,7 +1420,11 @@ export namespace Strategies {
           if (Array.isArray(res?.data) && res.data.length > 0) {
             const stock = res.data[0];
 
-            if (!stock.close || stock.close == stock.bottom_price) {
+            if (
+              !stock.close ||
+              !stock.open ||
+              stock.close == stock.bottom_price
+            ) {
               resolve(undefined);
               return;
             }

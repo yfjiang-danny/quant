@@ -20,8 +20,8 @@ export namespace IStockLadderTable {
           StockLadderTable.insert(
             stocks.slice(start, end).map((v) => ({
               ...v,
-              createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
-              updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+              create_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+              update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
             }))
           ) as any
         )
@@ -34,7 +34,7 @@ export namespace IStockLadderTable {
                   ![
                     StockLadderTable.symbol?.name as string,
                     StockLadderTable.date?.name as string,
-                    StockLadderTable.createAt?.name as string,
+                    StockLadderTable.create_at?.name as string,
                   ].includes(v.name as unknown as string)
               )
               .map((v) => {
@@ -60,7 +60,7 @@ export namespace IStockLadderTable {
       querys.push(
         StockLadderTable.update({
           ...stock,
-          updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+          update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
         })
           .where(StockLadderTable.symbol?.equals(stock.symbol))
           .toQuery()

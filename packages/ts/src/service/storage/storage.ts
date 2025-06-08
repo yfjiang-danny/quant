@@ -155,7 +155,7 @@ export namespace Storage {
     if (!date) {
       date = moment().format("YYYYMMDD");
     }
-    return tableQuery(
+    return tableQuery<StockSnapshotTableModel>(
       IStockSnapshotTable.queryStocksUpLimitedByDate(date as string)
     );
   }

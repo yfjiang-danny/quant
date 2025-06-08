@@ -22,8 +22,8 @@ export namespace IEntrustmentTable {
           EntrustmentTable.insert(
             data.slice(start, end).map((v) => ({
               ...v,
-              createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
-              updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+              create_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+              update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
             }))
           ) as any
         )
@@ -40,7 +40,7 @@ export namespace IEntrustmentTable {
                       ![
                         EntrustmentTable.symbol?.name as string,
                         EntrustmentTable.account_id?.name as string,
-                        EntrustmentTable.createAt?.name as string,
+                        EntrustmentTable.create_at?.name as string,
                       ].includes(v.name as unknown as string)
                   )
                   .map((v) => {
@@ -61,7 +61,7 @@ export namespace IEntrustmentTable {
     return dbQuery<EntrustmentTableModel[]>(
       EntrustmentTable.update({
         ...data,
-        updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+        update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       })
         .where(EntrustmentTable.account_id.equals(data.account_id))
         .where(EntrustmentTable.id.equals(data.id))
@@ -73,7 +73,7 @@ export namespace IEntrustmentTable {
     return dbQuery<EntrustmentTableModel[]>(
       EntrustmentTable.update({
         status: status,
-        updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+        update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       })
         .where(EntrustmentTable.id.equals(id))
         .toQuery()

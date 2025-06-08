@@ -12,8 +12,8 @@ export namespace IStrategyTable {
     return dbQuery<StrategyTableModel[]>(
       (
         StrategyTable.insert({
-          createAt: moment().format("YYYY-MM-DD HH:mm:ss"),
-          updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+          create_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+          update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
           ...strategy,
           id: id,
         }) as any
@@ -28,7 +28,7 @@ export namespace IStrategyTable {
                   StrategyTable.id?.name as string,
                   StrategyTable.name?.name as string,
                   StrategyTable.date?.name as string,
-                  StrategyTable.createAt?.name as string,
+                  StrategyTable.create_at?.name as string,
                 ].includes(v.name as unknown as string)
             )
             .map((v) => {
@@ -43,7 +43,7 @@ export namespace IStrategyTable {
     return dbQuery<StrategyTableModel[]>(
       StrategyTable.update({
         ...strategy,
-        updateAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+        update_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       })
         .where(StrategyTable.name.equals(strategy.name))
         .toQuery()

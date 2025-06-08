@@ -185,7 +185,7 @@ export function fillOneStockSMA(oneStockHistories: StockModel[]) {
     const smaStock = { ...v };
     [5, 10, 20, 30, 60, 120].forEach((interval) => {
       smaStock[`sma${interval}`] = calculateIntervalAverage(
-        oneStockHistories.slice(i, interval + 1) as unknown as CoreModel[],
+        oneStockHistories.slice(i, i + interval) as unknown as CoreModel[],
         interval
       );
     });
